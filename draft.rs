@@ -1105,14 +1105,28 @@ impl AccountSize for McpServerRegistryEntryV1 {
 }
 
 
+/// MCP Tool Definition for on-chain storage
+///
+/// Represents a summarized version of a tool offered by an MCP server.
+/// Contains the name, hashes of detailed information (stored off-chain),
+/// and tags for discovery.
+///
+/// This corresponds to the ToolDefinition in the MCP specification,
+/// with complete details available via the server's full_capabilities_uri.
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Debug)]
 pub struct McpToolDefinitionOnChain {
+    /// Tool name
     pub name: String, 
+    /// SHA256 hash of ToolDefinition.description
     pub description_hash: [u8; HASH_SIZE],
+    /// SHA256 hash of ToolDefinition.inputSchema
     pub input_schema_hash: [u8; HASH_SIZE],
+    /// SHA256 hash of ToolDefinition.outputSchema
     pub output_schema_hash: [u8; HASH_SIZE],
+    /// Tags for tool discovery
     pub tags: Vec<String>, 
 }
+/// Implementation of the AccountSize trait for McpToolDefinitionOnChain
 impl AccountSize for McpToolDefinitionOnChain {
     const ACCOUNT_SIZE: usize = borsh_size_string(MAX_TOOL_NAME_LEN) 
                               + HASH_SIZE  // description_hash
@@ -1122,24 +1136,48 @@ impl AccountSize for McpToolDefinitionOnChain {
 }
 
 
+/// MCP Resource Definition for on-chain storage
+///
+/// Represents a summarized version of a resource offered by an MCP server.
+/// Contains the URI pattern, hash of detailed description (stored off-chain),
+/// and tags for discovery.
+///
+/// This corresponds to the ResourceDefinition in the MCP specification,
+/// with complete details available via the server's full_capabilities_uri.
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Debug)]
 pub struct McpResourceDefinitionOnChain {
+    /// Resource URI or pattern
     pub uri_pattern: String, 
+    /// SHA256 hash of ResourceDefinition.description
     pub description_hash: [u8; HASH_SIZE],
+    /// Tags for resource discovery
     pub tags: Vec<String>, 
 }
+/// Implementation of the AccountSize trait for McpResourceDefinitionOnChain
 impl AccountSize for McpResourceDefinitionOnChain {
      const ACCOUNT_SIZE: usize = borsh_size_string(MAX_RESOURCE_URI_PATTERN_LEN) 
                                + HASH_SIZE // description_hash
                                + borsh_size_vec_string(MAX_RESOURCE_TAGS, MAX_RESOURCE_TAG_LEN); // tags
 }
 
+/// MCP Prompt Definition for on-chain storage
+///
+/// Represents a summarized version of a prompt offered by an MCP server.
+/// Contains the name, hash of detailed description (stored off-chain),
+/// and tags for discovery.
+///
+/// This corresponds to the PromptDefinition in the MCP specification,
+/// with complete details available via the server's full_capabilities_uri.
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Debug)]
 pub struct McpPromptDefinitionOnChain {
+    /// Prompt name
     pub name: String, 
+    /// SHA256 hash of PromptDefinition.description
     pub description_hash: [u8; HASH_SIZE],
+    /// Tags for prompt discovery
     pub tags: Vec<String>, 
 }
+/// Implementation of the AccountSize trait for McpPromptDefinitionOnChain
 impl AccountSize for McpPromptDefinitionOnChain {
     const ACCOUNT_SIZE: usize = borsh_size_string(MAX_PROMPT_NAME_LEN) 
                               + HASH_SIZE // description_hash
@@ -1147,69 +1185,127 @@ impl AccountSize for McpPromptDefinitionOnChain {
 }
 
 
+/// Service Endpoint Input struct 
+///
+/// Used for passing service endpoint data to the register_agent and update_agent_details instructions.
+/// Converted to the ServiceEndpoint struct for storage.
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
 pub struct ServiceEndpointInput {
+    /// Protocol type (e.g., "a2a_http_jsonrpc", "aea_p2p")
     pub protocol: String,
+    /// Endpoint URL
     pub url: String,
+    /// Indicates if this is the primary endpoint (only one can be true)
     pub is_default: bool,
 }
+/// Implementation of From<ServiceEndpointInput> for ServiceEndpoint
 impl From<ServiceEndpointInput> for ServiceEndpoint {
     fn from(item: ServiceEndpointInput) -> Self {
         ServiceEndpoint { protocol: item.protocol, url: item.url, is_default: item.is_default }
     }
 }
 
+/// Agent Skill Input struct
+///
+/// Used for passing agent skill data to the register_agent and update_agent_details instructions.
+/// Converted to the AgentSkill struct for storage.
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
 pub struct AgentSkillInput {
+    /// Skill's unique ID within the agent
     pub id: String,
+    /// Human-readable skill name
     pub name: String,
+    /// Optional SHA256 hash of detailed skill description (full description off-chain)
     pub description_hash: Option<[u8; HASH_SIZE]>,
+    /// Tags associated with the skill
     pub tags: Vec<String>,
 }
+/// Implementation of From<AgentSkillInput> for AgentSkill
 impl From<AgentSkillInput> for AgentSkill {
     fn from(item: AgentSkillInput) -> Self {
         AgentSkill { id: item.id, name: item.name, description_hash: item.description_hash, tags: item.tags }
     }
 }
 
+/// Input struct for updating agent details
+///
+/// This structure contains all fields that can be updated in an agent entry.
+/// All fields are optional - only the fields that should be updated need to be provided.
+/// For optional string fields, there are associated "clear_*" boolean flags that can be
+/// used to set those fields to None.
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, Default)]
 pub struct AgentUpdateDetailsInput {
+    /// New agent name (if provided)
     pub name: Option<String>,
+    /// New agent description (if provided)
     pub description: Option<String>,
+    /// New agent version (if provided)
     pub agent_version: Option<String>,
+    /// New provider name (if provided)
     pub provider_name: Option<String>,
+    /// Whether to clear the provider_name field
     pub clear_provider_name: Option<bool>,
+    /// New provider URL (if provided)
     pub provider_url: Option<String>,
+    /// Whether to clear the provider_url field
     pub clear_provider_url: Option<bool>,
+    /// New documentation URL (if provided)
     pub documentation_url: Option<String>,
+    /// Whether to clear the documentation_url field
     pub clear_documentation_url: Option<bool>,
+    /// New service endpoints (if provided)
     pub service_endpoints: Option<Vec<ServiceEndpointInput>>,
+    /// New capabilities flags (if provided)
     pub capabilities_flags: Option<u64>,
+    /// New supported input modes (if provided)
     pub supported_input_modes: Option<Vec<String>>,
+    /// New supported output modes (if provided)
     pub supported_output_modes: Option<Vec<String>>,
+    /// New skills (if provided)
     pub skills: Option<Vec<AgentSkillInput>>,
+    /// New security info URI (if provided)
     pub security_info_uri: Option<String>,
+    /// Whether to clear the security_info_uri field
     pub clear_security_info_uri: Option<bool>,
+    /// New AEA address (if provided)
     pub aea_address: Option<String>,
+    /// Whether to clear the aea_address field
     pub clear_aea_address: Option<bool>,
+    /// New economic intent summary (if provided)
     pub economic_intent_summary: Option<String>,
+    /// Whether to clear the economic_intent_summary field
     pub clear_economic_intent_summary: Option<bool>,
+    /// New supported AEA protocols hash (if provided)
     pub supported_aea_protocols_hash: Option<[u8; HASH_SIZE]>,
+    /// Whether to clear the supported_aea_protocols_hash field
     pub clear_supported_aea_protocols_hash: Option<bool>,
+    /// New extended metadata URI (if provided)
     pub extended_metadata_uri: Option<String>,
+    /// Whether to clear the extended_metadata_uri field
     pub clear_extended_metadata_uri: Option<bool>,
+    /// New tags (if provided)
     pub tags: Option<Vec<String>>,
 }
 
 
+/// MCP Tool Definition Input struct
+///
+/// Used for passing MCP tool definition data to the register_mcp_server and update_mcp_server_details instructions.
+/// Converted to the McpToolDefinitionOnChain struct for storage.
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
 pub struct McpToolDefinitionOnChainInput {
+    /// Tool name
     pub name: String, 
+    /// SHA256 hash of ToolDefinition.description
     pub description_hash: [u8; HASH_SIZE], 
+    /// SHA256 hash of ToolDefinition.inputSchema
     pub input_schema_hash: [u8; HASH_SIZE], 
+    /// SHA256 hash of ToolDefinition.outputSchema
     pub output_schema_hash: [u8; HASH_SIZE], 
+    /// Tags for tool discovery
     pub tags: Vec<String>,
 }
+/// Implementation of From<McpToolDefinitionOnChainInput> for McpToolDefinitionOnChain
 impl From<McpToolDefinitionOnChainInput> for McpToolDefinitionOnChain {
     fn from(item: McpToolDefinitionOnChainInput) -> Self { 
         McpToolDefinitionOnChain {
@@ -1222,12 +1318,20 @@ impl From<McpToolDefinitionOnChainInput> for McpToolDefinitionOnChain {
     }
 }
 
+/// MCP Resource Definition Input struct
+///
+/// Used for passing MCP resource definition data to the register_mcp_server and update_mcp_server_details instructions.
+/// Converted to the McpResourceDefinitionOnChain struct for storage.
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
 pub struct McpResourceDefinitionOnChainInput {
+    /// Resource URI or pattern
     pub uri_pattern: String,
+    /// SHA256 hash of ResourceDefinition.description
     pub description_hash: [u8; HASH_SIZE],
+    /// Tags for resource discovery
     pub tags: Vec<String>,
 }
+/// Implementation of From<McpResourceDefinitionOnChainInput> for McpResourceDefinitionOnChain
 impl From<McpResourceDefinitionOnChainInput> for McpResourceDefinitionOnChain {
     fn from(item: McpResourceDefinitionOnChainInput) -> Self {
         McpResourceDefinitionOnChain {
@@ -1238,12 +1342,20 @@ impl From<McpResourceDefinitionOnChainInput> for McpResourceDefinitionOnChain {
     }
 }
 
+/// MCP Prompt Definition Input struct
+///
+/// Used for passing MCP prompt definition data to the register_mcp_server and update_mcp_server_details instructions.
+/// Converted to the McpPromptDefinitionOnChain struct for storage.
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
 pub struct McpPromptDefinitionOnChainInput {
+    /// Prompt name
     pub name: String,
+    /// SHA256 hash of PromptDefinition.description
     pub description_hash: [u8; HASH_SIZE],
+    /// Tags for prompt discovery
     pub tags: Vec<String>,
 }
+/// Implementation of From<McpPromptDefinitionOnChainInput> for McpPromptDefinitionOnChain
 impl From<McpPromptDefinitionOnChainInput> for McpPromptDefinitionOnChain {
     fn from(item: McpPromptDefinitionOnChainInput) -> Self {
         McpPromptDefinitionOnChain {
@@ -1255,37 +1367,70 @@ impl From<McpPromptDefinitionOnChainInput> for McpPromptDefinitionOnChain {
 }
 
 
+/// Input struct for updating MCP server details
+///
+/// This structure contains all fields that can be updated in an MCP server entry.
+/// All fields are optional - only the fields that should be updated need to be provided.
+/// For optional string fields, there are associated "clear_*" boolean flags that can be
+/// used to set those fields to None.
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, Default)]
 pub struct McpServerUpdateDetailsInput {
+    /// New server name (if provided)
     pub name: Option<String>,
+    /// New server version (if provided)
     pub server_version: Option<String>,
+    /// New service endpoint (if provided)
     pub service_endpoint: Option<String>,
+    /// New documentation URL (if provided)
     pub documentation_url: Option<String>,
+    /// Whether to clear the documentation_url field
     pub clear_documentation_url: Option<bool>,
+    /// New server capabilities summary (if provided)
     pub server_capabilities_summary: Option<String>,
+    /// Whether to clear the server_capabilities_summary field
     pub clear_server_capabilities_summary: Option<bool>,
+    /// New supports_resources flag (if provided)
     pub supports_resources: Option<bool>,
+    /// New supports_tools flag (if provided)
     pub supports_tools: Option<bool>,
+    /// New supports_prompts flag (if provided)
     pub supports_prompts: Option<bool>,
+    /// New on-chain tool definitions (if provided)
     pub onchain_tool_definitions: Option<Vec<McpToolDefinitionOnChainInput>>,
+    /// New on-chain resource definitions (if provided)
     pub onchain_resource_definitions: Option<Vec<McpResourceDefinitionOnChainInput>>,
+    /// New on-chain prompt definitions (if provided)
     pub onchain_prompt_definitions: Option<Vec<McpPromptDefinitionOnChainInput>>,
+    /// New full capabilities URI (if provided)
     pub full_capabilities_uri: Option<String>,
+    /// Whether to clear the full_capabilities_uri field
     pub clear_full_capabilities_uri: Option<bool>,
+    /// New tags (if provided)
     pub tags: Option<Vec<String>>,
 }
 
 
 // --- Enums ---
+
+/// Status of an agent in the Agent Registry
+///
+/// Represents the current operational status of an agent.
 #[repr(u8)]
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
 pub enum AgentStatus {
+    /// Agent is pending verification or initialization
     Pending = 0,
+    /// Agent is active and operational
     Active = 1,
+    /// Agent is temporarily inactive
     Inactive = 2,
+    /// Agent has been deregistered and is no longer available
     Deregistered = 3, 
 }
 impl AgentStatus {
+    /// Convert a u8 value to an AgentStatus enum variant
+    ///
+    /// Returns None if the value doesn't correspond to any valid status.
     fn from_u8(value: u8) -> Option<Self> {
         match value {
             0 => Some(AgentStatus::Pending), 1 => Some(AgentStatus::Active),
@@ -1297,15 +1442,25 @@ impl AgentStatus {
 impl Default for AgentStatus { fn default() -> Self { AgentStatus::Pending } }
 
 
+/// Status of an MCP server in the MCP Server Registry
+///
+/// Represents the current operational status of an MCP server.
 #[repr(u8)]
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
 pub enum McpServerStatus {
+    /// Server is pending verification or initialization
     Pending = 0,
+    /// Server is active and operational
     Active = 1,
+    /// Server is temporarily inactive
     Inactive = 2,
+    /// Server has been deregistered and is no longer available
     Deregistered = 3,
 }
 impl McpServerStatus {
+    /// Convert a u8 value to a McpServerStatus enum variant
+    ///
+    /// Returns None if the value doesn't correspond to any valid status.
      fn from_u8(value: u8) -> Option<Self> {
         match value {
             0 => Some(McpServerStatus::Pending), 1 => Some(McpServerStatus::Active),
@@ -1318,94 +1473,185 @@ impl Default for McpServerStatus { fn default() -> Self { McpServerStatus::Pendi
 
 
 // --- Events ---
+
+/// Event emitted when an agent is registered
+///
+/// This event contains the full data of the newly registered agent,
+/// including all on-chain fields and the extended_metadata_uri pointing
+/// to off-chain data. This enables real-time notification of new agent
+/// registrations and allows off-chain indexers to capture complete agent details.
 #[event]
 pub struct AgentRegistered {
+    /// Schema version of this entry (e.g., 1)
     pub registry_version: u8,
+    /// Solana public key of the entry's owner/manager
     pub owner_authority: Pubkey,
+    /// Unique identifier for the agent
     pub agent_id: String,
+    /// Human-readable name of the agent
     pub name: String,
+    /// Human-readable description of the agent
     pub description: String,
+    /// Version of the agent software/implementation
     pub agent_version: String,
+    /// Optional name of the agent's provider organization
     pub provider_name: Option<String>,
+    /// Optional URL of the agent's provider
     pub provider_url: Option<String>,
+    /// Optional URL to human-readable documentation
     pub documentation_url: Option<String>,
+    /// List of service endpoints where the agent can be reached
     pub service_endpoints: Vec<ServiceEndpoint>,
+    /// Bitmask for core A2A capabilities
     pub capabilities_flags: u64,
+    /// Default accepted input MIME types
     pub supported_input_modes: Vec<String>,
+    /// Default produced output MIME types
     pub supported_output_modes: Vec<String>,
+    /// Summary of key agent skills
     pub skills: Vec<AgentSkill>,
+    /// Optional URI to detailed security scheme definitions
     pub security_info_uri: Option<String>,
+    /// Optional Fetch.ai AEA address/ID
     pub aea_address: Option<String>,
+    /// Optional brief summary of the agent's economic goals
     pub economic_intent_summary: Option<String>,
+    /// Optional SHA256 hash of a list of supported AEA protocol IDs
     pub supported_aea_protocols_hash: Option<[u8; HASH_SIZE]>,
+    /// Agent status (0:Pending, 1:Active, 2:Inactive, 3:Deregistered)
     pub status: u8,
+    /// Timestamp of initial registration
     pub registration_timestamp: i64,
+    /// Timestamp of the last update
     pub last_update_timestamp: i64,
+    /// Optional URI to extensive off-chain metadata (e.g., full AgentCard JSON)
     pub extended_metadata_uri: Option<String>,
+    /// General discoverability tags for the agent
     pub tags: Vec<String>,
 }
 
+/// Event emitted when agent details are updated
+///
+/// Notifies listeners about updates to specific fields of an agent entry.
+/// The changed_fields list identifies which fields were modified.
 #[event]
 pub struct AgentUpdated {
+    /// Unique identifier for the agent
     pub agent_id: String,
+    /// List of field names that were updated
     pub changed_fields: Vec<String>, 
+    /// Timestamp of the update
     pub last_update_timestamp: i64,
 }
 
+/// Event emitted when agent status changes
+///
+/// Notifies listeners about a change in the agent's operational status.
 #[event]
 pub struct AgentStatusChanged {
+    /// Unique identifier for the agent
     pub agent_id: String,
+    /// New status value
     pub new_status: u8,
+    /// Timestamp of the status change
     pub last_update_timestamp: i64,
 }
 
+/// Event emitted when an agent is deregistered
+///
+/// Notifies listeners when an agent is marked as deregistered.
 #[event]
 pub struct AgentDeregistered {
+    /// Unique identifier for the agent
     pub agent_id: String,
+    /// Timestamp of deregistration
     pub deregistration_timestamp: i64,
 }
 
 
+/// Event emitted when an MCP server is registered
+///
+/// This event contains the full data of the newly registered MCP server,
+/// including all on-chain fields and the full_capabilities_uri pointing
+/// to off-chain data. This enables real-time notification of new server
+/// registrations and allows off-chain indexers to capture complete server details.
 #[event]
 pub struct McpServerRegistered {
+    /// Schema version of this entry (e.g., 1)
     pub registry_version: u8,
+    /// Solana public key of the entry's owner/manager
     pub owner_authority: Pubkey,
+    /// Unique identifier for the MCP server
     pub server_id: String,
+    /// Human-readable server name
     pub name: String,
+    /// Version of the MCP server software
     pub server_version: String,
+    /// Primary URL for MCP communication
     pub service_endpoint: String,
+    /// Optional URL to human-readable documentation
     pub documentation_url: Option<String>,
+    /// Optional brief summary of server offerings
     pub server_capabilities_summary: Option<String>,
+    /// Whether server offers MCP Resources
     pub supports_resources: bool,
+    /// Whether server offers MCP Tools
     pub supports_tools: bool,
+    /// Whether server offers MCP Prompts
     pub supports_prompts: bool,
+    /// Summary of key on-chain advertised tools
     pub onchain_tool_definitions: Vec<McpToolDefinitionOnChain>,
+    /// Summary of key on-chain advertised resources
     pub onchain_resource_definitions: Vec<McpResourceDefinitionOnChain>,
+    /// Summary of key on-chain advertised prompts
     pub onchain_prompt_definitions: Vec<McpPromptDefinitionOnChain>,
+    /// Server status (0:Pending, 1:Active, 2:Inactive, 3:Deregistered)
     pub status: u8,
+    /// Timestamp of initial registration
     pub registration_timestamp: i64,
+    /// Timestamp of the last update
     pub last_update_timestamp: i64,
+    /// Optional URI to off-chain JSON with full tool/resource/prompt definitions
     pub full_capabilities_uri: Option<String>,
+    /// General discoverability tags for the server
     pub tags: Vec<String>,
 }
 
+/// Event emitted when MCP server details are updated
+///
+/// Notifies listeners about updates to specific fields of an MCP server entry.
+/// The changed_fields list identifies which fields were modified.
 #[event]
 pub struct McpServerUpdated {
+    /// Unique identifier for the MCP server
     pub server_id: String,
+    /// List of field names that were updated
     pub changed_fields: Vec<String>,
+    /// Timestamp of the update
     pub last_update_timestamp: i64,
 }
 
+/// Event emitted when MCP server status changes
+///
+/// Notifies listeners about a change in the MCP server's operational status.
 #[event]
 pub struct McpServerStatusChanged {
+    /// Unique identifier for the MCP server
     pub server_id: String,
+    /// New status value
     pub new_status: u8,
+    /// Timestamp of the status change
     pub last_update_timestamp: i64,
 }
 
+/// Event emitted when an MCP server is deregistered
+///
+/// Notifies listeners when an MCP server is marked as deregistered.
 #[event]
 pub struct McpServerDeregistered {
+    /// Unique identifier for the MCP server
     pub server_id: String,
+    /// Timestamp of deregistration
     pub deregistration_timestamp: i64,
 }
 
