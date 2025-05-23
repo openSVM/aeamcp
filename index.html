@@ -22,14 +22,13 @@
         .nav-link {
             color: #E5E5E5; /* Neutral-200 */
             transition: color 0.3s ease, background-color 0.3s ease;
-            padding: 0.25rem 0.5rem; /* Reduced padding */
+            padding: 0.5rem 1rem;
             border-radius: 0; /* Sharp corners for 90s look */
             font-weight: normal; /* Monospace handles weight differently */
             border: 1px solid #404040; /* Border for nav links */
             display: inline-block;
             margin-bottom: 0.125rem; /* Reduced margin */
             margin-right: 0.125rem; /* Reduced margin */
-            font-size: 0.875rem; /* Slightly smaller font */
             text-decoration: none; /* Ensure no underline */
         }
         .nav-link:hover {
@@ -69,6 +68,7 @@
         .footer-text {
             color: #D4D4D4; /* Neutral-300 */
         }
+        
         /* Book-specific styling */
         .book-container {
             display: flex;
@@ -107,6 +107,7 @@
             background-color: #A3A3A3;
             font-weight: bold;
         }
+        
         /* Markdown styling */
         .markdown-content h1 {
             font-size: 1.75rem;
@@ -172,77 +173,217 @@
             color: #525252;
         }
         
-        /* Enhanced Table styling */
-        .markdown-content table {
+        /* User-provided styles for tables and diagrams */
+        .card {
+            background-color: #F5F5F5; /* Neutral-100 */
+            border-radius: 0; /* Sharp corners */
+            box-shadow: 2px 2px 0px #A3A3A3; /* Simple shadow for 90s */
+            border: 1px solid #A3A3A3; /* Border for cards */
+            padding: 1.5rem; /* p-6 */
+            margin-bottom: 1.5rem; /* mb-6 */
+        }
+        
+        .info-box {
+            background-color: #E5E5E5; /* Neutral-200 */
+            border: 1px dashed #A3A3A3; /* Dashed border */
+            padding: 1rem;
+            border-radius: 0;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .table-corporate {
             width: 100%;
             border-collapse: collapse;
-            margin: 1.5rem 0;
-            border: 1px solid #262626;
-            background-color: #FFFFFF;
+            font-size: 0.9rem; /* Adjusted for monospace */
+            border: 1px solid #737373; /* Table border */
         }
         
-        .markdown-content th {
-            background-color: #E5E5E5;
-            font-weight: bold;
+        .table-corporate th, .table-corporate td {
+            padding: 0.5rem 0.75rem; /* Adjusted padding */
+            border: 1px solid #A3A3A3; /* Neutral-400 */
             text-align: left;
-            padding: 0.75rem;
-            border: 1px solid #A3A3A3;
         }
         
-        .markdown-content td {
-            padding: 0.75rem;
-            border: 1px solid #D4D4D4;
-            vertical-align: top;
+        .table-corporate th {
+            background-color: #A3A3A3; /* Neutral-400 */
+            color: #171717; /* Neutral-900 */
+            font-weight: bold;
         }
         
-        /* Enhanced ASCII diagram styling */
+        .table-corporate tbody tr:nth-child(even) {
+            background-color: #E5E5E5; /* Neutral-200 */
+        }
+        
+        .table-corporate tbody tr:hover {
+            background-color: #D4D4D4; /* Neutral-300 */
+        }
+        
+        .flow-step {
+            background-color: #D4D4D4; /* Neutral-300 */
+            border: 1px solid #737373; /* Neutral-500 */
+            color: #171717; /* Neutral-900 */
+            padding: 0.75rem 1.25rem;
+            border-radius: 0;
+            text-align: center;
+            font-weight: normal;
+        }
+        
+        .flow-arrow {
+            font-size: 1.5rem; /* Adjusted */
+            color: #525252; /* Neutral-600 */
+            margin: 0.5rem 0;
+            align-self: center;
+        }
+        
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 280px;
+            max-height: 320px;
+            background-color: #E5E5E5; /* Neutral-200 */
+            padding: 1rem;
+            border-radius: 0;
+            border: 1px solid #A3A3A3; /* Neutral-400 */
+        }
+        
+        .key-term {
+            font-weight: bold;
+            color: #262626; /* Neutral-800 */
+            text-decoration: underline; /* 90s style */
+        }
+        
+        .code-like {
+            font-family: 'Courier New', Courier, monospace; /* Ensure monospace */
+            background-color: #D4D4D4; /* Neutral-300 */
+            padding: 0.1rem 0.25rem;
+            border: 1px solid #A3A3A3; /* Border for code */
+            font-size: 0.9em;
+            color: #171717; /* Neutral-900 */
+        }
+        
+        .text-lead {
+            font-size: 1.05rem; /* Adjusted for monospace */
+            color: #525252; /* Neutral-600 */
+            line-height: 1.5;
+        }
+        
+        .info-box-title {
+            color: #171717; /* Neutral-900 */
+            font-weight: bold;
+        }
+        
+        .info-box-text {
+            color: #262626; /* Neutral-800 */
+        }
+        
+        .diagram-box {
+             background-color: #FFFFFF;
+             padding: 0.75rem;
+             border-radius: 0;
+             border: 1px solid #A3A3A3; /* Neutral-400 */
+             font-size: 0.9rem; /* Adjusted */
+        }
+        
+        .diagram-box-title {
+            font-weight: bold;
+            color: #171717; /* Neutral-900 */
+        }
+        
+        .diagram-box-subtext {
+            color: #262626; /* Neutral-800 */
+        }
+        
+        .hybrid-box {
+            border: 1px solid #737373; /* Neutral-500 */
+            background-color: #E5E5E5; /* Neutral-200 */
+        }
+        
+        .hybrid-box-title {
+            color: #171717; /* Neutral-900 */
+            font-weight: bold;
+        }
+        
+        .hybrid-box-subtext {
+            color: #262626; /* Neutral-800 */
+        }
+        
+        .status-text { /* General class for status text in tables */
+            font-weight: bold;
+            color: #262626; /* Neutral-800 */
+        }
+        
+        /* ASCII diagram styling */
         .ascii-diagram {
             font-family: 'Courier New', Courier, monospace;
             white-space: pre;
             line-height: 1.2;
-            background-color: #F9F9F9;
-            padding: 1.5rem;
-            border: 1px solid #262626;
+            background-color: #FFFFFF;
+            padding: 0.75rem;
+            border: 1px solid #A3A3A3;
             overflow-x: auto;
             font-size: 0.9rem;
-            margin: 1.5rem 0;
+            margin: 0;
         }
         
-        /* Diagram container styling */
-        .diagram-container {
-            border: 1px solid #262626;
-            background-color: #F5F5F5;
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        /* Book navigation */
+        .book-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #A3A3A3;
         }
         
-        .diagram-title {
-            font-weight: bold;
-            font-size: 1.1rem;
+        .book-navigation a {
+            padding: 0.5rem 1rem;
+            background-color: #E5E5E5;
+            border: 1px solid #A3A3A3;
+            color: #262626;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .book-navigation a:hover {
+            background-color: #D4D4D4;
+        }
+        
+        .mobile-menu-button, .mobile-sidebar-button {
+            display: none;
+        }
+        
+        /* Loading indicator */
+        .loading-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #E5E5E5;
+            border-top: 4px solid #404040;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Error message */
+        .error-message {
+            padding: 1rem;
+            background-color: #FEE2E2;
+            border: 1px solid #EF4444;
+            color: #B91C1C;
             margin-bottom: 1rem;
-            border-bottom: 1px solid #A3A3A3;
-            padding-bottom: 0.5rem;
-        }
-        
-        /* Box styling for key concepts */
-        .concept-box {
-            border: 1px solid #262626;
-            background-color: #F5F5F5;
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-        }
-        
-        .concept-box-title {
-            font-weight: bold;
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-            border-bottom: 1px solid #A3A3A3;
-            padding-bottom: 0.5rem;
-        }
-        
-        .concept-box-content {
-            padding: 0.5rem 0;
         }
         
         /* Two-column layout for comparison diagrams */
@@ -256,8 +397,8 @@
         .column {
             flex: 1;
             min-width: 300px;
-            border: 1px solid #262626;
-            background-color: #F5F5F5;
+            border: 1px solid #737373;
+            background-color: #E5E5E5;
             padding: 1.5rem;
         }
         
@@ -274,82 +415,21 @@
             padding: 0.5rem;
         }
         
-        .column-content ul {
-            margin-top: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-        
         .connector {
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.5rem;
             padding: 0 1rem;
-        }
-        
-        /* Footer styling for diagrams */
-        .diagram-footer {
-            font-size: 0.85rem;
-            font-style: italic;
-            text-align: center;
-            margin-top: 1rem;
             color: #525252;
         }
         
-        .book-navigation {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 2rem;
-            padding-top: 1rem;
-            border-top: 1px solid #A3A3A3;
-        }
-        .book-navigation a {
-            padding: 0.5rem 1rem;
-            background-color: #E5E5E5;
-            border: 1px solid #A3A3A3;
-            color: #262626;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .book-navigation a:hover {
-            background-color: #D4D4D4;
-        }
-        .mobile-menu-button, .mobile-sidebar-button {
-            display: none;
-        }
-        
-        /* Loading indicator */
-        .loading-indicator {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 200px;
-        }
-        .loading-spinner {
-            border: 4px solid #E5E5E5;
-            border-top: 4px solid #404040;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        /* Error message */
-        .error-message {
-            padding: 1rem;
-            background-color: #FEE2E2;
-            border: 1px solid #EF4444;
-            color: #B91C1C;
-            margin-bottom: 1rem;
-        }
         /* Responsive design */
         @media (max-width: 768px) {
             .book-container {
                 flex-direction: column;
             }
+            
             .book-sidebar {
                 width: 100%;
                 height: auto;
@@ -360,9 +440,11 @@
                 border-bottom: 1px solid #A3A3A3;
                 max-height: 300px;
             }
+            
             .book-sidebar.active {
                 display: block;
             }
+            
             .mobile-menu-button, .mobile-sidebar-button {
                 display: block;
                 background-color: #404040;
@@ -374,36 +456,46 @@
                 text-align: center;
                 width: 100%;
             }
+            
             .nav-container {
                 width: 100%;
             }
+            
             .nav-links {
                 display: none;
                 width: 100%;
                 flex-wrap: wrap;
                 justify-content: center;
             }
+            
             .nav-links.active {
                 display: flex;
             }
+            
             .book-content {
                 padding: 1rem;
             }
+            
             .markdown-content h1 {
                 font-size: 1.5rem;
             }
+            
             .markdown-content h2 {
                 font-size: 1.3rem;
             }
+            
             .markdown-content h3 {
                 font-size: 1.15rem;
             }
+            
             .markdown-content h4 {
                 font-size: 1rem;
             }
+            
             .ascii-diagram {
                 font-size: 0.7rem;
             }
+            
             .two-column-container {
                 flex-direction: column;
             }
@@ -417,17 +509,21 @@
                 padding: 1rem 0;
             }
         }
+        
         /* Print styles */
         @media print {
             .header-bg, .footer-bg, .book-sidebar, .mobile-sidebar-button, .book-navigation {
                 display: none !important;
             }
+            
             .book-container {
                 display: block;
             }
+            
             .book-content {
                 padding: 0;
             }
+            
             .main-container {
                 max-width: 100%;
                 padding: 0;
@@ -584,11 +680,22 @@
                 renderer.code = function(code, language, isEscaped) {
                     // Check if this looks like an ASCII diagram
                     if (code.includes('+---') || (code.includes('|') && code.includes('-'))) {
-                        return `<div class="diagram-container">
+                        return `<div class="card">
                                     <pre class="ascii-diagram">${code}</pre>
                                 </div>`;
                     }
                     return originalCodeRenderer.call(this, code, language, isEscaped);
+                };
+                
+                // Enhance tables
+                const originalTableRenderer = renderer.table;
+                renderer.table = function(header, body) {
+                    return `<div class="overflow-x-auto">
+                              <table class="table-corporate">
+                                <thead>${header}</thead>
+                                <tbody>${body}</tbody>
+                              </table>
+                            </div>`;
                 };
                 
                 // Set marked options
@@ -642,13 +749,9 @@
         
         // Enhance rendered content with better styling for tables and concept boxes
         function enhanceRenderedContent(html) {
-            // Wrap tables in container for better styling
-            html = html.replace(/<table>/g, '<div class="table-container"><table>');
-            html = html.replace(/<\/table>/g, '</table></div>');
-            
             // Enhance sections that look like concept boxes
             html = html.replace(/<h3>(Rent, Storage &amp; Hybrid Data Model|Program Derived Addresses \(PDAs\)|Account Structures &amp; Borsh Serialization|Key Strategic Objectives:)(.+?)<\/h3>/g, 
-                '<div class="concept-box"><h3 class="concept-box-title">$1$2</h3><div class="concept-box-content">');
+                '<div class="info-box"><h3 class="info-box-title">$1$2</h3><div class="info-box-text">');
             
             // Close concept boxes before the next h2 or h3
             html = html.replace(/(<\/div>)(\s*<h[23])/g, '$1</div>$2');
@@ -672,6 +775,13 @@
                 
                 html = html.replace(pattern, replacement);
             }
+            
+            // Enhance flow steps
+            html = html.replace(/<li>(\d+)\. (Prepare|Invoke|PDA Created|Event Emitted|Update|Deregistration)([^<]+)<\/li>/g, 
+                '<li class="flow-step">$1. $2$3</li><div class="flow-arrow">&#8595;</div>');
+            
+            // Remove last arrow after flow steps
+            html = html.replace(/(<\/li><div class="flow-arrow">&#8595;<\/div>)(?!.*<li class="flow-step">)/s, '</li>');
             
             return html;
         }
