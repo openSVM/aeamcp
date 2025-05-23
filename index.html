@@ -3,7 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SVMAI as A2A&MCP registry: Technical Overview</title>
+    <!-- Visualization & Content Choices:
+        - Report Info: Core Solana Concepts (PDAs, Borsh, Rent, Hybrid Storage). Goal: Inform/Explain. Viz: HTML/CSS diagrams. Interaction: Static. Method: HTML/CSS/Tailwind.
+        - Report Info: Agent/MCP Registry Data Structures (referenced). Goal: Inform/Reference. Viz: Key fields listed. Interaction: Static. Method: HTML/CSS.
+        - Report Info: Agent/MCP Service Endpoints. Goal: Inform/Explain. Viz: Styled HTML/CSS blocks. Interaction: Static. Method: HTML/CSS/Tailwind.
+        - Report Info: $SVMAI Token Utility (AEA Payments, Staking, Governance, Curation). Goal: Inform/Explain. Viz: Styled HTML/CSS info boxes, simple flow diagrams for AEA payments. Interaction: Static. Method: HTML/CSS/Tailwind.
+        - Report Info: Registration/Management Flows. Goal: Organize/Explain. Viz: Step-by-step visual flows. Interaction: Static. Method: HTML/CSS/Tailwind.
+        - Report Info: On-chain vs. Off-chain Querying. Goal: Compare. Viz: Styled HTML table. Interaction: Static. Method: HTML/CSS.
+        - Report Info: Conceptual Data Distribution. Goal: Inform. Viz: Simple donut charts. Interaction: Hover. Method: Chart.js.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <title>SVMAI role in the future for Autonomous Economic Agents: Technical Overview</title>
+    
+    <meta property="og:title" content="SVMAI role in the future for Autonomous Economic Agents and MCP & A2A registry: Technical Overview" />
+    <meta property="og:description" content="Explore the technical design for Solana-based Agent and MCP Server Registries, and the role of the $SVMAI token in enabling AEA payments, discovery, governance, and interoperability in decentralized AI ecosystems." />
+    <meta property="og:image" content="https://raw.githubusercontent.com/openSVM/aeamcp/refs/heads/main/preview.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="YOUR_CANONICAL_URL_HERE" /> 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -208,6 +223,24 @@
         .endpoint-detail .value {
             color: #404040; /* Neutral-700 */
         }
+        .token-utility-item {
+            background-color: #FFFFFF;
+            border: 1px solid #A3A3A3; /* Neutral-400 */
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        .token-utility-title {
+            font-weight: bold;
+            color: #171717; /* Neutral-900 */
+            margin-bottom: 0.25rem;
+            font-size: 1.05rem;
+        }
+        .token-diagram-box {
+            background-color: #FFFFFF;
+            border: 1px solid #737373; /* Neutral-500 */
+            padding: 1rem;
+            margin-top: 0.5rem;
+        }
 
     </style>
 </head>
@@ -222,6 +255,7 @@
                 <a href="#agent-registry" class="nav-link">Agent Registry</a>
                 <a href="#mcp-registry" class="nav-link">MCP Registry</a>
                 <a href="#service-endpoints" class="nav-link">Endpoints</a>
+                <a href="#svmai-token" class="nav-link">$SVMAI Token</a>
                 <a href="#discovery-querying" class="nav-link">Discovery</a>
                 <a href="#security" class="nav-link">Security</a>
                 <a href="#conclusion" class="nav-link">Conclusion</a>
@@ -234,14 +268,15 @@
         <section id="introduction" class="mb-16">
             <h2 class="section-title mb-6">Pioneering the Future of Decentralized AI on Solana</h2>
             <p class="text-lead mb-6">The rapid emergence of autonomous agents and sophisticated AI model integrations is reshaping the digital frontier. These intelligent entities offer transformative potential across diverse sectors. However, their proliferation introduces a critical challenge: enabling effective discovery, verification, and interoperability within decentralized networks. Without standardized infrastructure, the growth of a cohesive AI ecosystem is impeded.</p>
-            <p class="mb-4">This document outlines a strategic solution: two interconnected Solana-based program protocols – an <span class="key-term">Agent Registry</span> and an <span class="key-term">MCP Server Registry</span>. These on-chain registries are engineered to serve as foundational pillars, fostering a robust, trustworthy, and interoperable environment for AI components. By harnessing Solana's high-performance blockchain, these protocols aim to deliver a scalable and efficient framework for managing and discovering AI services.</p>
+            <p class="mb-4">This document outlines a strategic solution: two interconnected Solana-based program protocols – an <span class="key-term">Agent Registry</span> and an <span class="key-term">MCP Server Registry</span> – and the integral <span class="key-term">$SVMAI</span> utility token. These on-chain registries are engineered to serve as foundational pillars, fostering a robust, trustworthy, and interoperable environment for AI components. By harnessing Solana's high-performance blockchain, these protocols aim to deliver a scalable and efficient framework for managing and discovering AI services, powered by a dedicated ecosystem token.</p>
             <div class="info-box">
                 <h3 class="text-lg info-box-title mb-2">Key Strategic Objectives:</h3>
                 <ul class="list-disc list-inside space-y-1 info-box-text">
                     <li>Define precise on-chain data specifications for registry entries.</li>
                     <li>Outline secure, gas-efficient Solana program instructions for lifecycle management.</li>
+                    <li>Introduce the $SVMAI token and detail its utility in payments, staking, and governance.</li>
                     <li>Propose a multi-layered discovery approach (on-chain & off-chain indexing).</li>
-                    <li>Align Agent Registry with AEA & A2A principles.</li>
+                    <li>Align Agent Registry with AEA & A2A principles, utilizing $SVMAI for A2A payments.</li>
                     <li>Ensure MCP Server Registry adheres to official MCP specifications.</li>
                 </ul>
             </div>
@@ -407,6 +442,71 @@
             </div>
         </section>
 
+        <section id="svmai-token" class="mb-16">
+            <h2 class="section-title mb-6">The $SVMAI Token: Powering the Ecosystem</h2>
+            <p class="text-lead mb-6">The <span class="key-term">$SVMAI</span> token is an integral utility token designed to facilitate interactions, incentivize participation, and govern the Solana AI Registries ecosystem. Its multifaceted role ensures the smooth operation and sustainable growth of the decentralized AI network.</p>
+
+            <div class="card mb-8">
+                <h3 class="subsection-title">Core Utility: AEA Payments in A2A Protocol</h3>
+                <p class="mb-4 text-sm">A primary function of the <span class="code-like">$SVMAI</span> token is to serve as the native currency for Autonomous Economic Agent (AEA) payments within the Agent-to-Agent (A2A) communication protocol. When one agent consumes a service or requests a task from another registered agent, <span class="code-like">$SVMAI</span> tokens are used for settlement.</p>
+                <div class="info-box">
+                    <p class="text-sm info-box-text"><span class="font-semibold">Mechanism:</span> Agents list their services and associated costs in <span class="code-like">$SVMAI</span> within their <code class="code-like">extended_metadata_uri</code> (AgentCard). A2A protocols facilitate the negotiation and execution of these service agreements, with payments settled on-chain using <span class="code-like">$SVMAI</span>.</p>
+                </div>
+                <p class="text-sm mb-2 font-semibold">Conceptual AEA Payment Flow using $SVMAI:</p>
+                <div class="space-y-3 p-4 token-diagram-box rounded-none">
+                    <div class="flex items-center">
+                        <div class="flow-step text-sm flex-1">1. Agent A (Consumer) discovers Agent B (Provider) via Agent Registry.</div>
+                        <div class="flow-arrow mx-2 md:mx-4">-&gt;</div>
+                        <div class="flow-step text-sm flex-1">2. Agent A requests service from Agent B (A2A Protocol). Service cost specified in $SVMAI.</div>
+                    </div>
+                    <div class="flex justify-center"><span class="flow-arrow">\/</span></div>
+                    <div class="flex items-center">
+                        <div class="flow-step text-sm flex-1">3. Agent B performs service.</div>
+                        <div class="flow-arrow mx-2 md:mx-4">-&gt;</div>
+                        <div class="flow-step text-sm flex-1">4. Agent A transfers agreed $SVMAI amount to Agent B on Solana.</div>
+                    </div>
+                     <div class="flex justify-center"><span class="flow-arrow">\/</span></div>
+                    <div class="flow-step text-sm w-full">5. Transaction recorded on-chain; service considered paid.</div>
+                </div>
+                <p class="mt-3 text-sm">This creates a direct economic incentive for agents to offer valuable services and participate actively in the ecosystem, fostering a vibrant agent economy.</p>
+            </div>
+
+            <div class="card">
+                <h3 class="subsection-title">Additional Utilities for $SVMAI Token Holders</h3>
+                <p class="mb-4 text-sm">Beyond AEA payments, <span class="code-like">$SVMAI</span> empowers token holders through several key mechanisms:</p>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="token-utility-item">
+                        <p class="token-utility-title">Staking & Incentives</p>
+                        <p class="text-sm">Holders can stake <span class="code-like">$SVMAI</span> tokens to:</p>
+                        <ul class="list-disc list-inside pl-4 text-sm mt-1 space-y-1">
+                            <li>Earn staking rewards from network activity or treasury allocations.</li>
+                            <li>Potentially gain priority access or reduced fees for certain registry operations or indexed data services.</li>
+                            <li>Signal support for reputable agents or MCP servers, influencing their visibility (details TBD by DAO).</li>
+                        </ul>
+                    </div>
+                    <div class="token-utility-item">
+                        <p class="token-utility-title">Curation & Quality Control</p>
+                        <p class="text-sm"><span class="code-like">$SVMAI</span> tokens can be used in community-driven curation processes:</p>
+                        <ul class="list-disc list-inside pl-4 text-sm mt-1 space-y-1">
+                            <li>Staking tokens to vouch for the legitimacy or quality of registered agents/servers.</li>
+                            <li>Participating in challenge-response mechanisms to flag and remove malicious or low-quality entries (details TBD by DAO).</li>
+                            <li>Dispute resolution for service agreements between agents.</li>
+                        </ul>
+                    </div>
+                    <div class="token-utility-item md:col-span-2">
+                        <p class="token-utility-title">Governance & Protocol Evolution</p>
+                        <p class="text-sm"><span class="code-like">$SVMAI</span> token holders will form a Decentralized Autonomous Organization (DAO) to govern the registries and the token's ecosystem:</p>
+                        <ul class="list-disc list-inside pl-4 text-sm mt-1 space-y-1">
+                            <li>Voting on protocol upgrades and parameter changes (e.g., registration fees, on-chain data limits).</li>
+                            <li>Managing the community treasury, potentially funded by a portion of registration fees or token emissions.</li>
+                            <li>Guiding the development of new features and ecosystem initiatives.</li>
+                            <li>Overseeing the evolution of curation and reputation mechanisms.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section id="discovery-querying" class="mb-16">
             <h2 class="section-title mb-6">Advanced Discovery & Querying Strategies</h2>
             <p class="text-lead mb-6">Effective discovery requires a multi-layered strategy, combining direct on-chain lookups with powerful off-chain indexing fueled by on-chain events. This approach overcomes Solana's limitations for complex on-chain database-like queries.</p>
@@ -486,29 +586,29 @@
                 </div>
                 <div class="info-box md:col-span-1">
                     <h4 class="font-semibold info-box-title mb-1">Spam & Malice Mitigation</h4>
-                    <p class="text-sm info-box-text">Strategies include nominal registration fees and optional curation mechanisms (DAO-based or centralized). Links to external reputation systems are encouraged.</p>
+                    <p class="text-sm info-box-text">Strategies include nominal registration fees (potentially in <code class="code-like">$SVMAI</code>) and optional curation mechanisms (DAO-based, <code class="code-like">$SVMAI</code> staking). Links to external reputation systems are encouraged.</p>
                 </div>
                 <div class="info-box md:col-span-1">
                     <h4 class="font-semibold info-box-title mb-1">Program Upgradability</h4>
-                    <p class="text-sm info-box-text">Registry programs are upgradeable. Secure management of the upgrade authority (e.g., multisig, DAO) is critical, along with clear data migration plans for schema changes.</p>
+                    <p class="text-sm info-box-text">Registry programs are upgradeable. Secure management of the upgrade authority (e.g., multisig, DAO governed by <code class="code-like">$SVMAI</code> holders) is critical, along with clear data migration plans for schema changes.</p>
                 </div>
             </div>
         </section>
 
         <section id="conclusion" class="mb-8">
             <h2 class="section-title mb-6">Conclusion & Future Outlook</h2>
-            <p class="text-lead mb-6">The proposed Agent and MCP Server Registries on Solana offer a robust foundation for a decentralized AI ecosystem. By enabling efficient discovery, fostering interoperability, and building trust, these protocols can significantly accelerate innovation in AI applications and services.</p>
+            <p class="text-lead mb-6">The proposed Agent and MCP Server Registries, in conjunction with the <span class="key-term">$SVMAI</span> token, offer a comprehensive framework for a decentralized AI ecosystem on Solana. By enabling efficient discovery, facilitating economic interactions, fostering interoperability, and building trust through community governance, these protocols can significantly accelerate innovation in AI applications and services.</p>
             <div class="card">
                 <h3 class="subsection-title">Potential Future Enhancements:</h3>
                 <ul class="list-disc list-inside space-y-2 text-neutral-700">
-                    <li><span class="key-term">On-Chain Reputation/Attestation Systems:</span> Integrating verifiable credentials or community-driven reputation scores.</li>
+                    <li><span class="key-term">On-Chain Reputation/Attestation Systems:</span> Integrating verifiable credentials or community-driven reputation scores, potentially influenced by <span class="code-like">$SVMAI</span> staking.</li>
                     <li><span class="key-term">Sophisticated On-Chain Indexing:</span> Leveraging future Solana advancements for more granular on-chain queries.</li>
                     <li><span class="key-term">Native Decentralized Storage Integration:</span> Deeper links with IPFS/Arweave for metadata management.</li>
                     <li><span class="key-term">Cross-Chain Discovery Mechanisms:</span> Enabling interaction with agents and services on other blockchains.</li>
-                    <li><span class="key-term">Standardized Off-Chain Indexer APIs:</span> Promoting a competitive ecosystem of discovery services.</li>
-                    <li><span class="key-term">Automated Verification Services:</span> For endpoint liveness, protocol adherence, and metadata integrity checks.</li>
+                    <li><span class="key-term">Standardized Off-Chain Indexer Interfaces:</span> Promoting a competitive ecosystem of discovery services.</li>
+                    <li><span class="key-term">Automated Verification Services:</span> For endpoint liveness, protocol adherence, and metadata integrity checks, possibly incentivized by <span class="code-like">$SVMAI</span>.</li>
                 </ul>
-                <p class="mt-6">Addressing the fundamental need for service discovery and verification, these Solana-based registries are poised to play a pivotal role in shaping a more intelligent, autonomous, and interconnected digital future.</p>
+                <p class="mt-6">Addressing the fundamental need for service discovery, verification, and economic settlement, these Solana-based registries and the <span class="key-term">$SVMAI</span> token are poised to play a pivotal role in shaping a more intelligent, autonomous, and interconnected digital future.</p>
             </div>
         </section>
 
@@ -516,7 +616,7 @@
 
     <footer class="footer-bg footer-text text-center py-8 mt-12">
         <p class="text-sm">&copy; 2025 Solana AI Registries Initiative. Advancing Decentralized Intelligence.</p>
-        <p class="text-xs mt-1">This document provides a conceptual overview based on the "Solana Protocol Design for Agent and MCP Server Registries" report.</p>
+        <p class="text-xs mt-1">This document provides a conceptual overview based on the "Solana Protocol Design for Agent and MCP Server Registries" report and introduces the hypothetical $SVMAI token.</p>
     </footer>
 
     <script>
