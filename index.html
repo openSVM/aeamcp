@@ -77,6 +77,41 @@
             border-bottom: 1px solid var(--border-color);
         }
         
+        .search-container {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 0.5rem;
+            font-family: "Courier New", Courier, monospace;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+        }
+        
+        .search-results {
+            margin-top: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .search-results.visible {
+            display: block;
+        }
+        
+        .search-result-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+        
+        .search-result-item:hover {
+            background-color: var(--hover-bg);
+        }
+        
         .chapter-list {
             list-style-type: none;
             padding: 0;
@@ -98,6 +133,13 @@
         .chapter-list a:hover, .chapter-list a.active {
             background-color: var(--hover-bg);
             border: 1px solid var(--border-color);
+        }
+        
+        .chapter-toggle {
+            display: inline-block;
+            width: 20px;
+            text-align: center;
+            cursor: pointer;
         }
         
         .subchapter-list {
@@ -365,6 +407,12 @@
         
         <div id="sidebar" class="sidebar">
             <h2>Table of Contents</h2>
+            
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search chapters...">
+                <div id="searchResults" class="search-results"></div>
+            </div>
+            
             <ul id="chapterList" class="chapter-list">
                 <!-- Chapters will be dynamically loaded here -->
             </ul>
@@ -416,6 +464,9 @@
         // Cache for markdown content
         const markdownCache = {};
         
+        // Search index
+        let searchIndex = [];
+        
         // Current chapter
         let currentChapterId = "1";
         
@@ -431,6 +482,8 @@
         const sidebarToggle = document.getElementById('sidebarToggle');
         const downloadPDFButton = document.getElementById('downloadPDF');
         const printPageButton = document.getElementById('printPage');
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
         
         // Initialize marked renderer with sanitization
         const renderer = new marked.Renderer();
@@ -485,12 +538,29 @@
         
         // Initialize the sidebar with chapters
         function initializeSidebar() {
+            chapterList.innerHTML = '';
+            
             chapters.forEach(chapter => {
                 const li = document.createElement('li');
+                
+                // Create chapter toggle button
+                const toggleSpan = document.createElement('span');
+                toggleSpan.className = 'chapter-toggle';
+                toggleSpan.textContent = '+';
+                toggleSpan.dataset.chapterId = chapter.id;
+                toggleSpan.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleSubchapters(chapter.id);
+                });
+                li.appendChild(toggleSpan);
+                
+                // Create chapter link
                 const a = document.createElement('a');
                 a.href = `#chapter-${chapter.id}`;
                 a.textContent = `${chapter.id}. ${chapter.title}`;
                 a.dataset.chapterId = chapter.id;
+                a.style.display = 'inline-block';
+                a.style.width = 'calc(100% - 25px)';
                 a.addEventListener('click', (e) => {
                     e.preventDefault();
                     loadChapter(chapter.id);
@@ -507,10 +577,37 @@
             });
         }
         
+        // Toggle subchapters visibility
+        function toggleSubchapters(chapterId) {
+            const subchapterList = document.getElementById(`subchapters-${chapterId}`);
+            const toggleButton = document.querySelector(`.chapter-toggle[data-chapter-id="${chapterId}"]`);
+            
+            if (subchapterList.classList.contains('visible')) {
+                subchapterList.classList.remove('visible');
+                toggleButton.textContent = '+';
+            } else {
+                // If no subchapters yet, load them
+                if (subchapterList.children.length === 0) {
+                    // If this is not the current chapter, load it first
+                    if (currentChapterId !== chapterId) {
+                        loadChapter(chapterId, false);
+                    } else {
+                        // Update subchapters for current chapter
+                        updateSubchapters(chapterId, chapterContent);
+                    }
+                }
+                
+                subchapterList.classList.add('visible');
+                toggleButton.textContent = '-';
+            }
+        }
+        
         // Load chapter content
-        async function loadChapter(chapterId) {
+        async function loadChapter(chapterId, updateContent = true) {
             // Update current chapter
-            currentChapterId = chapterId;
+            if (updateContent) {
+                currentChapterId = chapterId;
+            }
             
             // Update active state in sidebar
             document.querySelectorAll('#chapterList a').forEach(a => {
@@ -520,10 +617,12 @@
                 }
             });
             
-            // Show loading spinner
-            spinner.classList.add('visible');
-            errorMessage.classList.remove('visible');
-            errorMessage.textContent = '';
+            // Show loading spinner if updating content
+            if (updateContent) {
+                spinner.classList.add('visible');
+                errorMessage.classList.remove('visible');
+                errorMessage.textContent = '';
+            }
             
             try {
                 // Get chapter file
@@ -546,38 +645,47 @@
                     
                     // Cache the content
                     markdownCache[chapter.file] = markdownContent;
+                    
+                    // Add to search index
+                    addToSearchIndex(chapterId, chapter.title, markdownContent);
                 }
                 
-                // Parse markdown to HTML with sanitization
-                const htmlContent = DOMPurify.sanitize(marked.parse(markdownContent));
-                
-                // Update content
-                chapterContent.innerHTML = htmlContent;
+                if (updateContent) {
+                    // Parse markdown to HTML with sanitization
+                    const htmlContent = DOMPurify.sanitize(marked.parse(markdownContent));
+                    
+                    // Update content
+                    chapterContent.innerHTML = htmlContent;
+                    
+                    // Process ASCII diagrams
+                    processAsciiDiagrams();
+                    
+                    // Update navigation buttons
+                    updateNavigationButtons();
+                    
+                    // Add copy and execute buttons to code blocks
+                    addCodeButtons();
+                    
+                    // Highlight code blocks
+                    document.querySelectorAll('pre code').forEach((block) => {
+                        hljs.highlightElement(block);
+                    });
+                }
                 
                 // Extract subheadings and update sidebar
-                updateSubchapters(chapterId, chapterContent);
-                
-                // Process ASCII diagrams
-                processAsciiDiagrams();
-                
-                // Update navigation buttons
-                updateNavigationButtons();
-                
-                // Add copy and execute buttons to code blocks
-                addCodeButtons();
-                
-                // Highlight code blocks
-                document.querySelectorAll('pre code').forEach((block) => {
-                    hljs.highlightElement(block);
-                });
+                updateSubchapters(chapterId, updateContent ? chapterContent : null);
                 
             } catch (error) {
                 console.error('Error loading chapter:', error);
-                errorMessage.textContent = `Error Loading Chapter\n${error.message}\nPlease ensure all markdown files are in the same directory as this HTML file.\n\nExpected file: ${chapters.find(c => c.id === chapterId).file}`;
-                errorMessage.classList.add('visible');
+                if (updateContent) {
+                    errorMessage.textContent = `Error Loading Chapter\n${error.message}\nPlease ensure all markdown files are in the same directory as this HTML file.\n\nExpected file: ${chapters.find(c => c.id === chapterId).file}`;
+                    errorMessage.classList.add('visible');
+                }
             } finally {
                 // Hide loading spinner
-                spinner.classList.remove('visible');
+                if (updateContent) {
+                    spinner.classList.remove('visible');
+                }
             }
         }
         
@@ -589,13 +697,20 @@
             // Clear existing subchapters
             subchapterList.innerHTML = '';
             
+            // If no content element provided, fetch the chapter content
+            if (!contentElement && markdownCache[chapters.find(c => c.id === chapterId).file]) {
+                const markdownContent = markdownCache[chapters.find(c => c.id === chapterId).file];
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = DOMPurify.sanitize(marked.parse(markdownContent));
+                contentElement = tempDiv;
+            }
+            
+            if (!contentElement) return;
+            
             // Find all h2 and h3 elements in the content
             const headings = contentElement.querySelectorAll('h2, h3');
             
             if (headings.length > 0) {
-                // Show the subchapter list
-                subchapterList.classList.add('visible');
-                
                 // Add each heading as a subchapter
                 headings.forEach((heading, index) => {
                     // Create an ID for the heading if it doesn't have one
@@ -609,7 +724,16 @@
                     a.textContent = heading.textContent;
                     a.addEventListener('click', (e) => {
                         e.preventDefault();
-                        heading.scrollIntoView({ behavior: 'smooth' });
+                        
+                        // If this is not the current chapter, load it first
+                        if (currentChapterId !== chapterId) {
+                            loadChapter(chapterId);
+                        }
+                        
+                        // Then scroll to the heading
+                        setTimeout(() => {
+                            document.getElementById(heading.id).scrollIntoView({ behavior: 'smooth' });
+                        }, 300);
                     });
                     
                     // Indent h3 elements
@@ -620,9 +744,18 @@
                     li.appendChild(a);
                     subchapterList.appendChild(li);
                 });
+                
+                // Show the toggle button
+                const toggleButton = document.querySelector(`.chapter-toggle[data-chapter-id="${chapterId}"]`);
+                if (toggleButton) {
+                    toggleButton.style.visibility = 'visible';
+                }
             } else {
-                // Hide the subchapter list if no headings
-                subchapterList.classList.remove('visible');
+                // Hide the toggle button if no headings
+                const toggleButton = document.querySelector(`.chapter-toggle[data-chapter-id="${chapterId}"]`);
+                if (toggleButton) {
+                    toggleButton.style.visibility = 'hidden';
+                }
             }
         }
         
@@ -760,6 +893,114 @@
             window.print();
         }
         
+        // Add to search index
+        function addToSearchIndex(chapterId, chapterTitle, markdownContent) {
+            // Add chapter title
+            searchIndex.push({
+                chapterId: chapterId,
+                title: chapterTitle,
+                content: chapterTitle,
+                isTitle: true
+            });
+            
+            // Extract headings from markdown
+            const headingRegex = /^(#{2,3})\s+(.+)$/gm;
+            let match;
+            
+            while ((match = headingRegex.exec(markdownContent)) !== null) {
+                const level = match[1].length; // Number of # characters
+                const heading = match[2].trim();
+                
+                searchIndex.push({
+                    chapterId: chapterId,
+                    title: `${chapterId}.${level-1} ${heading}`,
+                    content: heading,
+                    isTitle: false,
+                    level: level
+                });
+            }
+            
+            // Extract paragraphs for content search
+            const paragraphs = markdownContent.split('\n\n');
+            paragraphs.forEach((paragraph, index) => {
+                // Skip headings and code blocks
+                if (!paragraph.startsWith('#') && !paragraph.startsWith('```')) {
+                    // Clean up the paragraph
+                    const cleanParagraph = paragraph
+                        .replace(/\n/g, ' ')
+                        .replace(/\*\*/g, '')
+                        .replace(/\*/g, '')
+                        .replace(/`/g, '')
+                        .trim();
+                    
+                    if (cleanParagraph.length > 20) { // Only index substantial paragraphs
+                        searchIndex.push({
+                            chapterId: chapterId,
+                            title: `${chapterTitle} - Paragraph ${index + 1}`,
+                            content: cleanParagraph,
+                            isTitle: false,
+                            isParagraph: true
+                        });
+                    }
+                }
+            });
+        }
+        
+        // Perform search
+        function performSearch(query) {
+            if (!query || query.length < 2) {
+                searchResults.innerHTML = '';
+                searchResults.classList.remove('visible');
+                return;
+            }
+            
+            const results = searchIndex.filter(item => {
+                return item.content.toLowerCase().includes(query.toLowerCase());
+            });
+            
+            // Sort results: chapter titles first, then headings, then paragraphs
+            results.sort((a, b) => {
+                if (a.isTitle && !b.isTitle) return -1;
+                if (!a.isTitle && b.isTitle) return 1;
+                if (a.level && b.level) return a.level - b.level;
+                if (a.isParagraph && !b.isParagraph) return 1;
+                if (!a.isParagraph && b.isParagraph) return -1;
+                return 0;
+            });
+            
+            // Limit to top 10 results
+            const limitedResults = results.slice(0, 10);
+            
+            if (limitedResults.length > 0) {
+                searchResults.innerHTML = '';
+                
+                limitedResults.forEach(result => {
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'search-result-item';
+                    
+                    // Highlight the matching text
+                    const regex = new RegExp(`(${query})`, 'gi');
+                    const highlightedContent = result.isTitle ? 
+                        result.content.replace(regex, '<strong>$1</strong>') :
+                        result.content.substring(0, 100).replace(regex, '<strong>$1</strong>') + '...';
+                    
+                    resultItem.innerHTML = highlightedContent;
+                    resultItem.addEventListener('click', () => {
+                        loadChapter(result.chapterId);
+                        searchResults.classList.remove('visible');
+                        searchInput.value = '';
+                    });
+                    
+                    searchResults.appendChild(resultItem);
+                });
+                
+                searchResults.classList.add('visible');
+            } else {
+                searchResults.innerHTML = '<div class="search-result-item">No results found</div>';
+                searchResults.classList.add('visible');
+            }
+        }
+        
         // Handle keyboard navigation
         function handleKeydown(event) {
             // Left arrow key for previous chapter
@@ -776,6 +1017,12 @@
             if (event.key === 's' || event.key === 'S') {
                 toggleSidebar();
             }
+            
+            // '/' key to focus search
+            if (event.key === '/') {
+                searchInput.focus();
+                event.preventDefault();
+            }
         }
         
         // Initialize the application
@@ -788,6 +1035,18 @@
             downloadPDFButton.addEventListener('click', downloadPDF);
             printPageButton.addEventListener('click', printPage);
             document.addEventListener('keydown', handleKeydown);
+            
+            // Set up search
+            searchInput.addEventListener('input', () => {
+                performSearch(searchInput.value);
+            });
+            
+            // Close search results when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!searchResults.contains(e.target) && e.target !== searchInput) {
+                    searchResults.classList.remove('visible');
+                }
+            });
             
             // Load the first chapter
             loadChapter(currentChapterId);
@@ -803,6 +1062,11 @@
         
         // Start the application when the DOM is loaded
         document.addEventListener('DOMContentLoaded', initialize);
+        
+        // Make functions available globally
+        window.copyCode = copyCode;
+        window.executeCode = executeCode;
+        window.toggleSubchapters = toggleSubchapters;
     </script>
 </body>
 </html>
