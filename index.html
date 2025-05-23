@@ -3,16 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Visualization & Content Choices:
-        - Report Info: Core Solana Concepts (PDAs, Borsh, Rent, Hybrid Storage). Goal: Inform/Explain. Viz: HTML/CSS diagrams with clear labels and concise text. Interaction: Static visual aids. Justification: Simplifies abstract blockchain concepts for a corporate audience. Method: HTML/CSS/Tailwind.
-        - Report Info: Agent/MCP Registry Data Structures (Tables 1 & 2). Goal: Inform/Reference. Viz: Clean, well-styled HTML tables. Interaction: Potentially hover for tooltips on field names (if space/complexity allows without clutter). Justification: Presents detailed specifications clearly. Method: HTML/CSS.
-        - Report Info: Registration/Management Flows. Goal: Organize/Explain. Viz: Step-by-step visual flows using HTML/CSS. Interaction: Static. Justification: Clarifies procedural information. Method: HTML/CSS/Tailwind.
-        - Report Info: On-chain vs. Off-chain Querying (Table 3). Goal: Compare. Viz: Styled HTML table with clear distinctions. Interaction: Static. Justification: Highlights trade-offs effectively. Method: HTML/CSS.
-        - Report Info: Conceptual Data Distribution (On-chain vs. Off-chain). Goal: Inform. Viz: Simple donut charts. Interaction: Hover for details. Justification: Quick visual summary. Method: Chart.js.
-        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-    <title>Solana AI Registries: A Corporate Technical Overview (90s Monospace)</title>
+    <title>Solana Protocol Design for Agent and MCP Server Registries</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: 'Courier New', Courier, monospace; /* Monospace font */
@@ -29,10 +22,15 @@
         .nav-link {
             color: #E5E5E5; /* Neutral-200 */
             transition: color 0.3s ease, background-color 0.3s ease;
-            padding: 0.5rem 1rem;
+            padding: 0.25rem 0.5rem; /* Reduced padding */
             border-radius: 0; /* Sharp corners for 90s look */
             font-weight: normal; /* Monospace handles weight differently */
             border: 1px solid #404040; /* Border for nav links */
+            display: inline-block;
+            margin-bottom: 0.125rem; /* Reduced margin */
+            margin-right: 0.125rem; /* Reduced margin */
+            font-size: 0.875rem; /* Slightly smaller font */
+            text-decoration: none; /* Ensure no underline */
         }
         .nav-link:hover {
             background-color: #737373; /* Neutral-500 */
@@ -60,90 +58,6 @@
             margin-top: 1.5rem; /* mt-6 */
             margin-bottom: 0.75rem; /* mb-3 */
         }
-        .card {
-            background-color: #F5F5F5; /* Neutral-100 */
-            border-radius: 0; /* Sharp corners */
-            box-shadow: 2px 2px 0px #A3A3A3; /* Simple shadow for 90s */
-            border: 1px solid #A3A3A3; /* Border for cards */
-            padding: 1.5rem; /* p-6 */
-            margin-bottom: 1.5rem; /* mb-6 */
-        }
-        .info-box {
-            background-color: #E5E5E5; /* Neutral-200 */
-            border: 1px dashed #A3A3A3; /* Dashed border */
-            padding: 1rem;
-            border-radius: 0;
-            margin-top: 1rem;
-            margin-bottom: 1rem;
-        }
-        .table-corporate {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem; /* Adjusted for monospace */
-            border: 1px solid #737373; /* Table border */
-        }
-        .table-corporate th, .table-corporate td {
-            padding: 0.5rem 0.75rem; /* Adjusted padding */
-            border: 1px solid #A3A3A3; /* Neutral-400 */
-            text-align: left;
-        }
-        .table-corporate th {
-            background-color: #A3A3A3; /* Neutral-400 */
-            color: #171717; /* Neutral-900 */
-            font-weight: bold;
-        }
-        .table-corporate tbody tr:nth-child(even) {
-            background-color: #E5E5E5; /* Neutral-200 */
-        }
-        .table-corporate tbody tr:hover {
-            background-color: #D4D4D4; /* Neutral-300 */
-        }
-        .flow-step {
-            background-color: #D4D4D4; /* Neutral-300 */
-            border: 1px solid #737373; /* Neutral-500 */
-            color: #171717; /* Neutral-900 */
-            padding: 0.75rem 1.25rem;
-            border-radius: 0;
-            text-align: center;
-            font-weight: normal;
-        }
-        .flow-arrow {
-            font-size: 1.5rem; /* Adjusted */
-            color: #525252; /* Neutral-600 */
-            margin: 0.5rem 0;
-            align-self: center;
-        }
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 450px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 280px;
-            max-height: 320px;
-            background-color: #E5E5E5; /* Neutral-200 */
-            padding: 1rem;
-            border-radius: 0;
-            border: 1px solid #A3A3A3; /* Neutral-400 */
-        }
-        .key-term {
-            font-weight: bold;
-            color: #262626; /* Neutral-800 */
-            text-decoration: underline; /* 90s style */
-        }
-        .code-like {
-            font-family: 'Courier New', Courier, monospace; /* Ensure monospace */
-            background-color: #D4D4D4; /* Neutral-300 */
-            padding: 0.1rem 0.25rem;
-            border: 1px solid #A3A3A3; /* Border for code */
-            font-size: 0.9em;
-            color: #171717; /* Neutral-900 */
-        }
-        .text-lead {
-            font-size: 1.05rem; /* Adjusted for monospace */
-            color: #525252; /* Neutral-600 */
-            line-height: 1.5;
-        }
         .header-bg {
              background-color: #404040; /* Neutral-700 */
              border-bottom: 2px solid #171717; /* Neutral-900 */
@@ -155,405 +69,526 @@
         .footer-text {
             color: #D4D4D4; /* Neutral-300 */
         }
-        .info-box-title {
-            color: #171717; /* Neutral-900 */
+        /* Book-specific styling */
+        .book-container {
+            display: flex;
+            min-height: calc(100vh - 120px); /* Adjust based on header/footer height */
+        }
+        .book-sidebar {
+            width: 250px;
+            background-color: #F5F5F5;
+            border-right: 1px solid #A3A3A3;
+            padding: 1rem;
+            overflow-y: auto;
+            position: sticky;
+            top: 60px; /* Match header height */
+            height: calc(100vh - 120px); /* Adjust based on header/footer height */
+        }
+        .book-content {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+        .chapter-link {
+            display: block;
+            padding: 0.5rem;
+            margin-bottom: 0.25rem;
+            border: 1px solid #A3A3A3;
+            background-color: #E5E5E5;
+            color: #262626;
+            text-decoration: none;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .chapter-link:hover {
+            background-color: #D4D4D4;
+        }
+        .chapter-link.active {
+            background-color: #A3A3A3;
             font-weight: bold;
         }
-        .info-box-text {
-            color: #262626; /* Neutral-800 */
-        }
-        .diagram-box {
-             background-color: #FFFFFF;
-             padding: 0.75rem;
-             border-radius: 0;
-             border: 1px solid #A3A3A3; /* Neutral-400 */
-             font-size: 0.9rem; /* Adjusted */
-        }
-        .diagram-box-title {
+        /* Markdown styling */
+        .markdown-content h1 {
+            font-size: 1.75rem;
             font-weight: bold;
-            color: #171717; /* Neutral-900 */
+            margin-bottom: 1.5rem;
+            color: #171717;
+            border-bottom: 2px solid #525252;
+            padding-bottom: 0.5rem;
         }
-         .diagram-box-subtext {
-            color: #262626; /* Neutral-800 */
-         }
-        .hybrid-box {
-            border: 1px solid #737373; /* Neutral-500 */
-            background-color: #E5E5E5; /* Neutral-200 */
+        .markdown-content h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: #262626;
         }
-        .hybrid-box-title {
-            color: #171717; /* Neutral-900 */
+        .markdown-content h3 {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: #404040;
+        }
+        .markdown-content h4 {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: #525252;
+        }
+        .markdown-content p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .markdown-content pre {
+            background-color: #F5F5F5;
+            border: 1px solid #A3A3A3;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
+        .markdown-content code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #E5E5E5;
+            padding: 0.1rem 0.25rem;
+            border: 1px solid #A3A3A3;
+            font-size: 0.9em;
+        }
+        .markdown-content ul, .markdown-content ol {
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+        }
+        .markdown-content li {
+            margin-bottom: 0.5rem;
+        }
+        .markdown-content blockquote {
+            border-left: 4px solid #A3A3A3;
+            padding-left: 1rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1rem;
+            color: #525252;
+        }
+        .markdown-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        .markdown-content th, .markdown-content td {
+            border: 1px solid #A3A3A3;
+            padding: 0.5rem;
+        }
+        .markdown-content th {
+            background-color: #E5E5E5;
             font-weight: bold;
         }
-        .hybrid-box-subtext {
-            color: #262626; /* Neutral-800 */
+        .book-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #A3A3A3;
         }
-        .status-text { /* General class for status text in tables */
-            font-weight: bold;
-            color: #262626; /* Neutral-800 */
+        .book-navigation a {
+            padding: 0.5rem 1rem;
+            background-color: #E5E5E5;
+            border: 1px solid #A3A3A3;
+            color: #262626;
+            text-decoration: none;
+            cursor: pointer;
         }
-        /* Remove unicode icon specific styling if not needed, or adapt */
-        .unicode-icon { display: none; } /* Hide emojis */
-        .subsection-title-text { /* For titles that had icons */
-            /* Add any specific styling if needed, otherwise defaults are fine */
+        .book-navigation a:hover {
+            background-color: #D4D4D4;
         }
-
+        .mobile-menu-button, .mobile-sidebar-button {
+            display: none;
+        }
+        /* ASCII diagram styling */
+        .ascii-diagram {
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre;
+            line-height: 1.2;
+            background-color: #F5F5F5;
+            padding: 1rem;
+            border: 1px solid #A3A3A3;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        /* Loading indicator */
+        .loading-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        .loading-spinner {
+            border: 4px solid #E5E5E5;
+            border-top: 4px solid #404040;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Error message */
+        .error-message {
+            padding: 1rem;
+            background-color: #FEE2E2;
+            border: 1px solid #EF4444;
+            color: #B91C1C;
+            margin-bottom: 1rem;
+        }
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .book-container {
+                flex-direction: column;
+            }
+            .book-sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                top: 0;
+                display: none;
+                border-right: none;
+                border-bottom: 1px solid #A3A3A3;
+                max-height: 300px;
+            }
+            .book-sidebar.active {
+                display: block;
+            }
+            .mobile-menu-button, .mobile-sidebar-button {
+                display: block;
+                background-color: #404040;
+                color: #E5E5E5;
+                border: 1px solid #737373;
+                padding: 0.5rem;
+                margin-bottom: 1rem;
+                cursor: pointer;
+                text-align: center;
+                width: 100%;
+            }
+            .nav-container {
+                width: 100%;
+            }
+            .nav-links {
+                display: none;
+                width: 100%;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .nav-links.active {
+                display: flex;
+            }
+            .book-content {
+                padding: 1rem;
+            }
+            .markdown-content h1 {
+                font-size: 1.5rem;
+            }
+            .markdown-content h2 {
+                font-size: 1.3rem;
+            }
+            .markdown-content h3 {
+                font-size: 1.15rem;
+            }
+            .markdown-content h4 {
+                font-size: 1rem;
+            }
+            .ascii-diagram {
+                font-size: 0.7rem;
+            }
+        }
+        /* Print styles */
+        @media print {
+            .header-bg, .footer-bg, .book-sidebar, .mobile-sidebar-button, .book-navigation {
+                display: none !important;
+            }
+            .book-container {
+                display: block;
+            }
+            .book-content {
+                padding: 0;
+            }
+            .main-container {
+                max-width: 100%;
+                padding: 0;
+            }
+        }
     </style>
 </head>
 <body class="antialiased">
-
     <header class="header-bg text-white sticky top-0 z-50">
-        <nav class="main-container py-4 flex flex-col sm:flex-row justify-between items-center">
-            <a href="#" class="text-2xl font-bold text-white hover:text-neutral-300 transition-colors">Solana AI Registries Initiative</a>
-            <div class="mt-3 sm:mt-0 space-x-1 text-sm" id="main-nav">
-                <a href="#introduction" class="nav-link active">Introduction</a>
-                <a href="#foundational-concepts" class="nav-link">Core Concepts</a>
-                <a href="#agent-registry" class="nav-link">Agent Registry</a>
-                <a href="#mcp-registry" class="nav-link">MCP Registry</a>
-                <a href="#discovery-querying" class="nav-link">Discovery</a>
-                <a href="#security" class="nav-link">Security</a>
-                <a href="#conclusion" class="nav-link">Conclusion</a>
+        <nav class="main-container py-1">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex justify-between items-center w-full md:w-auto">
+                    <a href="#" class="text-lg font-bold text-white hover:text-neutral-300 transition-colors">Solana AI Registries Initiative</a>
+                    <button type="button" class="mobile-menu-button md:hidden" onclick="toggleMenu()">
+                        Menu &#9776;
+                    </button>
+                </div>
+                <div class="nav-container mt-1 md:mt-0">
+                    <div id="main-nav" class="nav-links flex flex-wrap md:flex-nowrap justify-center md:justify-end">
+                        <a href="#" class="nav-link active">Research Book</a>
+                        <a href="#" class="nav-link" onclick="downloadPDF()">Download PDF</a>
+                        <a href="#" class="nav-link" onclick="window.print()">Print</a>
+                    </div>
+                </div>
             </div>
         </nav>
     </header>
 
-    <main class="main-container pt-10 pb-16">
-
-        <section id="introduction" class="mb-16">
-            <h2 class="section-title mb-6">Pioneering the Future of Decentralized AI on Solana</h2>
-            <p class="text-lead mb-6">The rapid emergence of autonomous agents and sophisticated AI model integrations is reshaping the digital frontier. These intelligent entities offer transformative potential across diverse sectors. However, their proliferation introduces a critical challenge: enabling effective discovery, verification, and interoperability within decentralized networks. Without standardized infrastructure, the growth of a cohesive AI ecosystem is impeded.</p>
-            <p class="mb-4">This document outlines a strategic solution: two interconnected Solana-based program protocols – an <span class="key-term">Agent Registry</span> and an <span class="key-term">MCP Server Registry</span>. These on-chain registries are engineered to serve as foundational pillars, fostering a robust, trustworthy, and interoperable environment for AI components. By harnessing Solana's high-performance blockchain, these protocols aim to deliver a scalable and efficient framework for managing and discovering AI services.</p>
-            <div class="info-box">
-                <h3 class="text-lg info-box-title mb-2">Key Strategic Objectives:</h3>
-                <ul class="list-disc list-inside space-y-1 info-box-text">
-                    <li>Define precise on-chain data specifications for registry entries.</li>
-                    <li>Outline secure, gas-efficient Solana program instructions for lifecycle management.</li>
-                    <li>Propose a multi-layered discovery approach (on-chain & off-chain indexing).</li>
-                    <li>Align Agent Registry with AEA & A2A principles.</li>
-                    <li>Ensure MCP Server Registry adheres to official MCP specifications.</li>
-                </ul>
-            </div>
-        </section>
-
-        <section id="foundational-concepts" class="mb-16">
-            <h2 class="section-title mb-8">Core Solana Architecture for On-Chain Registries</h2>
-            <p class="text-lead mb-8">The design of these registries is intrinsically linked to Solana's unique architecture. Understanding these foundational elements—Program Derived Addresses (PDAs), data serialization with Borsh, and the rent model—is crucial for appreciating the efficiency and security of the proposed protocols.</p>
+    <div class="main-container">
+        <h1 class="section-title my-6">Solana Protocol Design for Agent and MCP Server Registries</h1>
+        
+        <button type="button" class="mobile-sidebar-button" onclick="toggleSidebar()">
+            Toggle Table of Contents &#9776;
+        </button>
+        
+        <div class="book-container">
+            <aside id="book-sidebar" class="book-sidebar">
+                <h2 class="font-bold text-lg mb-4 border-b border-neutral-400 pb-2">Table of Contents</h2>
+                <div id="chapter-links">
+                    <a class="chapter-link" onclick="loadChapter(1)">Chapter 1: Introduction</a>
+                    <a class="chapter-link" onclick="loadChapter(2)">Chapter 2: Foundational Solana Concepts</a>
+                    <a class="chapter-link" onclick="loadChapter(3)">Chapter 3: Agent Registry Protocol Design</a>
+                    <a class="chapter-link" onclick="loadChapter(4)">Chapter 4: MCP Server Registry Protocol Design</a>
+                    <a class="chapter-link" onclick="loadChapter(5)">Chapter 5: Discovery and Querying Mechanisms</a>
+                    <a class="chapter-link" onclick="loadChapter(6)">Chapter 6: Implementation Guide</a>
+                    <a class="chapter-link" onclick="loadChapter(7)">Chapter 7: Security Considerations</a>
+                    <a class="chapter-link" onclick="loadChapter(8)">Chapter 8: Performance Optimization</a>
+                    <a class="chapter-link" onclick="loadChapter(9)">Chapter 9: Deployment and Maintenance</a>
+                    <a class="chapter-link" onclick="loadChapter(10)">Chapter 10: Case Studies and Examples</a>
+                    <a class="chapter-link" onclick="loadChapter(11)">Chapter 11: Future Directions</a>
+                    <a class="chapter-link" onclick="loadChapter(12)">Chapter 12: Conclusion</a>
+                    <a class="chapter-link" onclick="loadChapter(13)">Chapter 13: References</a>
+                    <a class="chapter-link" onclick="loadChapter(14)">Chapter 14: Appendices</a>
+                </div>
+            </aside>
             
-            <div class="grid md:grid-cols-2 gap-8 mb-8">
-                <div class="card">
-                    <h3 class="subsection-title subsection-title-text">Program Derived Addresses (PDAs)</h3>
-                    <p class="mb-3">PDAs are unique addresses controlled by a program, not a private key. They are derived from the program's ID and custom "seeds" (e.g., an agent's unique ID). This ensures tamper-proof storage and authorized modifications for each registry entry.</p>
-                    <div class="diagram-box">
-                        <p><span class="diagram-box-title">PDA =</span> Program ID + Seeds (e.g., <code class="code-like">"agent_v1"</code>, <code class="code-like">agent_unique_id</code>)</p>
-                        <p class="mt-1 diagram-box-subtext"><span class="font-semibold">Benefit:</span> Unique, secure, program-controlled account for each entry.</p>
+            <main id="book-content" class="book-content">
+                <div id="markdown-content" class="markdown-content">
+                    <!-- Markdown content will be loaded here -->
+                    <div class="loading-indicator">
+                        <div class="loading-spinner"></div>
                     </div>
                 </div>
-                <div class="card">
-                    <h3 class="subsection-title subsection-title-text">Account Structures & Borsh Serialization</h3>
-                    <p class="mb-3">All data on Solana is stored in accounts. For registry entries, data is serialized into a compact, deterministic binary format using <span class="key-term">Borsh</span>. This is vital for efficiency and data integrity on-chain.</p>
-                     <div class="diagram-box">
-                        <p><span class="diagram-box-title">Borsh:</span> Efficient, deterministic binary serialization.</p>
-                        <p class="mt-1 diagram-box-subtext"><span class="font-semibold">Constraint:</span> Fixed format; direct on-chain querying of arbitrary fields is complex.</p>
-                    </div>
+                <div id="navigation-controls" class="book-navigation">
+                    <!-- Navigation controls will be added here -->
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <footer class="footer-bg py-6 mt-8">
+        <div class="main-container">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="footer-text">© 2025 Solana AI Registries Initiative</p>
+                </div>
+                <div>
+                    <a href="#" class="footer-text hover:text-white mr-4">Privacy Policy</a>
+                    <a href="#" class="footer-text hover:text-white">Contact</a>
                 </div>
             </div>
-
-            <div class="card mb-8">
-                <h3 class="subsection-title subsection-title-text">Rent, Storage & Hybrid Data Model</h3>
-                <p class="mb-4">Storing data on Solana incurs "rent." Accounts must be rent-exempt by holding a SOL balance. Given Solana's 10MB per-account limit and rent costs, a hybrid storage model is essential:</p>
-                <div class="flex flex-col md:flex-row items-stretch justify-around p-4 bg-white rounded-none border border-neutral-300 space-y-4 md:space-y-0 md:space-x-4">
-                    <div class="flex-1 p-4 hybrid-box rounded-none">
-                        <h4 class="hybrid-box-title mb-2 text-center">On-Chain Core Data</h4>
-                        <ul class="list-disc list-inside text-sm space-y-1">
-                            <li>Essential Identifiers (IDs, Owner)</li>
-                            <li>Key Status Flags & Timestamps</li>
-                            <li>Primary Service Endpoints</li>
-                            <li>Hashes of Off-Chain Data</li>
-                            <li>URI Pointers to Off-Chain Details</li>
-                        </ul>
-                        <p class="text-xs mt-2 text-center hybrid-box-subtext">Optimized for verifiability & performance.</p>
-                    </div>
-                    <div class="flex items-center justify-center text-3xl text-neutral-600 font-bold mx-4">&lt;--&gt;</div>
-                    <div class="flex-1 p-4 hybrid-box rounded-none">
-                        <h4 class="hybrid-box-title mb-2 text-center">Off-Chain Extended Metadata</h4>
-                         <ul class="list-disc list-inside text-sm space-y-1">
-                            <li>Full AgentCard JSON / AEA Manifests</li>
-                            <li>Complete MCP Tool/Resource/Prompt Schemas</li>
-                            <li>Detailed Descriptions & Documentation</li>
-                            <li>Large Media or Auxiliary Files</li>
-                        </ul>
-                        <p class="text-xs mt-2 text-center hybrid-box-subtext">Hosted on IPFS/Arweave for richness & scalability.</p>
-                    </div>
-                </div>
-                <p class="mt-4 text-sm">This balances on-chain integrity with the need for comprehensive information, managing costs and storage limits effectively.</p>
-            </div>
-        </section>
-
-        <section id="agent-registry" class="mb-16">
-            <h2 class="section-title mb-6">Agent Registry Protocol</h2>
-            <p class="text-lead mb-6">The Agent Registry provides a decentralized directory for autonomous agents, drawing inspiration from Google's A2A AgentCard and AEA principles. It emphasizes advertising agent capabilities, endpoints, identity, and economic intent to facilitate discovery and robust interaction.</p>
-            <div class="card">
-                <h3 class="subsection-title">Agent Entry Data Specification (`AgentRegistryEntryV1`)</h3>
-                <p class="mb-4 text-sm">Each agent's data is stored in a PDA. The structure balances on-chain essentials with links to comprehensive off-chain metadata. Key fields from Table 1 of the report include:</p>
-                <ul class="list-disc list-inside space-y-1 mb-4 pl-5 text-sm">
-                    <li><code class="code-like">owner_authority</code>, <code class="code-like">agent_id</code>, <code class="code-like">name</code>, <code class="code-like">description</code></li>
-                    <li><code class="code-like">service_endpoints</code> (Vec, limited on-chain)</li>
-                    <li><code class="code-like">capabilities_flags</code> (A2A bitmask), <code class="code-like">skills</code> (Vec summary)</li>
-                    <li><code class="code-like">status</code>, <code class="code-like">timestamps</code>, <code class="code-like">extended_metadata_uri</code> (link to full AgentCard)</li>
-                </ul>
-                <div class="info-box">
-                    <p class="text-sm info-box-text">For the complete `AgentRegistryEntryV1` structure, please refer to Table 1 in the source "Solana Protocol Design for Agent and MCP Server Registries" report. The table details each field, its Solana (Rust) type, description, AEA/A2A mapping, and constraints.</p>
-                </div>
-
-                <h3 class="subsection-title mt-6">Registration & Management Flow</h3>
-                <p class="mb-4 text-sm">Lifecycle management is handled via specific Solana program instructions, ensuring only the owner can modify entries.</p>
-                <div class="space-y-4">
-                    <div class="flow-step">1. <span class="font-semibold">Prepare Agent Data:</span> Assemble all required on-chain fields and off-chain metadata (AgentCard JSON).</div>
-                    <div class="flex justify-center"><span class="flow-arrow">\/</span></div>
-                    <div class="flow-step">2. <span class="font-semibold">Invoke `register_agent`:</span> Transaction signed by owner, funds PDA for rent-exemption.</div>
-                    <div class="flex justify-center"><span class="flow-arrow">\/</span></div>
-                    <div class="flow-step">3. <span class="font-semibold">PDA Created & Populated:</span> Agent data stored on-chain.</div>
-                    <div class="flex justify-center"><span class="flow-arrow">\/</span></div>
-                    <div class="flow-step">4. <span class="font-semibold">Event Emitted:</span> `AgentRegistered` event broadcast for indexers.</div>
-                </div>
-                <p class="text-xs mt-3 text-center">Update (<code class="code-like">update_agent_details</code>, <code class="code-like">update_agent_status</code>) and deregistration (<code class="code-like">deregister_agent</code>) follow similar owner-verified flows.</p>
-            </div>
-        </section>
-
-        <section id="mcp-registry" class="mb-16">
-            <h2 class="section-title mb-6">MCP Server Registry Protocol</h2>
-            <p class="text-lead mb-6">The MCP Server Registry facilitates the discovery of Model Context Protocol (MCP) compliant servers. It allows providers to advertise their services, including Tools, Resources, and Prompts, aligning with the official MCP specification.</p>
-             <div class="card">
-                <h3 class="subsection-title">MCP Server Entry Data Specification (`McpServerRegistryEntryV1`)</h3>
-                <p class="mb-4 text-sm">MCP Server entries also use PDAs and a hybrid data model. Key fields from Table 2 of the report include:</p>
-                 <ul class="list-disc list-inside space-y-1 mb-4 pl-5 text-sm">
-                    <li><code class="code-like">owner_authority</code>, <code class="code-like">server_id</code>, <code class="code-like">name</code>, <code class="code-like">service_endpoint</code> (HTTPS)</li>
-                    <li>Boolean flags: <code class="code-like">supports_tools</code>, <code class="code-like">supports_resources</code>, <code class="code-like">supports_prompts</code></li>
-                    <li>On-chain summaries/hashes for key <code class="code-like">onchain_tool_definitions</code>, <code class="code-like">onchain_resource_definitions</code>, etc. (limited Vecs)</li>
-                    <li><code class="code-like">status</code>, <code class="code-like">timestamps</code>, <code class="code-like">full_capabilities_uri</code> (link to complete MCP schema JSON)</li>
-                </ul>
-                 <div class="info-box">
-                    <p class="text-sm info-box-text">For the complete `McpServerRegistryEntryV1` structure, refer to Table 2 in the source report. It details each field, its type, description, MCP schema mapping, and constraints.</p>
-                </div>
-
-                <h3 class="subsection-title mt-6">Conceptual Data Distribution (Illustrative)</h3>
-                <p class="mb-4 text-sm">Both registries balance on-chain data for core verification and off-chain data for richness. This conceptual chart illustrates the idea:</p>
-                <div class="chart-container">
-                    <canvas id="hybridDataChart"></canvas>
-                </div>
-                <p class="text-xs mt-2 text-center">This hybrid model is crucial for scalability and cost-efficiency.</p>
-            </div>
-        </section>
-
-        <section id="discovery-querying" class="mb-16">
-            <h2 class="section-title mb-6">Advanced Discovery & Querying Strategies</h2>
-            <p class="text-lead mb-6">Effective discovery requires a multi-layered strategy, combining direct on-chain lookups with powerful off-chain indexing fueled by on-chain events. This approach overcomes Solana's limitations for complex on-chain database-like queries.</p>
-            
-            <div class="card mb-8">
-                <h3 class="subsection-title">On-Chain vs. Off-Chain Querying Comparison</h3>
-                <p class="mb-4 text-sm">The choice of querying strategy depends on the complexity and performance requirements. The following summarizes key differences (based on Table 3 from the report):</p>
-                <div class="overflow-x-auto">
-                    <table class="table-corporate">
-                        <thead>
-                            <tr>
-                                <th>Query Type</th>
-                                <th>On-Chain Feasibility</th>
-                                <th>Off-Chain Feasibility (via Indexers)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Direct ID Lookup</td>
-                                <td class="status-text">High (Fast)</td>
-                                <td class="status-text">High (Very Fast)</td>
-                            </tr>
-                            <tr>
-                                <td>Single Attribute Filter</td>
-                                <td class="status-text">Medium (Slow-Medium)</td>
-                                <td class="status-text">High (Very Fast)</td>
-                            </tr>
-                            <tr>
-                                <td>Multi-Attribute Filter / Full-Text Search</td>
-                                <td class="status-text">Very Low (Impractical)</td>
-                                <td class="status-text">High (Fast)</td>
-                            </tr>
-                            <tr>
-                                <td>Sorted Results / Aggregations</td>
-                                <td class="status-text">Very Low (Impractical)</td>
-                                <td class="status-text">High (Fast)</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <p class="mt-3 text-xs text-neutral-500">Off-chain indexers (e.g., using The Graph, Helius, or custom solutions) listen to on-chain events, fetch linked off-chain data, and populate optimized databases for rich querying.</p>
-            </div>
-
-            <div class="card">
-                <h3 class="subsection-title subsection-title-text">Event Emission: The Key to Off-Chain Indexing</h3>
-                <p class="mb-4">Reliable and comprehensive event emission from the on-chain programs is critical. Events like <code class="code-like">AgentRegistered</code> or <code class="code-like">McpServerToolAdded</code> provide the data feed for indexers.</p>
-                <div class="space-y-3 p-4 bg-white rounded-none border border-neutral-300">
-                    <div class="flex items-center">
-                        <div class="flow-step text-sm flex-1">1. On-Chain Action (e.g., Registration, Update)</div>
-                        <div class="flow-arrow mx-2 md:mx-4">-&gt;</div>
-                        <div class="flow-step text-sm flex-1">2. Program Emits Standardized Event</div>
-                    </div>
-                    <div class="flex justify-center"><span class="flow-arrow">\/</span></div>
-                    <div class="flex items-center">
-                        <div class="flow-step text-sm flex-1">3. Off-Chain Indexer Captures Event</div>
-                        <div class="flow-arrow mx-2 md:mx-4">-&gt;</div>
-                        <div class="flow-step text-sm flex-1">4. Indexer Fetches Off-Chain URI Data</div>
-                    </div>
-                     <div class="flex justify-center"><span class="flow-arrow">\/</span></div>
-                    <div class="flow-step text-sm w-full">5. Data Stored & Indexed in Off-Chain Database (SQL, Elasticsearch, etc.) for Rich Query API</div>
-                </div>
-                <p class="mt-3 text-sm">Using Anchor's <code class="code-like">emit_cpi!</code> is recommended for critical events to ensure reliability against log truncation.</p>
-            </div>
-        </section>
-
-        <section id="security" class="mb-16">
-            <h2 class="section-title mb-6">Ensuring Registry Security & Trustworthiness</h2>
-            <p class="text-lead mb-6">Security is foundational. The protocols incorporate robust measures for access control, data integrity, and mitigation of spam or malicious entries, aiming to build a trustworthy ecosystem.</p>
-            <div class="grid md:grid-cols-2 gap-6">
-                <div class="info-box md:col-span-1">
-                    <h4 class="font-semibold info-box-title mb-1">Ownership & Access Control</h4>
-                    <p class="text-sm info-box-text">Each entry is controlled by an <code class="code-like">owner_authority</code>. Modifications require a transaction signed by this authority, enforced at the program instruction level.</p>
-                </div>
-                <div class="info-box md:col-span-1">
-                    <h4 class="font-semibold info-box-title mb-1">Data Integrity & Validation</h4>
-                    <p class="text-sm info-box-text">Rigorous input validation within program instructions. On-chain hashes verify the integrity of linked off-chain data.</p>
-                </div>
-                <div class="info-box md:col-span-1">
-                    <h4 class="font-semibold info-box-title mb-1">Spam & Malice Mitigation</h4>
-                    <p class="text-sm info-box-text">Strategies include nominal registration fees and optional curation mechanisms (DAO-based or centralized). Links to external reputation systems are encouraged.</p>
-                </div>
-                <div class="info-box md:col-span-1">
-                    <h4 class="font-semibold info-box-title mb-1">Program Upgradability</h4>
-                    <p class="text-sm info-box-text">Registry programs are upgradeable. Secure management of the upgrade authority (e.g., multisig, DAO) is critical, along with clear data migration plans for schema changes.</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="conclusion" class="mb-8">
-            <h2 class="section-title mb-6">Conclusion & Future Outlook</h2>
-            <p class="text-lead mb-6">The proposed Agent and MCP Server Registries on Solana offer a robust foundation for a decentralized AI ecosystem. By enabling efficient discovery, fostering interoperability, and building trust, these protocols can significantly accelerate innovation in AI applications and services.</p>
-            <div class="card">
-                <h3 class="subsection-title">Potential Future Enhancements:</h3>
-                <ul class="list-disc list-inside space-y-2 text-neutral-700">
-                    <li><span class="key-term">On-Chain Reputation/Attestation Systems:</span> Integrating verifiable credentials or community-driven reputation scores.</li>
-                    <li><span class="key-term">Sophisticated On-Chain Indexing:</span> Leveraging future Solana advancements for more granular on-chain queries.</li>
-                    <li><span class="key-term">Native Decentralized Storage Integration:</span> Deeper links with IPFS/Arweave for metadata management.</li>
-                    <li><span class="key-term">Cross-Chain Discovery Mechanisms:</span> Enabling interaction with agents and services on other blockchains.</li>
-                    <li><span class="key-term">Standardized Off-Chain Indexer APIs:</span> Promoting a competitive ecosystem of discovery services.</li>
-                    <li><span class="key-term">Automated Verification Services:</span> For endpoint liveness, protocol adherence, and metadata integrity checks.</li>
-                </ul>
-                <p class="mt-6">Addressing the fundamental need for service discovery and verification, these Solana-based registries are poised to play a pivotal role in shaping a more intelligent, autonomous, and interconnected digital future.</p>
-            </div>
-        </section>
-
-    </main>
-
-    <footer class="footer-bg footer-text text-center py-8 mt-12">
-        <p class="text-sm">&copy; 2025 Solana AI Registries Initiative. Advancing Decentralized Intelligence.</p>
-        <p class="text-xs mt-1">This document provides a conceptual overview based on the "Solana Protocol Design for Agent and MCP Server Registries" report.</p>
+        </div>
     </footer>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const navLinks = document.querySelectorAll('#main-nav a');
-            const sections = document.querySelectorAll('main section[id]');
-
-            function changeActiveLink() {
-                let index = sections.length;
-                const offset = window.innerHeight * 0.25; 
-
-                while(--index && window.scrollY + offset < sections[index].offsetTop) {}
-                
-                navLinks.forEach((link) => link.classList.remove('active'));
-                
-                const activeSectionId = sections[index] ? sections[index].id : null;
-                if (activeSectionId) {
-                    const activeNavLink = document.querySelector(`#main-nav a[href="#${activeSectionId}"]`);
-                    if (activeNavLink) {
-                        activeNavLink.classList.add('active');
-                    }
-                } else if (sections.length > 0 && window.scrollY < sections[0].offsetTop - offset) {
-                     const firstLink = document.querySelector(`#main-nav a[href="#${sections[0].id}"]`);
-                     if(firstLink) firstLink.classList.add('active');
-                }
+        // Chapter file mapping
+        const chapterFiles = {
+            1: 'research_draft_part1.md',
+            2: 'research_draft_part2.md',
+            3: 'research_draft_part3.md',
+            4: 'research_draft_part4.md',
+            5: 'research_draft_part5.md',
+            6: 'research_draft_part6.md',
+            7: 'research_draft_part7.md',
+            8: 'research_draft_part8.md',
+            9: 'research_draft_part9.md',
+            10: 'research_draft_part10.md',
+            11: 'research_draft_part11.md',
+            12: 'research_draft_part12.md',
+            13: 'research_draft_part13.md',
+            14: 'research_draft_part14.md'
+        };
+        
+        // Current chapter
+        let currentChapter = 1;
+        
+        // Toggle main navigation menu
+        function toggleMenu() {
+            const navLinks = document.getElementById('main-nav');
+            if (navLinks) {
+                navLinks.classList.toggle('active');
             }
-            
-            if (sections.length > 0) {
-                changeActiveLink(); // Set initial active link
-                window.addEventListener('scroll', changeActiveLink);
+        }
+        
+        // Toggle sidebar for mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('book-sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('active');
             }
-
-            const hybridDataCtx = document.getElementById('hybridDataChart');
-            if (hybridDataCtx) {
-                new Chart(hybridDataCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['On-Chain Core Data (IDs, Hashes, URIs)', 'Off-Chain Extended Metadata (Full Schemas, Details)'],
-                        datasets: [{
-                            label: 'Data Distribution Model',
-                            data: [40, 60], 
-                            backgroundColor: [
-                                '#737373', // Neutral-500
-                                '#A3A3A3'  // Neutral-400
-                            ],
-                            borderColor: '#FFFFFF',
-                            borderWidth: 2,
-                            hoverOffset: 4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    color: '#262626', // Neutral-800
-                                    font: { 
-                                        size: 12,
-                                        family: "'Courier New', Courier, monospace" // Monospace for chart legend
-                                    },
-                                    boxWidth: 12,
-                                    padding: 15
-                                }
-                            },
-                            tooltip: {
-                                bodyFont: {
-                                    family: "'Courier New', Courier, monospace" // Monospace for tooltips
-                                },
-                                titleFont: {
-                                    family: "'Courier New', Courier, monospace" // Monospace for tooltips
-                                },
-                                callbacks: {
-                                    label: function(context) {
-                                        let label = context.label || '';
-                                        if (label) {
-                                            label += ': ';
-                                        }
-                                        if (context.parsed !== null) {
-                                            label += context.parsed + '%';
-                                        }
-                                        return label;
-                                    }
-                                }
-                            },
-                            title: {
-                                display: true,
-                                text: 'Conceptual Hybrid Data Storage',
-                                color: '#171717', // Neutral-900
-                                font: {
-                                    size: 14, 
-                                    weight: 'bold',
-                                    family: "'Courier New', Courier, monospace" // Monospace for chart title
-                                },
-                                padding: { top: 0, bottom: 10}
-                            }
-                        }
+        }
+        
+        // Load chapter content
+        async function loadChapter(chapterNum) {
+            try {
+                currentChapter = chapterNum;
+                
+                // Update active chapter link
+                const chapterLinks = document.querySelectorAll('.chapter-link');
+                chapterLinks.forEach((link, index) => {
+                    if (index + 1 === chapterNum) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
                     }
                 });
+                
+                // Show loading indicator
+                document.getElementById('markdown-content').innerHTML = '<div class="loading-indicator"><div class="loading-spinner"></div></div>';
+                
+                // Load chapter content
+                const response = await fetch(chapterFiles[chapterNum]);
+                if (!response.ok) {
+                    throw new Error(`Failed to load chapter ${chapterNum}`);
+                }
+                
+                const content = await response.text();
+                
+                // Render markdown content
+                document.getElementById('markdown-content').innerHTML = marked.parse(content);
+                
+                // Add navigation buttons
+                addNavigation(chapterNum);
+                
+                // Close sidebar on mobile after selection
+                if (window.innerWidth <= 768) {
+                    document.getElementById('book-sidebar').classList.remove('active');
+                }
+                
+                // Scroll to top
+                window.scrollTo(0, 0);
+                
+                // Process ASCII diagrams
+                processAsciiDiagrams();
+                
+                // Update document title
+                const chapterTitle = document.querySelector(`.chapter-link:nth-child(${chapterNum})`).textContent;
+                document.title = `${chapterTitle} | Solana Protocol Design`;
+                
+            } catch (error) {
+                console.error('Error loading chapter:', error);
+                document.getElementById('markdown-content').innerHTML = `
+                    <div class="error-message">
+                        <h3>Error Loading Chapter</h3>
+                        <p>Please ensure all markdown files are in the same directory as this HTML file.</p>
+                        <p>Expected file: ${chapterFiles[chapterNum]}</p>
+                        <p>Error details: ${error.message}</p>
+                    </div>
+                    <div class="mt-4">
+                        <p>This book requires the following markdown files to be present in the same directory:</p>
+                        <ul class="list-disc pl-5 mt-2">
+                            ${Object.values(chapterFiles).map(file => `<li>${file}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+        
+        // Process ASCII diagrams
+        function processAsciiDiagrams() {
+            const preElements = document.querySelectorAll('pre');
+            preElements.forEach(pre => {
+                // Check if this looks like an ASCII diagram
+                const content = pre.textContent;
+                if (content.includes('+---') || (content.includes('|') && content.includes('-'))) {
+                    pre.classList.add('ascii-diagram');
+                }
+            });
+        }
+        
+        // Add navigation buttons
+        function addNavigation(currentChapter) {
+            const totalChapters = Object.keys(chapterFiles).length;
+            const nav = document.getElementById('navigation-controls');
+            nav.innerHTML = '';
+            
+            // Previous button
+            if (currentChapter > 1) {
+                const prevButton = document.createElement('a');
+                prevButton.textContent = `← Previous: Chapter ${currentChapter - 1}`;
+                prevButton.onclick = () => loadChapter(currentChapter - 1);
+                nav.appendChild(prevButton);
+            } else {
+                // Empty div for spacing
+                const spacer = document.createElement('div');
+                nav.appendChild(spacer);
+            }
+            
+            // Next button
+            if (currentChapter < totalChapters) {
+                const nextButton = document.createElement('a');
+                nextButton.textContent = `Next: Chapter ${currentChapter + 1} →`;
+                nextButton.onclick = () => loadChapter(currentChapter + 1);
+                nav.appendChild(nextButton);
+            } else {
+                // Empty div for spacing
+                const spacer = document.createElement('div');
+                nav.appendChild(spacer);
+            }
+        }
+        
+        // Download PDF function
+        function downloadPDF() {
+            const pdfUrl = 'solana_protocol_design_for_agent_and_mcp_server_registries.pdf';
+            
+            // Create a temporary link element
+            const link = document.createElement('a');
+            link.href = pdfUrl;
+            link.download = 'solana_protocol_design_for_agent_and_mcp_server_registries.pdf';
+            
+            // Append to the document, click, and remove
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // Handle keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            // Left arrow key for previous chapter
+            if (e.key === 'ArrowLeft' && currentChapter > 1) {
+                loadChapter(currentChapter - 1);
+            }
+            // Right arrow key for next chapter
+            else if (e.key === 'ArrowRight' && currentChapter < Object.keys(chapterFiles).length) {
+                loadChapter(currentChapter + 1);
+            }
+        });
+        
+        // Load initial chapter on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Default to chapter 1
+            loadChapter(1);
+            
+            // Make sidebar visible on desktop by default
+            if (window.innerWidth > 768) {
+                document.getElementById('book-sidebar').style.display = 'block';
+            }
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                document.getElementById('book-sidebar').style.display = 'block';
+            } else {
+                document.getElementById('book-sidebar').style.display = 'none';
             }
         });
     </script>
