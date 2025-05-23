@@ -1657,100 +1657,152 @@ pub struct McpServerDeregistered {
 
 
 // --- Errors ---
+
+/// Error codes for the Solana AI Registries program
+///
+/// This enum defines all possible error conditions that can occur during
+/// the execution of program instructions, with descriptive messages for
+/// each error case.
 #[error_code]
 pub enum ErrorCode {
+    /// Agent ID length is invalid (empty or exceeds maximum length)
     #[msg("Agent ID length is invalid (empty or exceeds max).")]
     InvalidAgentIdLength,
+    /// Name length is invalid (empty or exceeds maximum length)
     #[msg("Name length is invalid (empty or exceeds max).")]
     InvalidNameLength,
+    /// Description length exceeds maximum allowed
     #[msg("Description length exceeds max.")]
     InvalidDescriptionLength,
+    /// Version length exceeds maximum allowed
     #[msg("Version length exceeds max.")]
     InvalidVersionLength,
+    /// Provider name length exceeds maximum allowed
     #[msg("Provider name length exceeds max.")]
     InvalidProviderNameLength,
+    /// Provider URL length exceeds maximum allowed
     #[msg("Provider URL length exceeds max.")]
     InvalidProviderUrlLength,
+    /// Documentation URL length exceeds maximum allowed
     #[msg("Documentation URL length exceeds max.")]
     InvalidDocumentationUrlLength,
+    /// Too many service endpoints provided (exceeds maximum allowed)
     #[msg("Too many service endpoints provided.")]
     TooManyServiceEndpoints,
+    /// Service endpoint protocol length is invalid (empty or exceeds maximum)
     #[msg("Service endpoint protocol length is invalid (empty or exceeds max).")]
     InvalidEndpointProtocolLength,
+    /// Service endpoint URL length is invalid (empty or exceeds maximum)
     #[msg("Service endpoint URL length is invalid (empty or exceeds max).")]
     InvalidEndpointUrlLength,
+    /// Multiple endpoints are marked as default (only one allowed)
     #[msg("Only one service endpoint can be marked as default.")]
     MultipleDefaultEndpoints,
+    /// No endpoint is marked as default when service endpoints are provided
     #[msg("If service endpoints are provided, one must be marked as default.")]
     MissingDefaultEndpoint,
+    /// Too many supported modes (input/output) provided
     #[msg("Too many supported modes (input/output) provided.")]
     TooManySupportedModes,
+    /// Supported mode string length is invalid (empty or exceeds maximum)
     #[msg("Supported mode string length is invalid (empty or exceeds max).")]
     InvalidModeLength,
+    /// Too many skills provided (exceeds maximum allowed)
     #[msg("Too many skills provided.")]
     TooManySkills,
+    /// Skill ID length is invalid (empty or exceeds maximum)
     #[msg("Skill ID length is invalid (empty or exceeds max).")]
     InvalidSkillIdLength,
+    /// Skill name length is invalid (empty or exceeds maximum)
     #[msg("Skill name length is invalid (empty or exceeds max).")]
     InvalidSkillNameLength,
+    /// Too many tags for a skill (exceeds maximum allowed)
     #[msg("Too many tags for a skill.")]
     TooManySkillTags,
+    /// Skill tag length is invalid (empty or exceeds maximum)
     #[msg("Skill tag length is invalid (empty or exceeds max).")]
     InvalidSkillTagLength,
+    /// Security info URI length exceeds maximum allowed
     #[msg("Security info URI length exceeds max.")]
     InvalidSecurityInfoUriLength,
+    /// AEA address length exceeds maximum allowed
     #[msg("AEA address length exceeds max.")]
     InvalidAeaAddressLength,
+    /// Economic intent summary length exceeds maximum allowed
     #[msg("Economic intent summary length exceeds max.")]
     InvalidEconomicIntentLength,
+    /// Extended metadata URI length exceeds maximum allowed
     #[msg("Extended metadata URI length exceeds max.")]
     InvalidExtendedMetadataUriLength,
+    /// Too many agent tags provided (exceeds maximum allowed)
     #[msg("Too many agent tags provided.")]
     TooManyAgentTags,
+    /// Agent tag length is invalid (empty or exceeds maximum)
     #[msg("Agent tag length is invalid (empty or exceeds max).")]
     InvalidAgentTagLength,
     
+    /// Server ID length is invalid (empty or exceeds maximum)
     #[msg("Server ID length is invalid (empty or exceeds max).")]
     InvalidServerIdLength,
+    /// Server capabilities summary length exceeds maximum allowed
     #[msg("Server capabilities summary length exceeds max.")]
     InvalidServerCapabilitiesSummaryLength,
+    /// Too many on-chain tool definitions (exceeds maximum allowed)
     #[msg("Too many on-chain tool definitions.")]
     TooManyToolDefinitions,
+    /// Tool name length is invalid (empty or exceeds maximum)
     #[msg("Tool name length is invalid (empty or exceeds max).")]
     InvalidToolNameLength,
+    /// Too many tags for a tool (exceeds maximum allowed)
     #[msg("Too many tags for a tool.")]
     TooManyToolTags,
+    /// Tool tag length is invalid (empty or exceeds maximum)
     #[msg("Tool tag length is invalid (empty or exceeds max).")]
     InvalidToolTagLength,
+    /// Too many on-chain resource definitions (exceeds maximum allowed)
     #[msg("Too many on-chain resource definitions.")]
     TooManyResourceDefinitions,
+    /// Resource URI pattern length is invalid (empty or exceeds maximum)
     #[msg("Resource URI pattern length is invalid (empty or exceeds max).")]
     InvalidResourceUriPatternLength,
+    /// Too many tags for a resource (exceeds maximum allowed)
     #[msg("Too many tags for a resource.")]
     TooManyResourceTags,
+    /// Resource tag length is invalid (empty or exceeds maximum)
     #[msg("Resource tag length is invalid (empty or exceeds max).")]
     InvalidResourceTagLength,
+    /// Too many on-chain prompt definitions (exceeds maximum allowed)
     #[msg("Too many on-chain prompt definitions.")]
     TooManyPromptDefinitions,
+    /// Prompt name length is invalid (empty or exceeds maximum)
     #[msg("Prompt name length is invalid (empty or exceeds max).")]
     InvalidPromptNameLength,
+    /// Too many tags for a prompt (exceeds maximum allowed)
     #[msg("Too many tags for a prompt.")]
     TooManyPromptTags,
+    /// Prompt tag length is invalid (empty or exceeds maximum)
     #[msg("Prompt tag length is invalid (empty or exceeds max).")]
     InvalidPromptTagLength,
+    /// Full capabilities URI length exceeds maximum allowed
     #[msg("Full capabilities URI length exceeds max.")]
     InvalidFullCapabilitiesUriLength,
+    /// Too many server tags provided (exceeds maximum allowed)
     #[msg("Too many server tags provided.")]
     TooManyServerTags,
+    /// Server tag length is invalid (empty or exceeds maximum)
     #[msg("Server tag length is invalid (empty or exceeds max).")]
     InvalidServerTagLength,
 
+    /// Invalid agent status value (not in the range 0-3)
     #[msg("Invalid agent status value.")]
     InvalidAgentStatus,
+    /// Invalid MCP server status value (not in the range 0-3)
     #[msg("Invalid MCP server status value.")]
     InvalidMcpServerStatus,
+    /// Bump seed not found in hash map (internal error)
     #[msg("Bump seed not found in hash map.")]
     BumpSeedNotInHashMap,
+    /// Signer is not the owner of the entry (unauthorized)
     #[msg("Unauthorized: Signer is not the owner of the entry.")]
     Unauthorized,
 }
