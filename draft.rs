@@ -53,6 +53,8 @@ mod constants {
     pub const MAX_SERVER_TAG_LEN: usize = 32;
 
     pub const HASH_SIZE: usize = 32; // SHA256 hash size
+    pub const STRING_LEN_PREFIX_SIZE: usize = 4; // u32 for String/Vec length
+    pub const OPTION_DISCRIMINATOR_SIZE: usize = 1; // 1 byte for Option discriminator
 
     // PDA Seed Prefixes
     pub const AGENT_REGISTRY_PDA_SEED: &[u8] = b"agent_reg_v1";
@@ -60,6 +62,33 @@ mod constants {
 }
 
 use constants::*;
+
+// Helper for Borsh size of String
+fn borsh_size_string(max_len: usize) -> usize {
+    STRING_LEN_PREFIX_SIZE + max_len
+}
+// Helper for Borsh size of Option<String>
+fn borsh_size_option_string(max_len: usize) -> usize {
+    OPTION_DISCRIMINATOR_SIZE + borsh_size_string(max_len)
+}
+// Helper for Borsh size of Option<[u8; HASH_SIZE]>
+fn borsh_size_option_hash() -> usize {
+    OPTION_DISCRIMINATOR_SIZE + HASH_SIZE
+}
+// Helper for Borsh size of Vec<String>
+fn borsh_size_vec_string(max_items: usize, max_item_len: usize) -> usize {
+    STRING_LEN_PREFIX_SIZE + (max_items * borsh_size_string(max_item_len))
+}
+// Helper for Borsh size of Vec<Struct>
+fn borsh_size_vec_struct<T: AccountSize>(max_items: usize) -> usize {
+    STRING_LEN_PREFIX_SIZE + (max_items * T::ACCOUNT_SIZE)
+}
+
+
+trait AccountSize { // Trait to get struct size for Vec calculations
+    const ACCOUNT_SIZE: usize;
+}
+
 
 #[program]
 pub mod solana_ai_registries {
@@ -88,23 +117,27 @@ pub mod solana_ai_registries {
         extended_metadata_uri: Option<String>,
         tags_input: Vec<String>,
     ) -> Result<()> {
-        // Input validations
+        // Exhaustive Input validations
         if agent_id.len() > MAX_AGENT_ID_LEN || agent_id.is_empty() { return err!(ErrorCode::InvalidAgentIdLength); }
         if name.len() > MAX_AGENT_NAME_LEN || name.is_empty() { return err!(ErrorCode::InvalidNameLength); }
-        if description.len() > MAX_AGENT_DESCRIPTION_LEN { return err!(ErrorCode::InvalidDescriptionLength); }
-        if agent_version.len() > MAX_AGENT_VERSION_LEN { return err!(ErrorCode::InvalidVersionLength); }
-        if let Some(ref pn) = provider_name { if pn.len() > MAX_PROVIDER_NAME_LEN { return err!(ErrorCode::InvalidProviderNameLength); }}
-        if let Some(ref pu) = provider_url { if pu.len() > MAX_PROVIDER_URL_LEN { return err!(ErrorCode::InvalidProviderUrlLength); }}
-        if let Some(ref du) = documentation_url { if du.len() > MAX_DOCUMENTATION_URL_LEN { return err!(ErrorCode::InvalidDocumentationUrlLength); }}
+        if description.len() > MAX_AGENT_DESCRIPTION_LEN { return err!(ErrorCode::InvalidDescriptionLength); } // Can be empty
+        if agent_version.len() > MAX_AGENT_VERSION_LEN || agent_version.is_empty() { return err!(ErrorCode::InvalidVersionLength); }
+        if let Some(ref val) = provider_name { if val.len() > MAX_PROVIDER_NAME_LEN { return err!(ErrorCode::InvalidProviderNameLength); }}
+        if let Some(ref val) = provider_url { if val.len() > MAX_PROVIDER_URL_LEN { return err!(ErrorCode::InvalidProviderUrlLength); }}
+        if let Some(ref val) = documentation_url { if val.len() > MAX_DOCUMENTATION_URL_LEN { return err!(ErrorCode::InvalidDocumentationUrlLength); }}
+        
         if service_endpoints_input.len() > MAX_SERVICE_ENDPOINTS { return err!(ErrorCode::TooManyServiceEndpoints); }
         for se in &service_endpoints_input {
             if se.protocol.len() > MAX_ENDPOINT_PROTOCOL_LEN || se.protocol.is_empty() { return err!(ErrorCode::InvalidEndpointProtocolLength); }
             if se.url.len() > MAX_ENDPOINT_URL_LEN || se.url.is_empty() { return err!(ErrorCode::InvalidEndpointUrlLength); }
         }
+        
         if supported_input_modes_input.len() > MAX_SUPPORTED_MODES { return err!(ErrorCode::TooManySupportedModes); }
         for mode in &supported_input_modes_input { if mode.len() > MAX_MODE_LEN || mode.is_empty() { return err!(ErrorCode::InvalidModeLength); }}
+        
         if supported_output_modes_input.len() > MAX_SUPPORTED_MODES { return err!(ErrorCode::TooManySupportedModes); }
         for mode in &supported_output_modes_input { if mode.len() > MAX_MODE_LEN || mode.is_empty() { return err!(ErrorCode::InvalidModeLength); }}
+        
         if skills_input.len() > MAX_SKILLS { return err!(ErrorCode::TooManySkills); }
         for skill in &skills_input {
             if skill.id.len() > MAX_SKILL_ID_LEN || skill.id.is_empty() { return err!(ErrorCode::InvalidSkillIdLength); }
@@ -112,13 +145,14 @@ pub mod solana_ai_registries {
             if skill.tags.len() > MAX_SKILL_TAGS { return err!(ErrorCode::TooManySkillTags); }
             for tag in &skill.tags { if tag.len() > MAX_SKILL_TAG_LEN || tag.is_empty() { return err!(ErrorCode::InvalidSkillTagLength); }}
         }
-        if let Some(ref siu) = security_info_uri { if siu.len() > MAX_SECURITY_INFO_URI_LEN { return err!(ErrorCode::InvalidSecurityInfoUriLength); }}
-        if let Some(ref aa) = aea_address { if aa.len() > MAX_AEA_ADDRESS_LEN { return err!(ErrorCode::InvalidAeaAddressLength); }}
-        if let Some(ref eis) = economic_intent_summary { if eis.len() > MAX_ECONOMIC_INTENT_LEN { return err!(ErrorCode::InvalidEconomicIntentLength); }}
-        if let Some(ref emu) = extended_metadata_uri { if emu.len() > MAX_EXTENDED_METADATA_URI_LEN { return err!(ErrorCode::InvalidExtendedMetadataUriLength); }}
+        
+        if let Some(ref val) = security_info_uri { if val.len() > MAX_SECURITY_INFO_URI_LEN { return err!(ErrorCode::InvalidSecurityInfoUriLength); }}
+        if let Some(ref val) = aea_address { if val.len() > MAX_AEA_ADDRESS_LEN { return err!(ErrorCode::InvalidAeaAddressLength); }}
+        if let Some(ref val) = economic_intent_summary { if val.len() > MAX_ECONOMIC_INTENT_LEN { return err!(ErrorCode::InvalidEconomicIntentLength); }}
+        if let Some(ref val) = extended_metadata_uri { if val.len() > MAX_EXTENDED_METADATA_URI_LEN { return err!(ErrorCode::InvalidExtendedMetadataUriLength); }}
+        
         if tags_input.len() > MAX_AGENT_TAGS { return err!(ErrorCode::TooManyAgentTags); }
         for tag in &tags_input { if tag.len() > MAX_AGENT_TAG_LEN || tag.is_empty() { return err!(ErrorCode::InvalidAgentTagLength); }}
-
 
         let agent_entry = &mut ctx.accounts.agent_entry;
         agent_entry.bump = *ctx.bumps.get("agent_entry").ok_or(ErrorCode::BumpSeedNotInHashMap)?;
@@ -136,7 +170,6 @@ pub mod solana_ai_registries {
         let default_count = agent_entry.service_endpoints.iter().filter(|se| se.is_default).count();
         if default_count > 1 { return err!(ErrorCode::MultipleDefaultEndpoints); }
         if default_count == 0 && !agent_entry.service_endpoints.is_empty() { return err!(ErrorCode::MissingDefaultEndpoint); }
-
 
         agent_entry.capabilities_flags = capabilities_flags;
         agent_entry.supported_input_modes = supported_input_modes_input;
@@ -188,22 +221,35 @@ pub mod solana_ai_registries {
             if val.len() > MAX_AGENT_NAME_LEN || val.is_empty() { return err!(ErrorCode::InvalidNameLength); }
             agent_entry.name = val; changed_fields.push("name".to_string());
         }
-        if let Some(val) = details.description {
+        if let Some(val) = details.description { // Description can be empty, but not exceed max length
             if val.len() > MAX_AGENT_DESCRIPTION_LEN { return err!(ErrorCode::InvalidDescriptionLength); }
             agent_entry.description = val; changed_fields.push("description".to_string());
         }
         if let Some(val) = details.agent_version {
-            if val.len() > MAX_AGENT_VERSION_LEN { return err!(ErrorCode::InvalidVersionLength); }
+            if val.len() > MAX_AGENT_VERSION_LEN || val.is_empty() { return err!(ErrorCode::InvalidVersionLength); }
             agent_entry.agent_version = val; changed_fields.push("agent_version".to_string());
         }
-        if details.provider_name.is_some() { 
-            let val = details.provider_name.unwrap();
-            if val.len() > MAX_PROVIDER_NAME_LEN { return err!(ErrorCode::InvalidProviderNameLength); }
-            agent_entry.provider_name = Some(val); changed_fields.push("provider_name".to_string());
-        } else if details.clear_provider_name.unwrap_or(false) {
-            agent_entry.provider_name = None; changed_fields.push("provider_name".to_string());
+        
+        macro_rules! update_optional_string_field {
+            ($field_name:ident, $max_len:ident, $error_code:ident, $clear_flag:ident) => {
+                if let Some(val) = details.$field_name {
+                    if val.len() > $max_len { return err!(ErrorCode::$error_code); }
+                    // Allow empty strings for optional fields if not explicitly disallowed by protocol for that field
+                    agent_entry.$field_name = Some(val); changed_fields.push(stringify!($field_name).to_string());
+                } else if details.$clear_flag.unwrap_or(false) {
+                     agent_entry.$field_name = None; changed_fields.push(stringify!($field_name).to_string());
+                }
+            };
         }
-        // ... (Repeat for all Option<String> fields: provider_url, documentation_url, security_info_uri, aea_address, economic_intent_summary, extended_metadata_uri)
+
+        update_optional_string_field!(provider_name, MAX_PROVIDER_NAME_LEN, InvalidProviderNameLength, clear_provider_name);
+        update_optional_string_field!(provider_url, MAX_PROVIDER_URL_LEN, InvalidProviderUrlLength, clear_provider_url);
+        update_optional_string_field!(documentation_url, MAX_DOCUMENTATION_URL_LEN, InvalidDocumentationUrlLength, clear_documentation_url);
+        update_optional_string_field!(security_info_uri, MAX_SECURITY_INFO_URI_LEN, InvalidSecurityInfoUriLength, clear_security_info_uri);
+        update_optional_string_field!(aea_address, MAX_AEA_ADDRESS_LEN, InvalidAeaAddressLength, clear_aea_address);
+        update_optional_string_field!(economic_intent_summary, MAX_ECONOMIC_INTENT_LEN, InvalidEconomicIntentLength, clear_economic_intent_summary);
+        update_optional_string_field!(extended_metadata_uri, MAX_EXTENDED_METADATA_URI_LEN, InvalidExtendedMetadataUriLength, clear_extended_metadata_uri);
+
 
         if let Some(val) = details.service_endpoints {
             if val.len() > MAX_SERVICE_ENDPOINTS { return err!(ErrorCode::TooManyServiceEndpoints); }
@@ -225,13 +271,36 @@ pub mod solana_ai_registries {
             for mode in &val { if mode.len() > MAX_MODE_LEN || mode.is_empty() { return err!(ErrorCode::InvalidModeLength); }}
             agent_entry.supported_input_modes = val; changed_fields.push("supported_input_modes".to_string());
         }
-        // ... (Repeat for supported_output_modes, skills, tags with their respective validations)
+        if let Some(val) = details.supported_output_modes {
+            if val.len() > MAX_SUPPORTED_MODES { return err!(ErrorCode::TooManySupportedModes); }
+            for mode in &val { if mode.len() > MAX_MODE_LEN || mode.is_empty() { return err!(ErrorCode::InvalidModeLength); }}
+            agent_entry.supported_output_modes = val; changed_fields.push("supported_output_modes".to_string());
+        }
 
-        if let Some(val) = details.supported_aea_protocols_hash { agent_entry.supported_aea_protocols_hash = Some(val); changed_fields.push("supported_aea_protocols_hash".to_string());}
-        else if details.clear_supported_aea_protocols_hash.unwrap_or(false) { agent_entry.supported_aea_protocols_hash = None; changed_fields.push("supported_aea_protocols_hash".to_string());}
+        if let Some(val) = details.skills {
+            if val.len() > MAX_SKILLS { return err!(ErrorCode::TooManySkills); }
+            for skill in &val {
+                if skill.id.len() > MAX_SKILL_ID_LEN || skill.id.is_empty() { return err!(ErrorCode::InvalidSkillIdLength); }
+                if skill.name.len() > MAX_SKILL_NAME_LEN || skill.name.is_empty() { return err!(ErrorCode::InvalidSkillNameLength); }
+                if skill.tags.len() > MAX_SKILL_TAGS { return err!(ErrorCode::TooManySkillTags); }
+                for tag in &skill.tags { if tag.len() > MAX_SKILL_TAG_LEN || tag.is_empty() { return err!(ErrorCode::InvalidSkillTagLength); }}
+            }
+            agent_entry.skills = val.into_iter().map(|asi| asi.into()).collect(); changed_fields.push("skills".to_string());
+        }
+        
+        if let Some(val) = details.supported_aea_protocols_hash { 
+            agent_entry.supported_aea_protocols_hash = Some(val); changed_fields.push("supported_aea_protocols_hash".to_string());
+        } else if details.clear_supported_aea_protocols_hash.unwrap_or(false) { 
+            agent_entry.supported_aea_protocols_hash = None; changed_fields.push("supported_aea_protocols_hash".to_string());
+        }
 
+        if let Some(val) = details.tags {
+            if val.len() > MAX_AGENT_TAGS { return err!(ErrorCode::TooManyAgentTags); }
+            for tag in &val { if tag.len() > MAX_AGENT_TAG_LEN || tag.is_empty() { return err!(ErrorCode::InvalidAgentTagLength); }}
+            agent_entry.tags = val; changed_fields.push("tags".to_string());
+        }
 
-        if changed_fields.is_empty() { return Ok(()); } // No actual changes
+        if changed_fields.is_empty() { return Ok(()); } 
 
         agent_entry.last_update_timestamp = Clock::get()?.unix_timestamp;
         emit!(AgentUpdated {
@@ -245,7 +314,7 @@ pub mod solana_ai_registries {
     pub fn update_agent_status(ctx: Context<UpdateAgent>, new_status_val: u8) -> Result<()> {
         let agent_entry = &mut ctx.accounts.agent_entry;
         let new_status = AgentStatus::from_u8(new_status_val).ok_or(ErrorCode::InvalidAgentStatus)?;
-        if agent_entry.status == new_status as u8 { return Ok(()); } // No change
+        if agent_entry.status == new_status as u8 { return Ok(()); } 
         agent_entry.status = new_status as u8;
         agent_entry.last_update_timestamp = Clock::get()?.unix_timestamp;
         emit!(AgentStatusChanged {
@@ -258,7 +327,7 @@ pub mod solana_ai_registries {
 
     pub fn deregister_agent(ctx: Context<UpdateAgent>) -> Result<()> {
         let agent_entry = &mut ctx.accounts.agent_entry;
-        if agent_entry.status == AgentStatus::Deregistered as u8 { return Ok(()); } // Already deregistered
+        if agent_entry.status == AgentStatus::Deregistered as u8 { return Ok(()); } 
 
         agent_entry.status = AgentStatus::Deregistered as u8;
         agent_entry.last_update_timestamp = Clock::get()?.unix_timestamp;
@@ -289,14 +358,40 @@ pub mod solana_ai_registries {
         full_capabilities_uri: Option<String>,
         tags_input: Vec<String>,
     ) -> Result<()> {
-        // Input validations
+        // Exhaustive Input validations
         if server_id.len() > MAX_SERVER_ID_LEN || server_id.is_empty() { return err!(ErrorCode::InvalidServerIdLength); }
         if name.len() > MAX_SERVER_NAME_LEN || name.is_empty() { return err!(ErrorCode::InvalidNameLength); }
-        if server_version.len() > MAX_SERVER_VERSION_LEN { return err!(ErrorCode::InvalidVersionLength); }
+        if server_version.len() > MAX_SERVER_VERSION_LEN || server_version.is_empty() { return err!(ErrorCode::InvalidVersionLength); }
         if service_endpoint.len() > MAX_SERVER_ENDPOINT_URL_LEN || service_endpoint.is_empty() { return err!(ErrorCode::InvalidEndpointUrlLength); }
-        // ... (similar validations for all other fields as in register_agent)
+        // Assuming HTTPS is a client-side or off-chain indexer validation for URIs, not strictly on-chain unless specified
+        if let Some(ref val) = documentation_url { if val.len() > MAX_DOCUMENTATION_URL_LEN { return err!(ErrorCode::InvalidDocumentationUrlLength); }}
+        if let Some(ref val) = server_capabilities_summary { if val.len() > MAX_SERVER_CAPABILITIES_SUMMARY_LEN { return err!(ErrorCode::InvalidServerCapabilitiesSummaryLength); }}
+        
         if onchain_tool_definitions_input.len() > MAX_ONCHAIN_TOOL_DEFINITIONS {return err!(ErrorCode::TooManyToolDefinitions); }
-        // ... more validations for nested structs ...
+        for tool_def in &onchain_tool_definitions_input {
+            if tool_def.name.len() > MAX_TOOL_NAME_LEN || tool_def.name.is_empty() { return err!(ErrorCode::InvalidToolNameLength); }
+            if tool_def.tags.len() > MAX_TOOL_TAGS { return err!(ErrorCode::TooManyToolTags); }
+            for tag in &tool_def.tags { if tag.len() > MAX_TOOL_TAG_LEN || tag.is_empty() { return err!(ErrorCode::InvalidToolTagLength); }}
+        }
+        
+        if onchain_resource_definitions_input.len() > MAX_ONCHAIN_RESOURCE_DEFINITIONS {return err!(ErrorCode::TooManyResourceDefinitions); }
+        for res_def in &onchain_resource_definitions_input {
+            if res_def.uri_pattern.len() > MAX_RESOURCE_URI_PATTERN_LEN || res_def.uri_pattern.is_empty() { return err!(ErrorCode::InvalidResourceUriPatternLength); }
+            if res_def.tags.len() > MAX_RESOURCE_TAGS { return err!(ErrorCode::TooManyResourceTags); }
+            for tag in &res_def.tags { if tag.len() > MAX_RESOURCE_TAG_LEN || tag.is_empty() { return err!(ErrorCode::InvalidResourceTagLength); }}
+        }
+
+        if onchain_prompt_definitions_input.len() > MAX_ONCHAIN_PROMPT_DEFINITIONS {return err!(ErrorCode::TooManyPromptDefinitions); }
+         for prompt_def in &onchain_prompt_definitions_input {
+            if prompt_def.name.len() > MAX_PROMPT_NAME_LEN || prompt_def.name.is_empty() { return err!(ErrorCode::InvalidPromptNameLength); }
+            if prompt_def.tags.len() > MAX_PROMPT_TAGS { return err!(ErrorCode::TooManyPromptTags); }
+            for tag in &prompt_def.tags { if tag.len() > MAX_PROMPT_TAG_LEN || tag.is_empty() { return err!(ErrorCode::InvalidPromptTagLength); }}
+        }
+
+        if let Some(ref val) = full_capabilities_uri { if val.len() > MAX_FULL_CAPABILITIES_URI_LEN { return err!(ErrorCode::InvalidFullCapabilitiesUriLength); }}
+        
+        if tags_input.len() > MAX_SERVER_TAGS { return err!(ErrorCode::TooManyServerTags); }
+        for tag in &tags_input { if tag.len() > MAX_SERVER_TAG_LEN || tag.is_empty() { return err!(ErrorCode::InvalidServerTagLength); }}
 
 
         let mcp_server_entry = &mut ctx.accounts.mcp_server_entry;
@@ -354,14 +449,65 @@ pub mod solana_ai_registries {
             mcp_server_entry.name = val; changed_fields.push("name".to_string());
         }
         if let Some(val) = details.server_version {
-            if val.len() > MAX_SERVER_VERSION_LEN { return err!(ErrorCode::InvalidVersionLength); }
+            if val.len() > MAX_SERVER_VERSION_LEN || val.is_empty() { return err!(ErrorCode::InvalidVersionLength); }
             mcp_server_entry.server_version = val; changed_fields.push("server_version".to_string());
         }
-        // ... (Repeat for all Option<String> and other updatable fields with validations)
-        // Example for a boolean field:
-        if let Some(val) = details.supports_tools { mcp_server_entry.supports_tools = val; changed_fields.push("supports_tools".to_string());}
-        // ... (Repeat for onchain_tool_definitions, onchain_resource_definitions, onchain_prompt_definitions with their respective validations)
+        if let Some(val) = details.service_endpoint {
+            if val.len() > MAX_SERVER_ENDPOINT_URL_LEN || val.is_empty() { return err!(ErrorCode::InvalidEndpointUrlLength); }
+            mcp_server_entry.service_endpoint = val; changed_fields.push("service_endpoint".to_string());
+        }
 
+        macro_rules! update_mcp_optional_string_field {
+            ($field_name:ident, $max_len:ident, $error_code:ident, $clear_flag:ident) => {
+                if let Some(val) = details.$field_name {
+                    if val.len() > $max_len { return err!(ErrorCode::$error_code); }
+                    mcp_server_entry.$field_name = Some(val); changed_fields.push(stringify!($field_name).to_string());
+                } else if details.$clear_flag.unwrap_or(false) {
+                     mcp_server_entry.$field_name = None; changed_fields.push(stringify!($field_name).to_string());
+                }
+            };
+        }
+        update_mcp_optional_string_field!(documentation_url, MAX_DOCUMENTATION_URL_LEN, InvalidDocumentationUrlLength, clear_documentation_url);
+        update_mcp_optional_string_field!(server_capabilities_summary, MAX_SERVER_CAPABILITIES_SUMMARY_LEN, InvalidServerCapabilitiesSummaryLength, clear_server_capabilities_summary);
+        update_mcp_optional_string_field!(full_capabilities_uri, MAX_FULL_CAPABILITIES_URI_LEN, InvalidFullCapabilitiesUriLength, clear_full_capabilities_uri);
+
+        if let Some(val) = details.supports_resources { mcp_server_entry.supports_resources = val; changed_fields.push("supports_resources".to_string());}
+        if let Some(val) = details.supports_tools { mcp_server_entry.supports_tools = val; changed_fields.push("supports_tools".to_string());}
+        if let Some(val) = details.supports_prompts { mcp_server_entry.supports_prompts = val; changed_fields.push("supports_prompts".to_string());}
+
+        if let Some(val) = details.onchain_tool_definitions {
+            if val.len() > MAX_ONCHAIN_TOOL_DEFINITIONS {return err!(ErrorCode::TooManyToolDefinitions); }
+            for tool_def in &val {
+                if tool_def.name.len() > MAX_TOOL_NAME_LEN || tool_def.name.is_empty() { return err!(ErrorCode::InvalidToolNameLength); }
+                if tool_def.tags.len() > MAX_TOOL_TAGS { return err!(ErrorCode::TooManyToolTags); }
+                for tag in &tool_def.tags { if tag.len() > MAX_TOOL_TAG_LEN || tag.is_empty() { return err!(ErrorCode::InvalidToolTagLength); }}
+            }
+            mcp_server_entry.onchain_tool_definitions = val.into_iter().map(|i| i.into()).collect(); changed_fields.push("onchain_tool_definitions".to_string());
+        }
+        if let Some(val) = details.onchain_resource_definitions {
+            if val.len() > MAX_ONCHAIN_RESOURCE_DEFINITIONS {return err!(ErrorCode::TooManyResourceDefinitions); }
+            for res_def in &val {
+                if res_def.uri_pattern.len() > MAX_RESOURCE_URI_PATTERN_LEN || res_def.uri_pattern.is_empty() { return err!(ErrorCode::InvalidResourceUriPatternLength); }
+                if res_def.tags.len() > MAX_RESOURCE_TAGS { return err!(ErrorCode::TooManyResourceTags); }
+                for tag in &res_def.tags { if tag.len() > MAX_RESOURCE_TAG_LEN || tag.is_empty() { return err!(ErrorCode::InvalidResourceTagLength); }}
+            }
+            mcp_server_entry.onchain_resource_definitions = val.into_iter().map(|i| i.into()).collect(); changed_fields.push("onchain_resource_definitions".to_string());
+        }
+        if let Some(val) = details.onchain_prompt_definitions {
+            if val.len() > MAX_ONCHAIN_PROMPT_DEFINITIONS {return err!(ErrorCode::TooManyPromptDefinitions); }
+            for prompt_def in &val {
+                if prompt_def.name.len() > MAX_PROMPT_NAME_LEN || prompt_def.name.is_empty() { return err!(ErrorCode::InvalidPromptNameLength); }
+                if prompt_def.tags.len() > MAX_PROMPT_TAGS { return err!(ErrorCode::TooManyPromptTags); }
+                for tag in &prompt_def.tags { if tag.len() > MAX_PROMPT_TAG_LEN || tag.is_empty() { return err!(ErrorCode::InvalidPromptTagLength); }}
+            }
+            mcp_server_entry.onchain_prompt_definitions = val.into_iter().map(|i| i.into()).collect(); changed_fields.push("onchain_prompt_definitions".to_string());
+        }
+        
+        if let Some(val) = details.tags {
+            if val.len() > MAX_SERVER_TAGS { return err!(ErrorCode::TooManyServerTags); }
+            for tag in &val { if tag.len() > MAX_SERVER_TAG_LEN || tag.is_empty() { return err!(ErrorCode::InvalidServerTagLength); }}
+            mcp_server_entry.tags = val; changed_fields.push("tags".to_string());
+        }
 
         if changed_fields.is_empty() { return Ok(()); }
 
@@ -409,7 +555,7 @@ pub struct RegisterAgent<'info> {
     #[account(
         init,
         payer = payer,
-        space = AgentRegistryEntryV1::LEN, 
+        space = AgentRegistryEntryV1::ACCOUNT_SIZE, 
         seeds = [AGENT_REGISTRY_PDA_SEED, agent_id.as_bytes()],
         bump
     )]
@@ -440,7 +586,7 @@ pub struct RegisterMcpServer<'info> {
     #[account(
         init,
         payer = payer,
-        space = McpServerRegistryEntryV1::LEN, 
+        space = McpServerRegistryEntryV1::ACCOUNT_SIZE, 
         seeds = [MCP_SERVER_REGISTRY_PDA_SEED, server_id.as_bytes()],
         bump
     )]
@@ -471,48 +617,58 @@ pub struct UpdateMcpServer<'info> {
 #[account]
 #[derive(Default, Clone)]
 pub struct AgentRegistryEntryV1 {
-    pub bump: u8,
-    pub registry_version: u8,
-    pub owner_authority: Pubkey,
-    pub agent_id: String, 
-    pub name: String, 
-    pub description: String, 
-    pub agent_version: String, 
-    pub provider_name: Option<String>, 
-    pub provider_url: Option<String>, 
-    pub documentation_url: Option<String>, 
-    pub service_endpoints: Vec<ServiceEndpoint>, 
-    pub capabilities_flags: u64,
-    pub supported_input_modes: Vec<String>, 
-    pub supported_output_modes: Vec<String>, 
-    pub skills: Vec<AgentSkill>, 
-    pub security_info_uri: Option<String>, 
-    pub aea_address: Option<String>, 
-    pub economic_intent_summary: Option<String>, 
-    pub supported_aea_protocols_hash: Option<[u8; HASH_SIZE]>,
-    pub status: u8, 
-    pub registration_timestamp: i64,
-    pub last_update_timestamp: i64,
-    pub extended_metadata_uri: Option<String>, 
-    pub tags: Vec<String>, 
+    pub bump: u8,                           // 1
+    pub registry_version: u8,               // 1
+    pub owner_authority: Pubkey,            // 32
+    pub agent_id: String,                   // 4 + MAX_AGENT_ID_LEN
+    pub name: String,                       // 4 + MAX_AGENT_NAME_LEN
+    pub description: String,                // 4 + MAX_AGENT_DESCRIPTION_LEN
+    pub agent_version: String,              // 4 + MAX_AGENT_VERSION_LEN
+    pub provider_name: Option<String>,      // 1 + (4 + MAX_PROVIDER_NAME_LEN)
+    pub provider_url: Option<String>,       // 1 + (4 + MAX_PROVIDER_URL_LEN)
+    pub documentation_url: Option<String>,  // 1 + (4 + MAX_DOCUMENTATION_URL_LEN)
+    pub service_endpoints: Vec<ServiceEndpoint>, // 4 + MAX_SERVICE_ENDPOINTS * ServiceEndpoint::ACCOUNT_SIZE
+    pub capabilities_flags: u64,            // 8
+    pub supported_input_modes: Vec<String>, // 4 + MAX_SUPPORTED_MODES * (4 + MAX_MODE_LEN)
+    pub supported_output_modes: Vec<String>,// 4 + MAX_SUPPORTED_MODES * (4 + MAX_MODE_LEN)
+    pub skills: Vec<AgentSkill>,            // 4 + MAX_SKILLS * AgentSkill::ACCOUNT_SIZE
+    pub security_info_uri: Option<String>,  // 1 + (4 + MAX_SECURITY_INFO_URI_LEN)
+    pub aea_address: Option<String>,        // 1 + (4 + MAX_AEA_ADDRESS_LEN)
+    pub economic_intent_summary: Option<String>, // 1 + (4 + MAX_ECONOMIC_INTENT_LEN)
+    pub supported_aea_protocols_hash: Option<[u8; HASH_SIZE]>, // 1 + HASH_SIZE
+    pub status: u8,                         // 1 (Enum AgentStatus)
+    pub registration_timestamp: i64,        // 8
+    pub last_update_timestamp: i64,         // 8
+    pub extended_metadata_uri: Option<String>,// 1 + (4 + MAX_EXTENDED_METADATA_URI_LEN)
+    pub tags: Vec<String>,                  // 4 + MAX_AGENT_TAGS * (4 + MAX_AGENT_TAG_LEN)
 }
 
-impl AgentRegistryEntryV1 {
-    const LEN: usize = 8 + 1 + 1 + 32 + (4+MAX_AGENT_ID_LEN) + (4+MAX_AGENT_NAME_LEN) + (4+MAX_AGENT_DESCRIPTION_LEN)
-        + (4+MAX_AGENT_VERSION_LEN) + (1+4+MAX_PROVIDER_NAME_LEN) + (1+4+MAX_PROVIDER_URL_LEN)
-        + (1+4+MAX_DOCUMENTATION_URL_LEN)
-        + (4 + MAX_SERVICE_ENDPOINTS * ServiceEndpoint::LEN_ITEM)
-        + 8 
-        + (4 + MAX_SUPPORTED_MODES * (4+MAX_MODE_LEN)) 
-        + (4 + MAX_SUPPORTED_MODES * (4+MAX_MODE_LEN)) 
-        + (4 + MAX_SKILLS * AgentSkill::LEN_ITEM)
-        + (1+4+MAX_SECURITY_INFO_URI_LEN) + (1+4+MAX_AEA_ADDRESS_LEN) + (1+4+MAX_ECONOMIC_INTENT_LEN)
-        + (1+HASH_SIZE) 
-        + 1 
-        + 8 + 8 
-        + (1+4+MAX_EXTENDED_METADATA_URI_LEN)
-        + (4 + MAX_AGENT_TAGS * (4+MAX_AGENT_TAG_LEN))
-        + 200; // Increased Padding for safety, exact calculation is critical
+impl AccountSize for AgentRegistryEntryV1 { // Renamed from LEN to ACCOUNT_SIZE for consistency with trait
+    const ACCOUNT_SIZE: usize = 8 // Anchor Discriminator
+        + 1  // bump
+        + 1  // registry_version
+        + 32 // owner_authority
+        + borsh_size_string(MAX_AGENT_ID_LEN)
+        + borsh_size_string(MAX_AGENT_NAME_LEN)
+        + borsh_size_string(MAX_AGENT_DESCRIPTION_LEN)
+        + borsh_size_string(MAX_AGENT_VERSION_LEN)
+        + borsh_size_option_string(MAX_PROVIDER_NAME_LEN)
+        + borsh_size_option_string(MAX_PROVIDER_URL_LEN)
+        + borsh_size_option_string(MAX_DOCUMENTATION_URL_LEN)
+        + STRING_LEN_PREFIX_SIZE + (MAX_SERVICE_ENDPOINTS * ServiceEndpoint::ACCOUNT_SIZE) // service_endpoints
+        + 8  // capabilities_flags
+        + borsh_size_vec_string(MAX_SUPPORTED_MODES, MAX_MODE_LEN) // supported_input_modes
+        + borsh_size_vec_string(MAX_SUPPORTED_MODES, MAX_MODE_LEN) // supported_output_modes
+        + STRING_LEN_PREFIX_SIZE + (MAX_SKILLS * AgentSkill::ACCOUNT_SIZE) // skills
+        + borsh_size_option_string(MAX_SECURITY_INFO_URI_LEN)
+        + borsh_size_option_string(MAX_AEA_ADDRESS_LEN)
+        + borsh_size_option_string(MAX_ECONOMIC_INTENT_LEN)
+        + borsh_size_option_hash() // supported_aea_protocols_hash
+        + 1  // status
+        + 8  // registration_timestamp
+        + 8  // last_update_timestamp
+        + borsh_size_option_string(MAX_EXTENDED_METADATA_URI_LEN)
+        + borsh_size_vec_string(MAX_AGENT_TAGS, MAX_AGENT_TAG_LEN); // tags
 }
 
 
@@ -522,8 +678,10 @@ pub struct ServiceEndpoint {
     pub url: String,      
     pub is_default: bool,
 }
-impl ServiceEndpoint {
-    const LEN_ITEM: usize = (4+MAX_ENDPOINT_PROTOCOL_LEN) + (4+MAX_ENDPOINT_URL_LEN) + 1;
+impl AccountSize for ServiceEndpoint {
+    const ACCOUNT_SIZE: usize = borsh_size_string(MAX_ENDPOINT_PROTOCOL_LEN) 
+                              + borsh_size_string(MAX_ENDPOINT_URL_LEN) 
+                              + 1; // is_default (bool)
 }
 
 
@@ -534,9 +692,11 @@ pub struct AgentSkill {
     pub description_hash: Option<[u8; HASH_SIZE]>,
     pub tags: Vec<String>, 
 }
-impl AgentSkill {
-     const LEN_ITEM: usize = (4+MAX_SKILL_ID_LEN) + (4+MAX_SKILL_NAME_LEN) + (1+HASH_SIZE)
-        + (4 + MAX_SKILL_TAGS * (4+MAX_SKILL_TAG_LEN));
+impl AccountSize for AgentSkill {
+     const ACCOUNT_SIZE: usize = borsh_size_string(MAX_SKILL_ID_LEN) 
+                               + borsh_size_string(MAX_SKILL_NAME_LEN) 
+                               + borsh_size_option_hash() // description_hash
+                               + borsh_size_vec_string(MAX_SKILL_TAGS, MAX_SKILL_TAG_LEN); // tags
 }
 
 #[account]
@@ -564,19 +724,28 @@ pub struct McpServerRegistryEntryV1 {
     pub tags: Vec<String>, 
 }
 
-impl McpServerRegistryEntryV1 {
-    const LEN: usize = 8 + 1 + 1 + 32 + (4+MAX_SERVER_ID_LEN) + (4+MAX_SERVER_NAME_LEN)
-        + (4+MAX_SERVER_VERSION_LEN) + (4+MAX_SERVER_ENDPOINT_URL_LEN)
-        + (1+4+MAX_DOCUMENTATION_URL_LEN) + (1+4+MAX_SERVER_CAPABILITIES_SUMMARY_LEN)
-        + 1 + 1 + 1 
-        + (4 + MAX_ONCHAIN_TOOL_DEFINITIONS * McpToolDefinitionOnChain::LEN_ITEM)
-        + (4 + MAX_ONCHAIN_RESOURCE_DEFINITIONS * McpResourceDefinitionOnChain::LEN_ITEM)
-        + (4 + MAX_ONCHAIN_PROMPT_DEFINITIONS * McpPromptDefinitionOnChain::LEN_ITEM)
-        + 1 
-        + 8 + 8 
-        + (1+4+MAX_FULL_CAPABILITIES_URI_LEN)
-        + (4 + MAX_SERVER_TAGS * (4+MAX_SERVER_TAG_LEN))
-        + 200; // Increased Padding
+impl AccountSize for McpServerRegistryEntryV1 {
+    const ACCOUNT_SIZE: usize = 8 // Anchor Discriminator
+        + 1  // bump
+        + 1  // registry_version
+        + 32 // owner_authority
+        + borsh_size_string(MAX_SERVER_ID_LEN)
+        + borsh_size_string(MAX_SERVER_NAME_LEN)
+        + borsh_size_string(MAX_SERVER_VERSION_LEN)
+        + borsh_size_string(MAX_SERVER_ENDPOINT_URL_LEN)
+        + borsh_size_option_string(MAX_DOCUMENTATION_URL_LEN)
+        + borsh_size_option_string(MAX_SERVER_CAPABILITIES_SUMMARY_LEN)
+        + 1  // supports_resources (bool)
+        + 1  // supports_tools (bool)
+        + 1  // supports_prompts (bool)
+        + STRING_LEN_PREFIX_SIZE + (MAX_ONCHAIN_TOOL_DEFINITIONS * McpToolDefinitionOnChain::ACCOUNT_SIZE)
+        + STRING_LEN_PREFIX_SIZE + (MAX_ONCHAIN_RESOURCE_DEFINITIONS * McpResourceDefinitionOnChain::ACCOUNT_SIZE)
+        + STRING_LEN_PREFIX_SIZE + (MAX_ONCHAIN_PROMPT_DEFINITIONS * McpPromptDefinitionOnChain::ACCOUNT_SIZE)
+        + 1  // status
+        + 8  // registration_timestamp
+        + 8  // last_update_timestamp
+        + borsh_size_option_string(MAX_FULL_CAPABILITIES_URI_LEN)
+        + borsh_size_vec_string(MAX_SERVER_TAGS, MAX_SERVER_TAG_LEN); // tags
 }
 
 
@@ -588,9 +757,12 @@ pub struct McpToolDefinitionOnChain {
     pub output_schema_hash: [u8; HASH_SIZE],
     pub tags: Vec<String>, 
 }
-impl McpToolDefinitionOnChain {
-    const LEN_ITEM: usize = (4+MAX_TOOL_NAME_LEN) + HASH_SIZE + HASH_SIZE + HASH_SIZE
-        + (4 + MAX_TOOL_TAGS * (4+MAX_TOOL_TAG_LEN));
+impl AccountSize for McpToolDefinitionOnChain {
+    const ACCOUNT_SIZE: usize = borsh_size_string(MAX_TOOL_NAME_LEN) 
+                              + HASH_SIZE  // description_hash
+                              + HASH_SIZE  // input_schema_hash
+                              + HASH_SIZE  // output_schema_hash
+                              + borsh_size_vec_string(MAX_TOOL_TAGS, MAX_TOOL_TAG_LEN); // tags
 }
 
 
@@ -600,9 +772,10 @@ pub struct McpResourceDefinitionOnChain {
     pub description_hash: [u8; HASH_SIZE],
     pub tags: Vec<String>, 
 }
-impl McpResourceDefinitionOnChain {
-     const LEN_ITEM: usize = (4+MAX_RESOURCE_URI_PATTERN_LEN) + HASH_SIZE
-        + (4 + MAX_RESOURCE_TAGS * (4+MAX_RESOURCE_TAG_LEN));
+impl AccountSize for McpResourceDefinitionOnChain {
+     const ACCOUNT_SIZE: usize = borsh_size_string(MAX_RESOURCE_URI_PATTERN_LEN) 
+                               + HASH_SIZE // description_hash
+                               + borsh_size_vec_string(MAX_RESOURCE_TAGS, MAX_RESOURCE_TAG_LEN); // tags
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Debug)]
@@ -611,9 +784,10 @@ pub struct McpPromptDefinitionOnChain {
     pub description_hash: [u8; HASH_SIZE],
     pub tags: Vec<String>, 
 }
-impl McpPromptDefinitionOnChain {
-    const LEN_ITEM: usize = (4+MAX_PROMPT_NAME_LEN) + HASH_SIZE
-        + (4 + MAX_PROMPT_TAGS * (4+MAX_PROMPT_TAG_LEN));
+impl AccountSize for McpPromptDefinitionOnChain {
+    const ACCOUNT_SIZE: usize = borsh_size_string(MAX_PROMPT_NAME_LEN) 
+                              + HASH_SIZE // description_hash
+                              + borsh_size_vec_string(MAX_PROMPT_TAGS, MAX_PROMPT_TAG_LEN); // tags
 }
 
 
@@ -818,7 +992,7 @@ pub struct AgentRegistered {
 #[event]
 pub struct AgentUpdated {
     pub agent_id: String,
-    pub changed_fields: Vec<String>, // List of field names that were updated
+    pub changed_fields: Vec<String>, 
     pub last_update_timestamp: i64,
 }
 
@@ -936,7 +1110,6 @@ pub enum ErrorCode {
     
     #[msg("Server ID length is invalid (empty or exceeds max).")]
     InvalidServerIdLength,
-    // Note: Reusing InvalidNameLength, InvalidVersionLength, InvalidEndpointUrlLength, InvalidDocumentationUrlLength for MCP Server
     #[msg("Server capabilities summary length exceeds max.")]
     InvalidServerCapabilitiesSummaryLength,
     #[msg("Too many on-chain tool definitions.")]
