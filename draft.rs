@@ -1,101 +1,225 @@
+/// # Solana Protocol for Agent and MCP Server Registries
+/// 
+/// This program implements two interconnected Solana-based registry protocols:
+/// 
+/// 1. **Agent Registry**: A decentralized directory for autonomous agents operating on Solana,
+///    supporting the advertisement of agent capabilities, endpoints, identity, and metadata
+///    following the Autonomous Economic Agent (AEA) and Agent-to-Agent (A2A) paradigms.
+/// 
+/// 2. **MCP Server Registry**: A directory for Model Context Protocol (MCP) compliant servers,
+///    enabling the discovery of AI tools, resources, and prompts following the MCP specification.
+///
+/// Both registries use a hybrid storage model where essential verifiable data resides on-chain,
+/// while more extensive metadata is stored off-chain (e.g., on IPFS/Arweave) and linked via URIs,
+/// with on-chain hashes ensuring data integrity.
+///
+/// The registries emit detailed events designed to power off-chain indexing and query services
+/// for advanced discovery capabilities.
+
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::system_program;
 
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"); // Replace with your program ID after deployment
 
-// Constants based on the report's constraints
+/// Constants defining size limits and PDA seeds for the registry protocols
 mod constants {
-    // Agent Registry Constants
+    /// ## Agent Registry Constants
+    /// Maximum allowed length for agent identifiers
     pub const MAX_AGENT_ID_LEN: usize = 64;
+    /// Maximum allowed length for agent names
     pub const MAX_AGENT_NAME_LEN: usize = 128;
+    /// Maximum allowed length for agent descriptions
     pub const MAX_AGENT_DESCRIPTION_LEN: usize = 512;
+    /// Maximum allowed length for agent version strings
     pub const MAX_AGENT_VERSION_LEN: usize = 32;
+    /// Maximum allowed length for provider names
     pub const MAX_PROVIDER_NAME_LEN: usize = 128;
+    /// Maximum allowed length for provider URLs
     pub const MAX_PROVIDER_URL_LEN: usize = 256;
+    /// Maximum allowed length for documentation URLs (shared by both registries)
     pub const MAX_DOCUMENTATION_URL_LEN: usize = 256;
+    /// Maximum number of service endpoints an agent can register on-chain
     pub const MAX_SERVICE_ENDPOINTS: usize = 3;
+    /// Maximum allowed length for endpoint protocol identifiers
     pub const MAX_ENDPOINT_PROTOCOL_LEN: usize = 64;
+    /// Maximum allowed length for endpoint URLs
     pub const MAX_ENDPOINT_URL_LEN: usize = 256;
+    /// Maximum number of supported input/output modes
     pub const MAX_SUPPORTED_MODES: usize = 5;
+    /// Maximum allowed length for mode identifiers
     pub const MAX_MODE_LEN: usize = 64;
+    /// Maximum number of skills an agent can register on-chain
     pub const MAX_SKILLS: usize = 10;
+    /// Maximum allowed length for skill identifiers
     pub const MAX_SKILL_ID_LEN: usize = 64;
+    /// Maximum allowed length for skill names
     pub const MAX_SKILL_NAME_LEN: usize = 128;
+    /// Maximum number of tags per skill
     pub const MAX_SKILL_TAGS: usize = 5;
+    /// Maximum allowed length for skill tags
     pub const MAX_SKILL_TAG_LEN: usize = 32;
+    /// Maximum allowed length for security information URIs
     pub const MAX_SECURITY_INFO_URI_LEN: usize = 256;
+    /// Maximum allowed length for Autonomous Economic Agent (AEA) addresses
     pub const MAX_AEA_ADDRESS_LEN: usize = 128;
+    /// Maximum allowed length for economic intent summaries
     pub const MAX_ECONOMIC_INTENT_LEN: usize = 256;
+    /// Maximum allowed length for extended metadata URIs
     pub const MAX_EXTENDED_METADATA_URI_LEN: usize = 256;
+    /// Maximum number of tags per agent
     pub const MAX_AGENT_TAGS: usize = 10;
+    /// Maximum allowed length for agent tags
     pub const MAX_AGENT_TAG_LEN: usize = 32;
 
-    // MCP Server Registry Constants
+    /// ## MCP Server Registry Constants
+    /// Maximum allowed length for MCP server identifiers
     pub const MAX_SERVER_ID_LEN: usize = 64;
+    /// Maximum allowed length for server names
     pub const MAX_SERVER_NAME_LEN: usize = 128;
+    /// Maximum allowed length for server version strings
     pub const MAX_SERVER_VERSION_LEN: usize = 32;
+    /// Maximum allowed length for server endpoint URLs
     pub const MAX_SERVER_ENDPOINT_URL_LEN: usize = 256;
+    /// Maximum allowed length for server capabilities summaries
     pub const MAX_SERVER_CAPABILITIES_SUMMARY_LEN: usize = 256;
+    /// Maximum number of on-chain tool definitions per MCP server
     pub const MAX_ONCHAIN_TOOL_DEFINITIONS: usize = 5;
+    /// Maximum allowed length for tool names
     pub const MAX_TOOL_NAME_LEN: usize = 64;
+    /// Maximum number of tags per tool
     pub const MAX_TOOL_TAGS: usize = 3;
+    /// Maximum allowed length for tool tags
     pub const MAX_TOOL_TAG_LEN: usize = 32;
+    /// Maximum number of on-chain resource definitions per MCP server
     pub const MAX_ONCHAIN_RESOURCE_DEFINITIONS: usize = 5;
+    /// Maximum allowed length for resource URI patterns
     pub const MAX_RESOURCE_URI_PATTERN_LEN: usize = 128;
+    /// Maximum number of tags per resource
     pub const MAX_RESOURCE_TAGS: usize = 3;
+    /// Maximum allowed length for resource tags
     pub const MAX_RESOURCE_TAG_LEN: usize = 32;
+    /// Maximum number of on-chain prompt definitions per MCP server
     pub const MAX_ONCHAIN_PROMPT_DEFINITIONS: usize = 5;
+    /// Maximum allowed length for prompt names
     pub const MAX_PROMPT_NAME_LEN: usize = 64;
+    /// Maximum number of tags per prompt
     pub const MAX_PROMPT_TAGS: usize = 3;
+    /// Maximum allowed length for prompt tags
     pub const MAX_PROMPT_TAG_LEN: usize = 32;
+    /// Maximum allowed length for full capabilities URIs
     pub const MAX_FULL_CAPABILITIES_URI_LEN: usize = 256;
+    /// Maximum number of tags per MCP server
     pub const MAX_SERVER_TAGS: usize = 10;
+    /// Maximum allowed length for server tags
     pub const MAX_SERVER_TAG_LEN: usize = 32;
 
+    /// Size of SHA256 hash in bytes
     pub const HASH_SIZE: usize = 32; // SHA256 hash size
+    /// Size of String/Vec length prefix in Borsh serialization
     pub const STRING_LEN_PREFIX_SIZE: usize = 4; // u32 for String/Vec length
+    /// Size of Option discriminator in Borsh serialization
     pub const OPTION_DISCRIMINATOR_SIZE: usize = 1; // 1 byte for Option discriminator
 
-    // PDA Seed Prefixes
+    /// ## PDA Seed Prefixes
+    /// Seed prefix used to derive Agent Registry PDAs
     pub const AGENT_REGISTRY_PDA_SEED: &[u8] = b"agent_reg_v1";
+    /// Seed prefix used to derive MCP Server Registry PDAs
     pub const MCP_SERVER_REGISTRY_PDA_SEED: &[u8] = b"mcp_srv_reg_v1";
 }
 
 use constants::*;
 
-// Helper for Borsh size of String
+/// Calculate the Borsh serialization size of a String with a maximum length
+///
+/// Returns the size in bytes that a String will occupy when serialized with Borsh,
+/// accounting for the length prefix and the maximum possible string content.
 fn borsh_size_string(max_len: usize) -> usize {
     STRING_LEN_PREFIX_SIZE + max_len
 }
-// Helper for Borsh size of Option<String>
+
+/// Calculate the Borsh serialization size of an Option<String> with a maximum length
+///
+/// Returns the size in bytes that an Option<String> will occupy when serialized with Borsh,
+/// accounting for the discriminator byte, length prefix, and the maximum possible string content.
 fn borsh_size_option_string(max_len: usize) -> usize {
     OPTION_DISCRIMINATOR_SIZE + borsh_size_string(max_len)
 }
-// Helper for Borsh size of Option<[u8; HASH_SIZE]>
+
+/// Calculate the Borsh serialization size of an Option<[u8; HASH_SIZE]>
+///
+/// Returns the size in bytes that an Option<[u8; HASH_SIZE]> will occupy when serialized with Borsh,
+/// accounting for the discriminator byte and the fixed-size hash.
 fn borsh_size_option_hash() -> usize {
     OPTION_DISCRIMINATOR_SIZE + HASH_SIZE
 }
-// Helper for Borsh size of Vec<String>
+
+/// Calculate the Borsh serialization size of a Vec<String> with a maximum number of items and maximum item length
+///
+/// Returns the size in bytes that a Vec<String> will occupy when serialized with Borsh,
+/// accounting for the length prefix and the maximum possible number of strings each with their maximum length.
 fn borsh_size_vec_string(max_items: usize, max_item_len: usize) -> usize {
     STRING_LEN_PREFIX_SIZE + (max_items * borsh_size_string(max_item_len))
 }
-// Helper for Borsh size of Vec<Struct>
+
+/// Calculate the Borsh serialization size of a Vec<T> where T implements AccountSize
+///
+/// Returns the size in bytes that a Vec<T> will occupy when serialized with Borsh,
+/// accounting for the length prefix and the maximum possible number of items each with their fixed size.
 fn borsh_size_vec_struct<T: AccountSize>(max_items: usize) -> usize {
     STRING_LEN_PREFIX_SIZE + (max_items * T::ACCOUNT_SIZE)
 }
 
-
+/// Trait for determining the fixed size of a struct when serialized with Borsh
+///
+/// Used to calculate the space requirements for storing collections of structs in accounts.
 trait AccountSize { // Trait to get struct size for Vec calculations
+    /// The size in bytes that this type occupies when serialized with Borsh
     const ACCOUNT_SIZE: usize;
 }
 
-
+/// # Solana AI Registries Program
+///
+/// This program module implements the core functionality for both the Agent Registry and 
+/// the MCP Server Registry protocols. It provides instructions for registering, updating,
+/// and managing entities in each registry.
 #[program]
 pub mod solana_ai_registries {
     use super::*;
 
     // --- Agent Registry Instructions ---
 
+    /// Register a new agent in the Agent Registry
+    ///
+    /// This instruction initializes a new PDA account for the agent and populates it with
+    /// the provided details. The PDA is derived using the agent_id as a seed.
+    /// The payer of the transaction funds the new PDA account with enough lamports to make
+    /// it rent-exempt.
+    ///
+    /// Emits an `AgentRegistered` event containing the full agent data.
+    ///
+    /// # Parameters
+    /// * `ctx` - The context containing accounts involved in the instruction
+    /// * `agent_id` - Unique identifier for the agent
+    /// * `name` - Human-readable name of the agent
+    /// * `description` - Human-readable description of the agent
+    /// * `agent_version` - Version of the agent software/implementation
+    /// * `provider_name` - Optional name of the agent's provider organization
+    /// * `provider_url` - Optional URL of the agent's provider
+    /// * `documentation_url` - Optional URL to human-readable documentation
+    /// * `service_endpoints_input` - List of service endpoints where the agent can be reached
+    /// * `capabilities_flags` - Bitmask for core A2A capabilities
+    /// * `supported_input_modes_input` - Default accepted input MIME types
+    /// * `supported_output_modes_input` - Default produced output MIME types
+    /// * `skills_input` - Summary of key agent skills
+    /// * `security_info_uri` - Optional URI to detailed security scheme definitions
+    /// * `aea_address` - Optional Fetch.ai AEA address/ID
+    /// * `economic_intent_summary` - Optional brief summary of agent's economic goals
+    /// * `supported_aea_protocols_hash` - Optional SHA256 hash of supported AEA protocol IDs
+    /// * `extended_metadata_uri` - Optional URI to extensive off-chain metadata
+    /// * `tags_input` - General discoverability tags for the agent
+    ///
+    /// # Returns
+    /// * Result indicating success or providing error details
     pub fn register_agent(
         ctx: Context<RegisterAgent>,
         agent_id: String,
@@ -213,6 +337,20 @@ pub mod solana_ai_registries {
         Ok(())
     }
 
+    /// Update the details of an existing agent in the Agent Registry
+    ///
+    /// Allows the owner_authority to modify mutable fields of an existing agent entry.
+    /// Only the fields provided in the input will be updated; other fields remain unchanged.
+    /// The function performs validation on each provided field to ensure data integrity.
+    ///
+    /// Emits an `AgentUpdated` event, detailing the agent_id and the fields that were changed.
+    ///
+    /// # Parameters
+    /// * `ctx` - The context containing accounts involved in the instruction
+    /// * `details` - A struct containing optional fields to update; only provided fields will be changed
+    ///
+    /// # Returns
+    /// * Result indicating success or providing error details
     pub fn update_agent_details(ctx: Context<UpdateAgent>, details: AgentUpdateDetailsInput) -> Result<()> {
         let agent_entry = &mut ctx.accounts.agent_entry;
         let mut changed_fields: Vec<String> = Vec::new();
@@ -311,6 +449,20 @@ pub mod solana_ai_registries {
         Ok(())
     }
 
+    /// Update the status of an existing agent in the Agent Registry
+    ///
+    /// A specialized instruction for changing the agent's operational status 
+    /// (Pending, Active, Inactive, Deregistered).
+    /// Requires owner_authority signature for authorization.
+    ///
+    /// Emits an `AgentStatusChanged` event with agent_id and the new_status.
+    ///
+    /// # Parameters
+    /// * `ctx` - The context containing accounts involved in the instruction
+    /// * `new_status_val` - The new status value (0: Pending, 1: Active, 2: Inactive, 3: Deregistered)
+    ///
+    /// # Returns
+    /// * Result indicating success or providing error details
     pub fn update_agent_status(ctx: Context<UpdateAgent>, new_status_val: u8) -> Result<()> {
         let agent_entry = &mut ctx.accounts.agent_entry;
         let new_status = AgentStatus::from_u8(new_status_val).ok_or(ErrorCode::InvalidAgentStatus)?;
@@ -325,6 +477,19 @@ pub mod solana_ai_registries {
         Ok(())
     }
 
+    /// Deregister an agent from the Agent Registry
+    ///
+    /// Allows the owner_authority to mark an agent as deregistered.
+    /// This changes the agent's status to Deregistered, preserving its history
+    /// rather than completely removing the entry.
+    ///
+    /// Emits an `AgentDeregistered` event with agent_id and deregistration timestamp.
+    ///
+    /// # Parameters
+    /// * `ctx` - The context containing accounts involved in the instruction
+    ///
+    /// # Returns
+    /// * Result indicating success or providing error details
     pub fn deregister_agent(ctx: Context<UpdateAgent>) -> Result<()> {
         let agent_entry = &mut ctx.accounts.agent_entry;
         if agent_entry.status == AgentStatus::Deregistered as u8 { return Ok(()); } 
@@ -341,6 +506,37 @@ pub mod solana_ai_registries {
 
     // --- MCP Server Registry Instructions ---
 
+    /// Register a new MCP server in the MCP Server Registry
+    ///
+    /// This instruction initializes a new PDA account for the MCP server and populates it with
+    /// the provided details. The PDA is derived using the server_id as a seed.
+    /// The payer of the transaction funds the new PDA account with enough lamports to make
+    /// it rent-exempt.
+    ///
+    /// MCP servers follow the Model Context Protocol specification, enabling AI applications
+    /// to discover and interact with external data sources and tools.
+    ///
+    /// Emits an `McpServerRegistered` event containing the full server data.
+    ///
+    /// # Parameters
+    /// * `ctx` - The context containing accounts involved in the instruction
+    /// * `server_id` - Unique identifier for the MCP server
+    /// * `name` - Human-readable name of the server
+    /// * `server_version` - Version of the MCP server software
+    /// * `service_endpoint` - Primary URL for MCP communication 
+    /// * `documentation_url` - Optional URL to human-readable documentation
+    /// * `server_capabilities_summary` - Optional brief summary of server offerings
+    /// * `supports_resources` - Whether server offers MCP Resources
+    /// * `supports_tools` - Whether server offers MCP Tools
+    /// * `supports_prompts` - Whether server offers MCP Prompts
+    /// * `onchain_tool_definitions_input` - Summary of key on-chain advertised tools
+    /// * `onchain_resource_definitions_input` - Summary of key on-chain advertised resources
+    /// * `onchain_prompt_definitions_input` - Summary of key on-chain advertised prompts
+    /// * `full_capabilities_uri` - Optional URI to off-chain JSON with full tool/resource/prompt definitions
+    /// * `tags_input` - General discoverability tags for the server
+    ///
+    /// # Returns
+    /// * Result indicating success or providing error details
     pub fn register_mcp_server(
         ctx: Context<RegisterMcpServer>,
         server_id: String,
@@ -440,6 +636,20 @@ pub mod solana_ai_registries {
         Ok(())
     }
     
+    /// Update the details of an existing MCP server in the MCP Server Registry
+    ///
+    /// Allows the owner_authority to modify mutable fields of an existing MCP server entry.
+    /// Only the fields provided in the input will be updated; other fields remain unchanged.
+    /// The function performs validation on each provided field to ensure data integrity.
+    ///
+    /// Emits an `McpServerUpdated` event, detailing the server_id and the fields that were changed.
+    ///
+    /// # Parameters
+    /// * `ctx` - The context containing accounts involved in the instruction
+    /// * `details` - A struct containing optional fields to update; only provided fields will be changed
+    ///
+    /// # Returns
+    /// * Result indicating success or providing error details
     pub fn update_mcp_server_details(ctx: Context<UpdateMcpServer>, details: McpServerUpdateDetailsInput) -> Result<()> {
         let mcp_server_entry = &mut ctx.accounts.mcp_server_entry;
         let mut changed_fields: Vec<String> = Vec::new();
@@ -520,6 +730,20 @@ pub mod solana_ai_registries {
         Ok(())
     }
 
+    /// Update the status of an existing MCP server in the MCP Server Registry
+    ///
+    /// A specialized instruction for changing the MCP server's operational status
+    /// (Pending, Active, Inactive, Deregistered).
+    /// Requires owner_authority signature for authorization.
+    ///
+    /// Emits an `McpServerStatusChanged` event with server_id and the new_status.
+    ///
+    /// # Parameters
+    /// * `ctx` - The context containing accounts involved in the instruction
+    /// * `new_status_val` - The new status value (0: Pending, 1: Active, 2: Inactive, 3: Deregistered)
+    ///
+    /// # Returns
+    /// * Result indicating success or providing error details
     pub fn update_mcp_server_status(ctx: Context<UpdateMcpServer>, new_status_val: u8) -> Result<()> {
         let mcp_server_entry = &mut ctx.accounts.mcp_server_entry;
         let new_status = McpServerStatus::from_u8(new_status_val).ok_or(ErrorCode::InvalidMcpServerStatus)?;
@@ -534,6 +758,19 @@ pub mod solana_ai_registries {
         Ok(())
     }
 
+    /// Deregister an MCP server from the MCP Server Registry
+    ///
+    /// Allows the owner_authority to mark an MCP server as deregistered.
+    /// This changes the server's status to Deregistered, preserving its history
+    /// rather than completely removing the entry.
+    ///
+    /// Emits an `McpServerDeregistered` event with server_id and deregistration timestamp.
+    ///
+    /// # Parameters
+    /// * `ctx` - The context containing accounts involved in the instruction
+    ///
+    /// # Returns
+    /// * Result indicating success or providing error details
     pub fn deregister_mcp_server(ctx: Context<UpdateMcpServer>) -> Result<()> {
         let mcp_server_entry = &mut ctx.accounts.mcp_server_entry;
         if mcp_server_entry.status == McpServerStatus::Deregistered as u8 { return Ok(()); }
