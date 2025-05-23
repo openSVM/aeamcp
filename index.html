@@ -678,8 +678,8 @@
                 // Enhance code blocks for ASCII diagrams
                 const originalCodeRenderer = renderer.code;
                 renderer.code = function(code, language, isEscaped) {
-                    // Check if this looks like an ASCII diagram
-                    if (code.includes('+---') || (code.includes('|') && code.includes('-'))) {
+                    // Fix for the error: Check if code is a string before using includes
+                    if (typeof code === 'string' && (code.includes('+---') || (code.includes('|') && code.includes('-')))) {
                         return `<div class="card">
                                     <pre class="ascii-diagram">${code}</pre>
                                 </div>`;
