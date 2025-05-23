@@ -143,18 +143,19 @@
             line-height: 1.6;
         }
         .markdown-content pre {
-            background-color: #F5F5F5;
+            background-color: #FFFFFF;
             border: 1px solid #A3A3A3;
             padding: 1rem;
             margin-bottom: 1rem;
             overflow-x: auto;
             font-size: 0.9rem;
+            position: relative;
         }
         .markdown-content code {
             font-family: 'Courier New', Courier, monospace;
-            background-color: #E5E5E5;
+            background-color: transparent;
             padding: 0.1rem 0.25rem;
-            border: 1px solid #A3A3A3;
+            border: none;
             font-size: 0.9em;
         }
         .markdown-content ul, .markdown-content ol {
@@ -184,8 +185,8 @@
         }
         
         .info-box {
-            background-color: #E5E5E5; /* Neutral-200 */
-            border: 1px dashed #A3A3A3; /* Dashed border */
+            background-color: #F5F5F5; /* Light gray background matching screenshot */
+            border: 1px solid #A3A3A3; /* Border */
             padding: 1rem;
             border-radius: 0;
             margin-top: 1rem;
@@ -244,7 +245,7 @@
             margin-right: auto;
             height: 280px;
             max-height: 320px;
-            background-color: #E5E5E5; /* Neutral-200 */
+            background-color: #F5F5F5; /* Light gray background matching screenshot */
             padding: 1rem;
             border-radius: 0;
             border: 1px solid #A3A3A3; /* Neutral-400 */
@@ -258,9 +259,9 @@
         
         .code-like {
             font-family: 'Courier New', Courier, monospace; /* Ensure monospace */
-            background-color: #D4D4D4; /* Neutral-300 */
+            background-color: transparent; /* Removed dark background */
             padding: 0.1rem 0.25rem;
-            border: 1px solid #A3A3A3; /* Border for code */
+            border: none; /* Removed border */
             font-size: 0.9em;
             color: #171717; /* Neutral-900 */
         }
@@ -281,7 +282,7 @@
         }
         
         .diagram-box {
-             background-color: #FFFFFF;
+             background-color: #F5F5F5; /* Light gray background matching screenshot */
              padding: 0.75rem;
              border-radius: 0;
              border: 1px solid #A3A3A3; /* Neutral-400 */
@@ -299,7 +300,7 @@
         
         .hybrid-box {
             border: 1px solid #737373; /* Neutral-500 */
-            background-color: #E5E5E5; /* Neutral-200 */
+            background-color: #F5F5F5; /* Light gray background matching screenshot */
         }
         
         .hybrid-box-title {
@@ -398,7 +399,7 @@
             flex: 1;
             min-width: 300px;
             border: 1px solid #737373;
-            background-color: #E5E5E5;
+            background-color: #F5F5F5; /* Light gray background matching screenshot */
             padding: 1.5rem;
         }
         
@@ -422,6 +423,81 @@
             font-size: 1.5rem;
             padding: 0 1rem;
             color: #525252;
+        }
+        
+        /* Code snippet buttons */
+        .code-buttons {
+            position: absolute;
+            top: 0.25rem;
+            right: 0.25rem;
+            display: flex;
+            gap: 0.25rem;
+        }
+        
+        .copy-button, .execute-button {
+            background-color: #E5E5E5;
+            border: 1px solid #A3A3A3;
+            color: #262626;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .copy-button:hover, .execute-button:hover {
+            background-color: #D4D4D4;
+        }
+        
+        .copy-button:active, .execute-button:active {
+            background-color: #A3A3A3;
+        }
+        
+        /* New styles to match the screenshot */
+        .content-box {
+            background-color: #F5F5F5;
+            border: 1px solid #A3A3A3;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .code-tag {
+            display: inline-block;
+            background-color: #A3A3A3;
+            color: #262626;
+            padding: 0.1rem 0.5rem;
+            margin: 0 0.25rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+        }
+        
+        .note-box {
+            background-color: #E5E5E5;
+            border: 1px solid #A3A3A3;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .data-spec-list {
+            list-style-type: none;
+            padding-left: 1rem;
+        }
+        
+        .data-spec-list li {
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .data-spec-list li::before {
+            content: "•";
+            margin-right: 0.5rem;
+        }
+        
+        .chart-image {
+            width: 100%;
+            max-width: 450px;
+            margin: 1rem auto;
+            display: block;
         }
         
         /* Responsive design */
@@ -646,6 +722,39 @@
             }
         }
         
+        // Copy code to clipboard
+        function copyCode(codeElement) {
+            const code = codeElement.textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const button = codeElement.parentElement.querySelector('.copy-button');
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy code: ', err);
+            });
+        }
+        
+        // Execute code in terminal
+        function executeCode(codeElement) {
+            const code = codeElement.textContent;
+            // Create a custom event that can be intercepted by the terminal
+            const event = new CustomEvent('execute-in-terminal', { 
+                detail: { command: code } 
+            });
+            document.dispatchEvent(event);
+            
+            // Show feedback to user
+            const button = codeElement.parentElement.querySelector('.execute-button');
+            const originalText = button.textContent;
+            button.textContent = 'Sent to terminal!';
+            setTimeout(() => {
+                button.textContent = originalText;
+            }, 2000);
+        }
+        
         // Load chapter content
         async function loadChapter(chapterNum) {
             try {
@@ -675,15 +784,35 @@
                 // Configure marked.js renderer to enhance diagrams and tables
                 const renderer = new marked.Renderer();
                 
-                // Enhance code blocks for ASCII diagrams
+                // Enhance code blocks for ASCII diagrams and add copy/execute buttons
                 const originalCodeRenderer = renderer.code;
                 renderer.code = function(code, language, isEscaped) {
                     // Fix for the error: Check if code is a string before using includes
-                    if (typeof code === 'string' && (code.includes('+---') || (code.includes('|') && code.includes('-')))) {
-                        return `<div class="card">
-                                    <pre class="ascii-diagram">${code}</pre>
+                    if (typeof code === 'string') {
+                        // Check if this is an ASCII diagram
+                        if (code.includes('+---') || (code.includes('|') && code.includes('-'))) {
+                            return `<div class="content-box">
+                                        <pre class="ascii-diagram">${code}</pre>
+                                    </div>`;
+                        }
+                        
+                        // For regular code blocks, add copy and execute buttons
+                        const codeId = 'code-' + Math.random().toString(36).substr(2, 9);
+                        const isShellCommand = language === 'bash' || language === 'sh' || 
+                                             code.trim().startsWith('$') || 
+                                             code.includes('npm install') ||
+                                             code.includes('cargo build') ||
+                                             code.includes('solana ');
+                        
+                        return `<div class="code-container">
+                                    <pre><code id="${codeId}" class="language-${language || ''}">${code}</code>
+                                    <div class="code-buttons">
+                                        <button class="copy-button" onclick="copyCode(document.getElementById('${codeId}'))">Copy</button>
+                                        ${isShellCommand ? `<button class="execute-button" onclick="executeCode(document.getElementById('${codeId}'))">Execute</button>` : ''}
+                                    </div></pre>
                                 </div>`;
                     }
+                    
                     return originalCodeRenderer.call(this, code, language, isEscaped);
                 };
                 
@@ -716,6 +845,9 @@
                 // Add navigation buttons
                 addNavigation(chapterNum);
                 
+                // Apply code tag styling to match screenshot
+                applyCodeTagStyling();
+                
                 // Close sidebar on mobile after selection
                 if (window.innerWidth <= 768) {
                     document.getElementById('book-sidebar').classList.remove('active');
@@ -747,11 +879,101 @@
             }
         }
         
+        // Apply code tag styling to match screenshot
+        function applyCodeTagStyling() {
+            // Find all inline code elements that look like field names or tags
+            const codeElements = document.querySelectorAll('code');
+            codeElements.forEach(code => {
+                const text = code.textContent.trim();
+                // Check if this looks like a field name or tag (short, no spaces, etc.)
+                if (text.length < 30 && !text.includes('\n') && 
+                    (text.includes('_') || /^[a-z]+$/.test(text) || text.startsWith('supports_'))) {
+                    // Replace with styled tag
+                    code.outerHTML = `<span class="code-tag">${text}</span>`;
+                }
+            });
+            
+            // Convert bullet lists with field specifications to match screenshot
+            const lists = document.querySelectorAll('ul');
+            lists.forEach(list => {
+                // Check if this list contains field specifications
+                const items = list.querySelectorAll('li');
+                let isFieldList = false;
+                
+                items.forEach(item => {
+                    if (item.textContent.includes('owner') || 
+                        item.textContent.includes('status') || 
+                        item.textContent.includes('Boolean flags') ||
+                        item.textContent.includes('On-chain')) {
+                        isFieldList = true;
+                    }
+                });
+                
+                if (isFieldList) {
+                    list.classList.add('data-spec-list');
+                    
+                    // Process each list item to add code tags
+                    items.forEach(item => {
+                        const html = item.innerHTML;
+                        // Use regex to find potential field names and wrap them in code tags
+                        const processedHtml = html.replace(/\b([a-z_]+)\b/g, (match) => {
+                            // Skip common words
+                            if (['the', 'and', 'or', 'for', 'of', 'to', 'in', 'on', 'with', 'by', 'as', 'etc'].includes(match)) {
+                                return match;
+                            }
+                            return `<span class="code-tag">${match}</span>`;
+                        });
+                        item.innerHTML = processedHtml;
+                    });
+                }
+            });
+            
+            // Wrap sections that look like data specifications in content boxes
+            const h3Elements = document.querySelectorAll('h3');
+            h3Elements.forEach(h3 => {
+                if (h3.textContent.includes('Data Specification') || 
+                    h3.textContent.includes('Entry Data') || 
+                    h3.textContent.includes('Registry Entry')) {
+                    
+                    // Find the next h3 or h2
+                    let nextHeading = h3.nextElementSibling;
+                    let elements = [h3];
+                    
+                    while (nextHeading && 
+                           nextHeading.tagName !== 'H3' && 
+                           nextHeading.tagName !== 'H2') {
+                        elements.push(nextHeading);
+                        nextHeading = nextHeading.nextElementSibling;
+                    }
+                    
+                    // Create a content box and move elements into it
+                    const contentBox = document.createElement('div');
+                    contentBox.className = 'content-box';
+                    h3.parentNode.insertBefore(contentBox, h3);
+                    
+                    elements.forEach(el => {
+                        contentBox.appendChild(el);
+                    });
+                }
+            });
+            
+            // Add note boxes for explanatory text
+            const paragraphs = document.querySelectorAll('p');
+            paragraphs.forEach(p => {
+                if (p.textContent.includes('For the complete') || 
+                    p.textContent.includes('refer to Table') || 
+                    p.textContent.includes('Note:')) {
+                    
+                    p.classList.add('note-box');
+                }
+            });
+        }
+        
         // Enhance rendered content with better styling for tables and concept boxes
         function enhanceRenderedContent(html) {
             // Enhance sections that look like concept boxes
-            html = html.replace(/<h3>(Rent, Storage &amp; Hybrid Data Model|Program Derived Addresses \(PDAs\)|Account Structures &amp; Borsh Serialization|Key Strategic Objectives:)(.+?)<\/h3>/g, 
-                '<div class="info-box"><h3 class="info-box-title">$1$2</h3><div class="info-box-text">');
+            html = html.replace(/<h3>(Rent, Storage &amp; Hybrid Data Model|Program Derived Addresses \(PDAs\)|Account Structures &amp; Borsh Serialization|Key Strategic Objectives:|MCP Server Entry Data Specification|Agent Registry Entry Data Specification|Conceptual Data Distribution)(.+?)<\/h3>/g, 
+                '<div class="content-box"><h3 class="info-box-title">$1$2</h3><div class="info-box-text">');
             
             // Close concept boxes before the next h2 or h3
             html = html.replace(/(<\/div>)(\s*<h[23])/g, '$1</div>$2');
@@ -782,6 +1004,10 @@
             
             // Remove last arrow after flow steps
             html = html.replace(/(<\/li><div class="flow-arrow">&#8595;<\/div>)(?!.*<li class="flow-step">)/s, '</li>');
+            
+            // Wrap data specification sections in content boxes
+            html = html.replace(/<h2>(MCP Server Entry Data Specification|Agent Registry Entry Data Specification|Data Specification)(.+?)<\/h2>/g, 
+                '<div class="content-box"><h2>$1$2</h2>');
             
             return html;
         }
@@ -842,6 +1068,13 @@
             else if (e.key === 'ArrowRight' && currentChapter < Object.keys(chapterFiles).length) {
                 loadChapter(currentChapter + 1);
             }
+        });
+        
+        // Setup terminal execution listener
+        document.addEventListener('execute-in-terminal', function(e) {
+            console.log('Command to execute in terminal:', e.detail.command);
+            // In a real implementation, this would communicate with a local terminal
+            // For now, we'll just log to console
         });
         
         // Load initial chapter on page load
