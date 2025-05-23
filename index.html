@@ -4,1098 +4,805 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solana Protocol Design for Agent and MCP Server Registries</title>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- External libraries -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.8.0/styles/github-gist.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.8.0/highlight.min.js"></script>
+    <!-- Explicitly include Rust language support -->
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.8.0/languages/rust.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
+    
     <style>
+        /* Base styles */
+        :root {
+            --bg-color: #f8f8f8;
+            --text-color: #333;
+            --border-color: #737373;
+            --header-bg: #e5e5e5;
+            --tag-bg: #a3a3a3;
+            --hover-bg: #f0f0f0;
+            --code-bg: #f5f5f5;
+            --box-shadow: 2px 2px 0px #a3a3a3;
+            --info-box-bg: #e5e5e5;
+        }
+        
         body {
-            font-family: 'Courier New', Courier, monospace; /* Monospace font */
-            background-color: #FFFFFF;
-            color: #262626; /* Neutral-800 */
-            scroll-behavior: smooth;
-            font-size: 16px; /* Base font size for monospace for readability */
-        }
-        .main-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1.5rem; /* 24px */
-        }
-        .nav-link {
-            color: #E5E5E5; /* Neutral-200 */
-            transition: color 0.3s ease, background-color 0.3s ease;
-            padding: 0.5rem 1rem;
-            border-radius: 0; /* Sharp corners for 90s look */
-            font-weight: normal; /* Monospace handles weight differently */
-            border: 1px solid #404040; /* Border for nav links */
-            display: inline-block;
-            margin-bottom: 0.125rem; /* Reduced margin */
-            margin-right: 0.125rem; /* Reduced margin */
-            text-decoration: none; /* Ensure no underline */
-        }
-        .nav-link:hover {
-            background-color: #737373; /* Neutral-500 */
-            color: #FFFFFF;
-            border-color: #737373;
-        }
-        .nav-link.active {
-            background-color: #404040; /* Neutral-700 */
-            color: #FFFFFF;
-            font-weight: bold; /* Monospace can use bold */
-            border-color: #404040;
-        }
-        .section-title {
-            color: #171717; /* Neutral-900 */
-            border-bottom: 2px solid #525252; /* Neutral-600 */
-            padding-bottom: 0.75rem; /* 12px */
-            font-size: 1.75rem; /* Adjusted for monospace */
-            font-weight: bold;
-            text-transform: uppercase; /* 90s style */
-        }
-        .subsection-title {
-            color: #262626; /* Neutral-800 */
-            font-size: 1.15rem; /* Adjusted for monospace */
-            font-weight: bold;
-            margin-top: 1.5rem; /* mt-6 */
-            margin-bottom: 0.75rem; /* mb-3 */
-        }
-        .header-bg {
-             background-color: #404040; /* Neutral-700 */
-             border-bottom: 2px solid #171717; /* Neutral-900 */
-        }
-        .footer-bg {
-            background-color: #404040; /* Neutral-700 */
-            border-top: 2px solid #171717; /* Neutral-900 */
-        }
-        .footer-text {
-            color: #D4D4D4; /* Neutral-300 */
-        }
-        
-        /* Book-specific styling */
-        .book-container {
-            display: flex;
-            min-height: calc(100vh - 120px); /* Adjust based on header/footer height */
-        }
-        .book-sidebar {
-            width: 250px;
-            background-color: #F5F5F5;
-            border-right: 1px solid #A3A3A3;
-            padding: 1rem;
-            overflow-y: auto;
-            position: sticky;
-            top: 60px; /* Match header height */
-            height: calc(100vh - 120px); /* Adjust based on header/footer height */
-        }
-        .book-content {
-            flex: 1;
-            padding: 1.5rem;
-            overflow-y: auto;
-        }
-        .chapter-link {
-            display: block;
-            padding: 0.5rem;
-            margin-bottom: 0.25rem;
-            border: 1px solid #A3A3A3;
-            background-color: #E5E5E5;
-            color: #262626;
-            text-decoration: none;
-            font-size: 0.9rem;
-            cursor: pointer;
-        }
-        .chapter-link:hover {
-            background-color: #D4D4D4;
-        }
-        .chapter-link.active {
-            background-color: #A3A3A3;
-            font-weight: bold;
-        }
-        
-        /* Markdown styling */
-        .markdown-content h1 {
-            font-size: 1.75rem;
-            font-weight: bold;
-            margin-bottom: 1.5rem;
-            color: #171717;
-            border-bottom: 2px solid #525252;
-            padding-bottom: 0.5rem;
-        }
-        .markdown-content h2 {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-top: 2rem;
-            margin-bottom: 1rem;
-            color: #262626;
-        }
-        .markdown-content h3 {
-            font-size: 1.25rem;
-            font-weight: bold;
-            margin-top: 1.5rem;
-            margin-bottom: 0.75rem;
-            color: #404040;
-        }
-        .markdown-content h4 {
-            font-size: 1.1rem;
-            font-weight: bold;
-            margin-top: 1.25rem;
-            margin-bottom: 0.5rem;
-            color: #525252;
-        }
-        .markdown-content p {
-            margin-bottom: 1rem;
+            font-family: "Courier New", Courier, monospace;
             line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
         }
-        .markdown-content pre {
-            background-color: #FFFFFF;
-            border: 1px solid #A3A3A3;
+        
+        /* Layout */
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background-color: var(--header-bg);
+            border-right: 1px solid var(--border-color);
             padding: 1rem;
-            margin-bottom: 1rem;
-            overflow-x: auto;
-            font-size: 0.9rem;
-            position: relative;
-        }
-        .markdown-content code {
-            font-family: 'Courier New', Courier, monospace;
-            background-color: transparent;
-            padding: 0.1rem 0.25rem;
-            border: none;
-            font-size: 0.9em;
-        }
-        .markdown-content ul, .markdown-content ol {
-            margin-bottom: 1rem;
-            padding-left: 2rem;
-        }
-        .markdown-content li {
-            margin-bottom: 0.5rem;
-        }
-        .markdown-content blockquote {
-            border-left: 4px solid #A3A3A3;
-            padding-left: 1rem;
-            margin-left: 0;
-            margin-right: 0;
-            margin-bottom: 1rem;
-            color: #525252;
+            overflow-y: auto;
+            position: fixed;
+            height: 100vh;
+            transition: transform 0.3s ease;
+            z-index: 100;
         }
         
-        /* User-provided styles for tables and diagrams */
-        .card {
-            background-color: #F5F5F5; /* Neutral-100 */
-            border-radius: 0; /* Sharp corners */
-            box-shadow: 2px 2px 0px #A3A3A3; /* Simple shadow for 90s */
-            border: 1px solid #A3A3A3; /* Border for cards */
-            padding: 1.5rem; /* p-6 */
-            margin-bottom: 1.5rem; /* mb-6 */
+        .sidebar-hidden {
+            transform: translateX(-280px);
         }
         
-        .info-box {
-            background-color: #F5F5F5; /* Light gray background matching screenshot */
-            border: 1px solid #A3A3A3; /* Border */
-            padding: 1rem;
-            border-radius: 0;
-            margin-top: 1rem;
-            margin-bottom: 1rem;
+        .sidebar-toggle {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 101;
+            background-color: var(--header-bg);
+            border: 1px solid var(--border-color);
+            padding: 5px 10px;
+            cursor: pointer;
+            display: none;
         }
         
-        .table-corporate {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem; /* Adjusted for monospace */
-            border: 1px solid #737373; /* Table border */
+        .sidebar h2 {
+            margin-top: 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
         }
         
-        .table-corporate th, .table-corporate td {
-            padding: 0.5rem 0.75rem; /* Adjusted padding */
-            border: 1px solid #A3A3A3; /* Neutral-400 */
-            text-align: left;
-        }
-        
-        .table-corporate th {
-            background-color: #A3A3A3; /* Neutral-400 */
-            color: #171717; /* Neutral-900 */
-            font-weight: bold;
-        }
-        
-        .table-corporate tbody tr:nth-child(even) {
-            background-color: #E5E5E5; /* Neutral-200 */
-        }
-        
-        .table-corporate tbody tr:hover {
-            background-color: #D4D4D4; /* Neutral-300 */
-        }
-        
-        .flow-step {
-            background-color: #D4D4D4; /* Neutral-300 */
-            border: 1px solid #737373; /* Neutral-500 */
-            color: #171717; /* Neutral-900 */
-            padding: 0.75rem 1.25rem;
-            border-radius: 0;
-            text-align: center;
-            font-weight: normal;
-        }
-        
-        .flow-arrow {
-            font-size: 1.5rem; /* Adjusted */
-            color: #525252; /* Neutral-600 */
-            margin: 0.5rem 0;
-            align-self: center;
-        }
-        
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 450px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 280px;
-            max-height: 320px;
-            background-color: #F5F5F5; /* Light gray background matching screenshot */
-            padding: 1rem;
-            border-radius: 0;
-            border: 1px solid #A3A3A3; /* Neutral-400 */
-        }
-        
-        .key-term {
-            font-weight: bold;
-            color: #262626; /* Neutral-800 */
-            text-decoration: underline; /* 90s style */
-        }
-        
-        .code-like {
-            font-family: 'Courier New', Courier, monospace; /* Ensure monospace */
-            background-color: transparent; /* Removed dark background */
-            padding: 0.1rem 0.25rem;
-            border: none; /* Removed border */
-            font-size: 0.9em;
-            color: #171717; /* Neutral-900 */
-        }
-        
-        .text-lead {
-            font-size: 1.05rem; /* Adjusted for monospace */
-            color: #525252; /* Neutral-600 */
-            line-height: 1.5;
-        }
-        
-        .info-box-title {
-            color: #171717; /* Neutral-900 */
-            font-weight: bold;
-        }
-        
-        .info-box-text {
-            color: #262626; /* Neutral-800 */
-        }
-        
-        .diagram-box {
-             background-color: #F5F5F5; /* Light gray background matching screenshot */
-             padding: 0.75rem;
-             border-radius: 0;
-             border: 1px solid #A3A3A3; /* Neutral-400 */
-             font-size: 0.9rem; /* Adjusted */
-        }
-        
-        .diagram-box-title {
-            font-weight: bold;
-            color: #171717; /* Neutral-900 */
-        }
-        
-        .diagram-box-subtext {
-            color: #262626; /* Neutral-800 */
-        }
-        
-        .hybrid-box {
-            border: 1px solid #737373; /* Neutral-500 */
-            background-color: #F5F5F5; /* Light gray background matching screenshot */
-        }
-        
-        .hybrid-box-title {
-            color: #171717; /* Neutral-900 */
-            font-weight: bold;
-        }
-        
-        .hybrid-box-subtext {
-            color: #262626; /* Neutral-800 */
-        }
-        
-        .status-text { /* General class for status text in tables */
-            font-weight: bold;
-            color: #262626; /* Neutral-800 */
-        }
-        
-        /* ASCII diagram styling */
-        .ascii-diagram {
-            font-family: 'Courier New', Courier, monospace;
-            white-space: pre;
-            line-height: 1.2;
-            background-color: #FFFFFF;
-            padding: 0.75rem;
-            border: 1px solid #A3A3A3;
-            overflow-x: auto;
-            font-size: 0.9rem;
+        .chapter-list {
+            list-style-type: none;
+            padding: 0;
             margin: 0;
         }
         
-        /* Book navigation */
-        .book-navigation {
+        .chapter-list li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .chapter-list a {
+            display: block;
+            padding: 0.5rem;
+            text-decoration: none;
+            color: var(--text-color);
+            border: 1px solid transparent;
+        }
+        
+        .chapter-list a:hover, .chapter-list a.active {
+            background-color: var(--hover-bg);
+            border: 1px solid var(--border-color);
+        }
+        
+        .subchapter-list {
+            list-style-type: none;
+            padding-left: 1.5rem;
+            margin: 0.5rem 0;
+            display: none;
+        }
+        
+        .subchapter-list.visible {
+            display: block;
+        }
+        
+        /* Main content */
+        .content {
+            flex: 1;
+            padding: 2rem;
+            margin-left: 280px;
+            transition: margin-left 0.3s ease;
+        }
+        
+        .content-full {
+            margin-left: 0;
+        }
+        
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+        
+        .header h1 {
+            margin: 0;
+        }
+        
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        /* Navigation controls */
+        .navigation-controls {
             display: flex;
             justify-content: space-between;
             margin-top: 2rem;
             padding-top: 1rem;
-            border-top: 1px solid #A3A3A3;
+            border-top: 1px solid var(--border-color);
         }
         
-        .book-navigation a {
-            padding: 0.5rem 1rem;
-            background-color: #E5E5E5;
-            border: 1px solid #A3A3A3;
-            color: #262626;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        
-        .book-navigation a:hover {
-            background-color: #D4D4D4;
-        }
-        
-        .mobile-menu-button, .mobile-sidebar-button {
+        /* Loading spinner */
+        .spinner {
             display: none;
+            margin: 2rem auto;
+            text-align: center;
         }
         
-        /* Loading indicator */
-        .loading-indicator {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 200px;
-        }
-        
-        .loading-spinner {
-            border: 4px solid #E5E5E5;
-            border-top: 4px solid #404040;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .spinner.visible {
+            display: block;
         }
         
         /* Error message */
         .error-message {
+            background-color: #ffdddd;
+            border: 1px solid #f44336;
             padding: 1rem;
-            background-color: #FEE2E2;
-            border: 1px solid #EF4444;
-            color: #B91C1C;
-            margin-bottom: 1rem;
+            margin: 1rem 0;
+            display: none;
         }
         
-        /* Two-column layout for comparison diagrams */
-        .two-column-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-            margin: 1.5rem 0;
+        .error-message.visible {
+            display: block;
         }
         
-        .column {
-            flex: 1;
-            min-width: 300px;
-            border: 1px solid #737373;
-            background-color: #F5F5F5; /* Light gray background matching screenshot */
-            padding: 1.5rem;
-        }
-        
-        .column-title {
-            font-weight: bold;
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-            border-bottom: 1px solid #A3A3A3;
-            padding-bottom: 0.5rem;
-            text-align: center;
-        }
-        
-        .column-content {
-            padding: 0.5rem;
-        }
-        
-        .connector {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            padding: 0 1rem;
-            color: #525252;
-        }
-        
-        /* Code snippet buttons */
-        .code-buttons {
-            position: absolute;
-            top: 0.25rem;
-            right: 0.25rem;
-            display: flex;
-            gap: 0.25rem;
-        }
-        
-        .copy-button, .execute-button {
-            background-color: #E5E5E5;
-            border: 1px solid #A3A3A3;
-            color: #262626;
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
+        /* Button styles */
+        button {
+            background-color: var(--header-bg);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
             cursor: pointer;
-            transition: background-color 0.2s;
+            font-family: "Courier New", Courier, monospace;
         }
         
-        .copy-button:hover, .execute-button:hover {
-            background-color: #D4D4D4;
+        button:hover {
+            background-color: var(--hover-bg);
         }
         
-        .copy-button:active, .execute-button:active {
-            background-color: #A3A3A3;
+        /* Table styles */
+        .table-corporate {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
         }
         
-        /* New styles to match the screenshot */
-        .content-box {
-            background-color: #F5F5F5;
-            border: 1px solid #A3A3A3;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+        .table-corporate th {
+            background-color: var(--tag-bg);
+            color: white;
+            text-align: left;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
         }
         
-        .code-tag {
-            display: inline-block;
-            background-color: #A3A3A3;
-            color: #262626;
-            padding: 0.1rem 0.5rem;
-            margin: 0 0.25rem;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.9em;
+        .table-corporate td {
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
         }
         
-        .note-box {
-            background-color: #E5E5E5;
-            border: 1px solid #A3A3A3;
+        .table-corporate tr:nth-child(even) {
+            background-color: var(--hover-bg);
+        }
+        
+        /* Card and info box styles */
+        .card {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .info-box {
+            background-color: var(--info-box-bg);
+            border: 1px dashed var(--border-color);
             padding: 1rem;
             margin: 1rem 0;
         }
         
-        .data-spec-list {
-            list-style-type: none;
-            padding-left: 1rem;
-        }
-        
-        .data-spec-list li {
-            margin-bottom: 0.75rem;
+        /* Hybrid box for two-column layouts */
+        .hybrid-box {
             display: flex;
-            align-items: flex-start;
+            margin: 1rem 0;
+            border: 1px solid var(--border-color);
         }
         
-        .data-spec-list li::before {
-            content: "•";
-            margin-right: 0.5rem;
+        .hybrid-box-column {
+            flex: 1;
+            padding: 1rem;
+            background-color: var(--code-bg);
         }
         
-        .chart-image {
-            width: 100%;
-            max-width: 450px;
-            margin: 1rem auto;
-            display: block;
+        .hybrid-box-column:first-child {
+            border-right: 1px solid var(--border-color);
         }
         
-        /* Responsive design */
+        .hybrid-box-connector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 1rem;
+        }
+        
+        /* Flow steps and arrows */
+        .flow-step {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            margin: 0.5rem 0;
+            text-align: center;
+        }
+        
+        .flow-arrow {
+            text-align: center;
+            margin: 0.5rem 0;
+        }
+        
+        /* Code styles */
+        pre {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            overflow-x: auto;
+            position: relative;
+            margin: 1rem 0;
+        }
+        
+        code {
+            font-family: "Courier New", Courier, monospace;
+        }
+        
+        .code-tag {
+            display: inline-block;
+            background-color: var(--tag-bg);
+            padding: 0.1rem 0.3rem;
+            margin: 0 0.2rem;
+            border-radius: 0;
+        }
+        
+        /* Code buttons */
+        .code-buttons {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: flex;
+            gap: 5px;
+        }
+        
+        .copy-button, .execute-button {
+            background-color: var(--header-bg);
+            border: 1px solid var(--border-color);
+            padding: 2px 5px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        
+        .copy-button:hover, .execute-button:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        /* ASCII diagram styles */
+        .ascii-diagram {
+            font-family: "Courier New", Courier, monospace;
+            white-space: pre;
+            line-height: 1.2;
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+        
+        /* Responsive styles */
         @media (max-width: 768px) {
-            .book-container {
+            .container {
                 flex-direction: column;
             }
             
-            .book-sidebar {
+            .sidebar {
                 width: 100%;
                 height: auto;
                 position: relative;
-                top: 0;
-                display: none;
                 border-right: none;
-                border-bottom: 1px solid #A3A3A3;
-                max-height: 300px;
-            }
-            
-            .book-sidebar.active {
-                display: block;
-            }
-            
-            .mobile-menu-button, .mobile-sidebar-button {
-                display: block;
-                background-color: #404040;
-                color: #E5E5E5;
-                border: 1px solid #737373;
-                padding: 0.5rem;
-                margin-bottom: 1rem;
-                cursor: pointer;
-                text-align: center;
-                width: 100%;
-            }
-            
-            .nav-container {
-                width: 100%;
-            }
-            
-            .nav-links {
+                border-bottom: 1px solid var(--border-color);
                 display: none;
-                width: 100%;
-                flex-wrap: wrap;
-                justify-content: center;
             }
             
-            .nav-links.active {
-                display: flex;
+            .sidebar.visible {
+                display: block;
             }
             
-            .book-content {
+            .content {
+                margin-left: 0;
                 padding: 1rem;
             }
             
-            .markdown-content h1 {
-                font-size: 1.5rem;
-            }
-            
-            .markdown-content h2 {
-                font-size: 1.3rem;
-            }
-            
-            .markdown-content h3 {
-                font-size: 1.15rem;
-            }
-            
-            .markdown-content h4 {
-                font-size: 1rem;
-            }
-            
-            .ascii-diagram {
-                font-size: 0.7rem;
-            }
-            
-            .two-column-container {
-                flex-direction: column;
-            }
-            
-            .column {
-                width: 100%;
-            }
-            
-            .connector {
-                transform: rotate(90deg);
-                padding: 1rem 0;
-            }
-        }
-        
-        /* Print styles */
-        @media print {
-            .header-bg, .footer-bg, .book-sidebar, .mobile-sidebar-button, .book-navigation {
-                display: none !important;
-            }
-            
-            .book-container {
+            .sidebar-toggle {
                 display: block;
             }
             
-            .book-content {
-                padding: 0;
+            .hybrid-box {
+                flex-direction: column;
             }
             
-            .main-container {
-                max-width: 100%;
-                padding: 0;
+            .hybrid-box-column:first-child {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
             }
         }
     </style>
 </head>
-<body class="antialiased">
-    <header class="header-bg text-white sticky top-0 z-50">
-        <nav class="main-container py-1">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="flex justify-between items-center w-full md:w-auto">
-                    <a href="#" class="text-lg font-bold text-white hover:text-neutral-300 transition-colors">Solana AI Registries Initiative</a>
-                    <button type="button" class="mobile-menu-button md:hidden" onclick="toggleMenu()">
-                        Menu &#9776;
-                    </button>
-                </div>
-                <div class="nav-container mt-1 md:mt-0">
-                    <div id="main-nav" class="nav-links flex flex-wrap md:flex-nowrap justify-center md:justify-end">
-                        <a href="#" class="nav-link active">Research Book</a>
-                        <a href="#" class="nav-link" onclick="downloadPDF()">Download PDF</a>
-                        <a href="#" class="nav-link" onclick="window.print()">Print</a>
-                    </div>
+<body>
+    <div class="container">
+        <button id="sidebarToggle" class="sidebar-toggle">☰</button>
+        
+        <div id="sidebar" class="sidebar">
+            <h2>Table of Contents</h2>
+            <ul id="chapterList" class="chapter-list">
+                <!-- Chapters will be dynamically loaded here -->
+            </ul>
+        </div>
+        
+        <div id="content" class="content">
+            <div class="header">
+                <h1>Solana Protocol Design for Agent and MCP Server Registries</h1>
+                <div class="header-controls">
+                    <button id="downloadPDF">Download PDF</button>
+                    <button id="printPage">Print</button>
                 </div>
             </div>
-        </nav>
-    </header>
-
-    <div class="main-container">
-        <h1 class="section-title my-6">Solana Protocol Design for Agent and MCP Server Registries</h1>
-        
-        <button type="button" class="mobile-sidebar-button" onclick="toggleSidebar()">
-            Toggle Table of Contents &#9776;
-        </button>
-        
-        <div class="book-container">
-            <aside id="book-sidebar" class="book-sidebar">
-                <h2 class="font-bold text-lg mb-4 border-b border-neutral-400 pb-2">Table of Contents</h2>
-                <div id="chapter-links">
-                    <a class="chapter-link" onclick="loadChapter(1)">Chapter 1: Introduction</a>
-                    <a class="chapter-link" onclick="loadChapter(2)">Chapter 2: Foundational Solana Concepts</a>
-                    <a class="chapter-link" onclick="loadChapter(3)">Chapter 3: Agent Registry Protocol Design</a>
-                    <a class="chapter-link" onclick="loadChapter(4)">Chapter 4: MCP Server Registry Protocol Design</a>
-                    <a class="chapter-link" onclick="loadChapter(5)">Chapter 5: Discovery and Querying Mechanisms</a>
-                    <a class="chapter-link" onclick="loadChapter(6)">Chapter 6: Implementation Guide</a>
-                    <a class="chapter-link" onclick="loadChapter(7)">Chapter 7: Security Considerations</a>
-                    <a class="chapter-link" onclick="loadChapter(8)">Chapter 8: Performance Optimization</a>
-                    <a class="chapter-link" onclick="loadChapter(9)">Chapter 9: Deployment and Maintenance</a>
-                    <a class="chapter-link" onclick="loadChapter(10)">Chapter 10: Case Studies and Examples</a>
-                    <a class="chapter-link" onclick="loadChapter(11)">Chapter 11: Future Directions</a>
-                    <a class="chapter-link" onclick="loadChapter(12)">Chapter 12: Conclusion</a>
-                    <a class="chapter-link" onclick="loadChapter(13)">Chapter 13: References</a>
-                    <a class="chapter-link" onclick="loadChapter(14)">Chapter 14: Appendices</a>
-                </div>
-            </aside>
             
-            <main id="book-content" class="book-content">
-                <div id="markdown-content" class="markdown-content">
-                    <!-- Markdown content will be loaded here -->
-                    <div class="loading-indicator">
-                        <div class="loading-spinner"></div>
-                    </div>
-                </div>
-                <div id="navigation-controls" class="book-navigation">
-                    <!-- Navigation controls will be added here -->
-                </div>
-            </main>
+            <div id="spinner" class="spinner">
+                <p>Loading chapter...</p>
+            </div>
+            
+            <div id="errorMessage" class="error-message"></div>
+            
+            <div id="chapterContent"></div>
+            
+            <div class="navigation-controls">
+                <button id="prevChapter">Previous Chapter</button>
+                <button id="nextChapter">Next Chapter</button>
+            </div>
         </div>
     </div>
-
-    <footer class="footer-bg py-6 mt-8">
-        <div class="main-container">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="mb-4 md:mb-0">
-                    <p class="footer-text">© 2025 Solana AI Registries Initiative</p>
-                </div>
-                <div>
-                    <a href="#" class="footer-text hover:text-white mr-4">Privacy Policy</a>
-                    <a href="#" class="footer-text hover:text-white">Contact</a>
-                </div>
-            </div>
-        </div>
-    </footer>
-
+    
     <script>
-        // Chapter file mapping
-        const chapterFiles = {
-            1: 'research_draft_part1.md',
-            2: 'research_draft_part2.md',
-            3: 'research_draft_part3.md',
-            4: 'research_draft_part4.md',
-            5: 'research_draft_part5.md',
-            6: 'research_draft_part6.md',
-            7: 'research_draft_part7.md',
-            8: 'research_draft_part8.md',
-            9: 'research_draft_part9.md',
-            10: 'research_draft_part10.md',
-            11: 'research_draft_part11.md',
-            12: 'research_draft_part12.md',
-            13: 'research_draft_part13.md',
-            14: 'research_draft_part14.md'
-        };
+        // Chapter configuration
+        const chapters = [
+            { id: "1", title: "Introduction", file: "research_draft_part1.md" },
+            { id: "2", title: "Foundational Solana Concepts", file: "research_draft_part2.md" },
+            { id: "3", title: "Agent Registry Protocol Design", file: "research_draft_part3.md" },
+            { id: "4", title: "MCP Server Registry Design", file: "research_draft_part4.md" },
+            { id: "5", title: "Discovery and Query Mechanisms", file: "research_draft_part5.md" },
+            { id: "6", title: "Implementation Guidelines", file: "research_draft_part6.md" },
+            { id: "7", title: "Security Considerations", file: "research_draft_part7.md" },
+            { id: "8", title: "Performance Optimizations", file: "research_draft_part8.md" },
+            { id: "9", title: "Deployment and Maintenance", file: "research_draft_part9.md" },
+            { id: "10", title: "Case Studies and Examples", file: "research_draft_part10.md" },
+            { id: "11", title: "Future Directions", file: "research_draft_part11.md" },
+            { id: "12", title: "Conclusion", file: "research_draft_part12.md" },
+            { id: "13", title: "References", file: "research_draft_part13.md" },
+            { id: "14", title: "Appendices", file: "research_draft_part14.md" }
+        ];
+        
+        // Cache for markdown content
+        const markdownCache = {};
         
         // Current chapter
-        let currentChapter = 1;
+        let currentChapterId = "1";
         
-        // Toggle main navigation menu
-        function toggleMenu() {
-            const navLinks = document.getElementById('main-nav');
-            if (navLinks) {
-                navLinks.classList.toggle('active');
+        // DOM elements
+        const sidebar = document.getElementById('sidebar');
+        const content = document.getElementById('content');
+        const chapterList = document.getElementById('chapterList');
+        const chapterContent = document.getElementById('chapterContent');
+        const spinner = document.getElementById('spinner');
+        const errorMessage = document.getElementById('errorMessage');
+        const prevChapterButton = document.getElementById('prevChapter');
+        const nextChapterButton = document.getElementById('nextChapter');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const downloadPDFButton = document.getElementById('downloadPDF');
+        const printPageButton = document.getElementById('printPage');
+        
+        // Initialize marked renderer with sanitization
+        const renderer = new marked.Renderer();
+        
+        // Custom renderer for code blocks with syntax highlighting and buttons
+        renderer.code = function(code, language) {
+            const validLanguage = typeof language === 'string' ? language : '';
+            const isShellCommand = validLanguage === 'bash' || validLanguage === 'sh';
+            const highlightedCode = hljs.highlightAuto(code, validLanguage ? [validLanguage] : undefined).value;
+            
+            // Check if this is an ASCII diagram (contains box drawing characters)
+            const isAsciiDiagram = typeof code === 'string' && (
+                code.includes('┌') || code.includes('└') || code.includes('┐') || code.includes('┘') ||
+                code.includes('+---') || code.includes('|') || code.includes('+-') ||
+                code.includes('-->') || code.includes('<--') || code.includes('<->') ||
+                code.includes('===') || code.includes('---')
+            );
+            
+            let result = '';
+            
+            if (isAsciiDiagram) {
+                result = `<div class="ascii-diagram">${code}</div>`;
+            } else {
+                result = `<pre><div class="code-buttons">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    ${isShellCommand ? '<button class="execute-button" onclick="executeCode(this)">Execute</button>' : ''}
+                </div><code class="${validLanguage}">${highlightedCode}</code></pre>`;
+            }
+            
+            return result;
+        };
+        
+        // Custom renderer for list items to handle tag-style elements
+        renderer.listitem = function(text) {
+            // Replace patterns like `keyword` with tag-style spans
+            const taggedText = text.replace(/`([^`]+)`/g, '<span class="code-tag">$1</span>');
+            return `<li>${taggedText}</li>`;
+        };
+        
+        // Set up marked with custom renderer and sanitization
+        marked.setOptions({
+            renderer: renderer,
+            highlight: function(code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    return hljs.highlight(code, { language: lang }).value;
+                }
+                return hljs.highlightAuto(code).value;
+            },
+            breaks: true,
+            gfm: true
+        });
+        
+        // Initialize the sidebar with chapters
+        function initializeSidebar() {
+            chapters.forEach(chapter => {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = `#chapter-${chapter.id}`;
+                a.textContent = `${chapter.id}. ${chapter.title}`;
+                a.dataset.chapterId = chapter.id;
+                a.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    loadChapter(chapter.id);
+                });
+                li.appendChild(a);
+                
+                // Create subchapter list container
+                const subchapterList = document.createElement('ul');
+                subchapterList.className = 'subchapter-list';
+                subchapterList.id = `subchapters-${chapter.id}`;
+                li.appendChild(subchapterList);
+                
+                chapterList.appendChild(li);
+            });
+        }
+        
+        // Load chapter content
+        async function loadChapter(chapterId) {
+            // Update current chapter
+            currentChapterId = chapterId;
+            
+            // Update active state in sidebar
+            document.querySelectorAll('#chapterList a').forEach(a => {
+                a.classList.remove('active');
+                if (a.dataset.chapterId === chapterId) {
+                    a.classList.add('active');
+                }
+            });
+            
+            // Show loading spinner
+            spinner.classList.add('visible');
+            errorMessage.classList.remove('visible');
+            errorMessage.textContent = '';
+            
+            try {
+                // Get chapter file
+                const chapter = chapters.find(c => c.id === chapterId);
+                if (!chapter) {
+                    throw new Error(`Chapter ${chapterId} not found`);
+                }
+                
+                // Check cache first
+                let markdownContent;
+                if (markdownCache[chapter.file]) {
+                    markdownContent = markdownCache[chapter.file];
+                } else {
+                    // Fetch markdown content
+                    const response = await fetch(chapter.file);
+                    if (!response.ok) {
+                        throw new Error(`Failed to load ${chapter.file}: ${response.status} ${response.statusText}`);
+                    }
+                    markdownContent = await response.text();
+                    
+                    // Cache the content
+                    markdownCache[chapter.file] = markdownContent;
+                }
+                
+                // Parse markdown to HTML with sanitization
+                const htmlContent = DOMPurify.sanitize(marked.parse(markdownContent));
+                
+                // Update content
+                chapterContent.innerHTML = htmlContent;
+                
+                // Extract subheadings and update sidebar
+                updateSubchapters(chapterId, chapterContent);
+                
+                // Process ASCII diagrams
+                processAsciiDiagrams();
+                
+                // Update navigation buttons
+                updateNavigationButtons();
+                
+                // Add copy and execute buttons to code blocks
+                addCodeButtons();
+                
+                // Highlight code blocks
+                document.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+                
+            } catch (error) {
+                console.error('Error loading chapter:', error);
+                errorMessage.textContent = `Error Loading Chapter\n${error.message}\nPlease ensure all markdown files are in the same directory as this HTML file.\n\nExpected file: ${chapters.find(c => c.id === chapterId).file}`;
+                errorMessage.classList.add('visible');
+            } finally {
+                // Hide loading spinner
+                spinner.classList.remove('visible');
             }
         }
         
-        // Toggle sidebar for mobile
-        function toggleSidebar() {
-            const sidebar = document.getElementById('book-sidebar');
-            if (sidebar) {
-                sidebar.classList.toggle('active');
+        // Extract subheadings from chapter content and update sidebar
+        function updateSubchapters(chapterId, contentElement) {
+            const subchapterList = document.getElementById(`subchapters-${chapterId}`);
+            if (!subchapterList) return;
+            
+            // Clear existing subchapters
+            subchapterList.innerHTML = '';
+            
+            // Find all h2 and h3 elements in the content
+            const headings = contentElement.querySelectorAll('h2, h3');
+            
+            if (headings.length > 0) {
+                // Show the subchapter list
+                subchapterList.classList.add('visible');
+                
+                // Add each heading as a subchapter
+                headings.forEach((heading, index) => {
+                    // Create an ID for the heading if it doesn't have one
+                    if (!heading.id) {
+                        heading.id = `section-${chapterId}-${index}`;
+                    }
+                    
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = `#${heading.id}`;
+                    a.textContent = heading.textContent;
+                    a.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        heading.scrollIntoView({ behavior: 'smooth' });
+                    });
+                    
+                    // Indent h3 elements
+                    if (heading.tagName === 'H3') {
+                        a.style.paddingLeft = '1rem';
+                    }
+                    
+                    li.appendChild(a);
+                    subchapterList.appendChild(li);
+                });
+            } else {
+                // Hide the subchapter list if no headings
+                subchapterList.classList.remove('visible');
             }
+        }
+        
+        // Process ASCII diagrams
+        function processAsciiDiagrams() {
+            document.querySelectorAll('.ascii-diagram').forEach(diagram => {
+                // No additional processing needed, the CSS handles the display
+            });
+        }
+        
+        // Update navigation buttons
+        function updateNavigationButtons() {
+            const currentIndex = chapters.findIndex(c => c.id === currentChapterId);
+            
+            // Previous button
+            if (currentIndex > 0) {
+                prevChapterButton.disabled = false;
+                prevChapterButton.onclick = () => loadChapter(chapters[currentIndex - 1].id);
+            } else {
+                prevChapterButton.disabled = true;
+                prevChapterButton.onclick = null;
+            }
+            
+            // Next button
+            if (currentIndex < chapters.length - 1) {
+                nextChapterButton.disabled = false;
+                nextChapterButton.onclick = () => loadChapter(chapters[currentIndex + 1].id);
+            } else {
+                nextChapterButton.disabled = true;
+                nextChapterButton.onclick = null;
+            }
+        }
+        
+        // Add copy and execute buttons to code blocks
+        function addCodeButtons() {
+            document.querySelectorAll('pre').forEach(pre => {
+                // Skip if buttons already exist
+                if (pre.querySelector('.code-buttons')) return;
+                
+                const codeElement = pre.querySelector('code');
+                if (!codeElement) return;
+                
+                const language = Array.from(codeElement.classList).find(cls => cls !== 'hljs');
+                const isShellCommand = language === 'bash' || language === 'sh';
+                
+                const buttonsDiv = document.createElement('div');
+                buttonsDiv.className = 'code-buttons';
+                
+                const copyButton = document.createElement('button');
+                copyButton.className = 'copy-button';
+                copyButton.textContent = 'Copy';
+                copyButton.onclick = function() { copyCode(this); };
+                buttonsDiv.appendChild(copyButton);
+                
+                if (isShellCommand) {
+                    const executeButton = document.createElement('button');
+                    executeButton.className = 'execute-button';
+                    executeButton.textContent = 'Execute';
+                    executeButton.onclick = function() { executeCode(this); };
+                    buttonsDiv.appendChild(executeButton);
+                }
+                
+                pre.insertBefore(buttonsDiv, pre.firstChild);
+            });
         }
         
         // Copy code to clipboard
-        function copyCode(codeElement) {
-            const code = codeElement.textContent;
-            navigator.clipboard.writeText(code).then(() => {
-                const button = codeElement.parentElement.querySelector('.copy-button');
+        function copyCode(button) {
+            const pre = button.closest('pre');
+            const code = pre.querySelector('code');
+            const text = code.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
                 const originalText = button.textContent;
                 button.textContent = 'Copied!';
                 setTimeout(() => {
                     button.textContent = originalText;
                 }, 2000);
             }).catch(err => {
-                console.error('Failed to copy code: ', err);
+                console.error('Failed to copy code:', err);
+                alert('Failed to copy code to clipboard');
             });
         }
         
         // Execute code in terminal
-        function executeCode(codeElement) {
-            const code = codeElement.textContent;
-            // Create a custom event that can be intercepted by the terminal
-            const event = new CustomEvent('execute-in-terminal', { 
-                detail: { command: code } 
-            });
-            document.dispatchEvent(event);
+        function executeCode(button) {
+            const pre = button.closest('pre');
+            const code = pre.querySelector('code');
+            const command = code.textContent;
             
-            // Show feedback to user
-            const button = codeElement.parentElement.querySelector('.execute-button');
-            const originalText = button.textContent;
-            button.textContent = 'Sent to terminal!';
-            setTimeout(() => {
-                button.textContent = originalText;
-            }, 2000);
-        }
-        
-        // Load chapter content
-        async function loadChapter(chapterNum) {
             try {
-                currentChapter = chapterNum;
+                // Create a temporary textarea to hold the command
+                const textarea = document.createElement('textarea');
+                textarea.value = command;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
                 
-                // Update active chapter link
-                const chapterLinks = document.querySelectorAll('.chapter-link');
-                chapterLinks.forEach((link, index) => {
-                    if (index + 1 === chapterNum) {
-                        link.classList.add('active');
-                    } else {
-                        link.classList.remove('active');
-                    }
-                });
+                // Attempt to open terminal with the command
+                alert('Command copied to clipboard. Please paste it in your terminal.');
                 
-                // Show loading indicator
-                document.getElementById('markdown-content').innerHTML = '<div class="loading-indicator"><div class="loading-spinner"></div></div>';
-                
-                // Load chapter content
-                const response = await fetch(chapterFiles[chapterNum]);
-                if (!response.ok) {
-                    throw new Error(`Failed to load chapter ${chapterNum}`);
+                // On some systems, we can try to open a terminal
+                // This may not work in all browsers due to security restrictions
+                if (navigator.platform.indexOf('Win') !== -1) {
+                    // Windows
+                    window.open('cmd://');
+                } else if (navigator.platform.indexOf('Mac') !== -1) {
+                    // macOS
+                    window.open('terminal://');
+                } else {
+                    // Linux and others
+                    window.open('x-terminal-emulator://');
                 }
-                
-                const content = await response.text();
-                
-                // Configure marked.js renderer to enhance diagrams and tables
-                const renderer = new marked.Renderer();
-                
-                // Enhance code blocks for ASCII diagrams and add copy/execute buttons
-                const originalCodeRenderer = renderer.code;
-                renderer.code = function(code, language, isEscaped) {
-                    // Fix for the error: Check if code is a string before using includes
-                    if (typeof code === 'string') {
-                        // Check if this is an ASCII diagram
-                        if (code.includes('+---') || (code.includes('|') && code.includes('-'))) {
-                            return `<div class="content-box">
-                                        <pre class="ascii-diagram">${code}</pre>
-                                    </div>`;
-                        }
-                        
-                        // For regular code blocks, add copy and execute buttons
-                        const codeId = 'code-' + Math.random().toString(36).substr(2, 9);
-                        const isShellCommand = language === 'bash' || language === 'sh' || 
-                                             code.trim().startsWith('$') || 
-                                             code.includes('npm install') ||
-                                             code.includes('cargo build') ||
-                                             code.includes('solana ');
-                        
-                        return `<div class="code-container">
-                                    <pre><code id="${codeId}" class="language-${language || ''}">${code}</code>
-                                    <div class="code-buttons">
-                                        <button class="copy-button" onclick="copyCode(document.getElementById('${codeId}'))">Copy</button>
-                                        ${isShellCommand ? `<button class="execute-button" onclick="executeCode(document.getElementById('${codeId}'))">Execute</button>` : ''}
-                                    </div></pre>
-                                </div>`;
-                    }
-                    
-                    return originalCodeRenderer.call(this, code, language, isEscaped);
-                };
-                
-                // Enhance tables
-                const originalTableRenderer = renderer.table;
-                renderer.table = function(header, body) {
-                    return `<div class="overflow-x-auto">
-                              <table class="table-corporate">
-                                <thead>${header}</thead>
-                                <tbody>${body}</tbody>
-                              </table>
-                            </div>`;
-                };
-                
-                // Set marked options
-                marked.setOptions({
-                    renderer: renderer,
-                    gfm: true,
-                    breaks: true
-                });
-                
-                // Render markdown content
-                let renderedContent = marked.parse(content);
-                
-                // Post-process the rendered HTML to enhance tables and add concept boxes
-                renderedContent = enhanceRenderedContent(renderedContent);
-                
-                document.getElementById('markdown-content').innerHTML = renderedContent;
-                
-                // Add navigation buttons
-                addNavigation(chapterNum);
-                
-                // Apply code tag styling to match screenshot
-                applyCodeTagStyling();
-                
-                // Close sidebar on mobile after selection
-                if (window.innerWidth <= 768) {
-                    document.getElementById('book-sidebar').classList.remove('active');
-                }
-                
-                // Scroll to top
-                window.scrollTo(0, 0);
-                
-                // Update document title
-                const chapterTitle = document.querySelector(`.chapter-link:nth-child(${chapterNum})`).textContent;
-                document.title = `${chapterTitle} | Solana Protocol Design`;
-                
-            } catch (error) {
-                console.error('Error loading chapter:', error);
-                document.getElementById('markdown-content').innerHTML = `
-                    <div class="error-message">
-                        <h3>Error Loading Chapter</h3>
-                        <p>Please ensure all markdown files are in the same directory as this HTML file.</p>
-                        <p>Expected file: ${chapterFiles[chapterNum]}</p>
-                        <p>Error details: ${error.message}</p>
-                    </div>
-                    <div class="mt-4">
-                        <p>This book requires the following markdown files to be present in the same directory:</p>
-                        <ul class="list-disc pl-5 mt-2">
-                            ${Object.values(chapterFiles).map(file => `<li>${file}</li>`).join('')}
-                        </ul>
-                    </div>
-                `;
+            } catch (err) {
+                console.error('Failed to execute code:', err);
+                alert('Command copied to clipboard. Please open a terminal and paste the command.');
             }
         }
         
-        // Apply code tag styling to match screenshot
-        function applyCodeTagStyling() {
-            // Find all inline code elements that look like field names or tags
-            const codeElements = document.querySelectorAll('code');
-            codeElements.forEach(code => {
-                const text = code.textContent.trim();
-                // Check if this looks like a field name or tag (short, no spaces, etc.)
-                if (text.length < 30 && !text.includes('\n') && 
-                    (text.includes('_') || /^[a-z]+$/.test(text) || text.startsWith('supports_'))) {
-                    // Replace with styled tag
-                    code.outerHTML = `<span class="code-tag">${text}</span>`;
-                }
-            });
-            
-            // Convert bullet lists with field specifications to match screenshot
-            const lists = document.querySelectorAll('ul');
-            lists.forEach(list => {
-                // Check if this list contains field specifications
-                const items = list.querySelectorAll('li');
-                let isFieldList = false;
-                
-                items.forEach(item => {
-                    if (item.textContent.includes('owner') || 
-                        item.textContent.includes('status') || 
-                        item.textContent.includes('Boolean flags') ||
-                        item.textContent.includes('On-chain')) {
-                        isFieldList = true;
-                    }
-                });
-                
-                if (isFieldList) {
-                    list.classList.add('data-spec-list');
-                    
-                    // Process each list item to add code tags
-                    items.forEach(item => {
-                        const html = item.innerHTML;
-                        // Use regex to find potential field names and wrap them in code tags
-                        const processedHtml = html.replace(/\b([a-z_]+)\b/g, (match) => {
-                            // Skip common words
-                            if (['the', 'and', 'or', 'for', 'of', 'to', 'in', 'on', 'with', 'by', 'as', 'etc'].includes(match)) {
-                                return match;
-                            }
-                            return `<span class="code-tag">${match}</span>`;
-                        });
-                        item.innerHTML = processedHtml;
-                    });
-                }
-            });
-            
-            // Wrap sections that look like data specifications in content boxes
-            const h3Elements = document.querySelectorAll('h3');
-            h3Elements.forEach(h3 => {
-                if (h3.textContent.includes('Data Specification') || 
-                    h3.textContent.includes('Entry Data') || 
-                    h3.textContent.includes('Registry Entry')) {
-                    
-                    // Find the next h3 or h2
-                    let nextHeading = h3.nextElementSibling;
-                    let elements = [h3];
-                    
-                    while (nextHeading && 
-                           nextHeading.tagName !== 'H3' && 
-                           nextHeading.tagName !== 'H2') {
-                        elements.push(nextHeading);
-                        nextHeading = nextHeading.nextElementSibling;
-                    }
-                    
-                    // Create a content box and move elements into it
-                    const contentBox = document.createElement('div');
-                    contentBox.className = 'content-box';
-                    h3.parentNode.insertBefore(contentBox, h3);
-                    
-                    elements.forEach(el => {
-                        contentBox.appendChild(el);
-                    });
-                }
-            });
-            
-            // Add note boxes for explanatory text
-            const paragraphs = document.querySelectorAll('p');
-            paragraphs.forEach(p => {
-                if (p.textContent.includes('For the complete') || 
-                    p.textContent.includes('refer to Table') || 
-                    p.textContent.includes('Note:')) {
-                    
-                    p.classList.add('note-box');
-                }
-            });
+        // Toggle sidebar
+        function toggleSidebar() {
+            sidebar.classList.toggle('sidebar-hidden');
+            content.classList.toggle('content-full');
         }
         
-        // Enhance rendered content with better styling for tables and concept boxes
-        function enhanceRenderedContent(html) {
-            // Enhance sections that look like concept boxes
-            html = html.replace(/<h3>(Rent, Storage &amp; Hybrid Data Model|Program Derived Addresses \(PDAs\)|Account Structures &amp; Borsh Serialization|Key Strategic Objectives:|MCP Server Entry Data Specification|Agent Registry Entry Data Specification|Conceptual Data Distribution)(.+?)<\/h3>/g, 
-                '<div class="content-box"><h3 class="info-box-title">$1$2</h3><div class="info-box-text">');
-            
-            // Close concept boxes before the next h2 or h3
-            html = html.replace(/(<\/div>)(\s*<h[23])/g, '$1</div>$2');
-            
-            // Create two-column layouts for comparison sections
-            if (html.includes('On-Chain Core Data') && html.includes('Off-Chain Extended Metadata')) {
-                const pattern = /<h4>On-Chain Core Data<\/h4>([\s\S]*?)<h4>Off-Chain Extended Metadata<\/h4>([\s\S]*?)(<h[23]|<div class="book-navigation">)/;
-                const replacement = `
-                <div class="two-column-container">
-                    <div class="column">
-                        <h4 class="column-title">On-Chain Core Data</h4>
-                        <div class="column-content">$1</div>
-                    </div>
-                    <div class="connector">&lt;---&gt;</div>
-                    <div class="column">
-                        <h4 class="column-title">Off-Chain Extended Metadata</h4>
-                        <div class="column-content">$2</div>
-                    </div>
-                </div>
-                $3`;
-                
-                html = html.replace(pattern, replacement);
-            }
-            
-            // Enhance flow steps
-            html = html.replace(/<li>(\d+)\. (Prepare|Invoke|PDA Created|Event Emitted|Update|Deregistration)([^<]+)<\/li>/g, 
-                '<li class="flow-step">$1. $2$3</li><div class="flow-arrow">&#8595;</div>');
-            
-            // Remove last arrow after flow steps
-            html = html.replace(/(<\/li><div class="flow-arrow">&#8595;<\/div>)(?!.*<li class="flow-step">)/s, '</li>');
-            
-            // Wrap data specification sections in content boxes
-            html = html.replace(/<h2>(MCP Server Entry Data Specification|Agent Registry Entry Data Specification|Data Specification)(.+?)<\/h2>/g, 
-                '<div class="content-box"><h2>$1$2</h2>');
-            
-            return html;
-        }
-        
-        // Add navigation buttons
-        function addNavigation(currentChapter) {
-            const totalChapters = Object.keys(chapterFiles).length;
-            const nav = document.getElementById('navigation-controls');
-            nav.innerHTML = '';
-            
-            // Previous button
-            if (currentChapter > 1) {
-                const prevButton = document.createElement('a');
-                prevButton.textContent = `← Previous: Chapter ${currentChapter - 1}`;
-                prevButton.onclick = () => loadChapter(currentChapter - 1);
-                nav.appendChild(prevButton);
-            } else {
-                // Empty div for spacing
-                const spacer = document.createElement('div');
-                nav.appendChild(spacer);
-            }
-            
-            // Next button
-            if (currentChapter < totalChapters) {
-                const nextButton = document.createElement('a');
-                nextButton.textContent = `Next: Chapter ${currentChapter + 1} →`;
-                nextButton.onclick = () => loadChapter(currentChapter + 1);
-                nav.appendChild(nextButton);
-            } else {
-                // Empty div for spacing
-                const spacer = document.createElement('div');
-                nav.appendChild(spacer);
-            }
-        }
-        
-        // Download PDF function
+        // Download PDF
         function downloadPDF() {
-            const pdfUrl = 'solana_protocol_design_for_agent_and_mcp_server_registries.pdf';
-            
-            // Create a temporary link element
-            const link = document.createElement('a');
-            link.href = pdfUrl;
-            link.download = 'solana_protocol_design_for_agent_and_mcp_server_registries.pdf';
-            
-            // Append to the document, click, and remove
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // Redirect to the PDF file
+            window.open('solana_protocol_design_for_agent_and_mcp_server_registries.pdf', '_blank');
+        }
+        
+        // Print page
+        function printPage() {
+            window.print();
         }
         
         // Handle keyboard navigation
-        document.addEventListener('keydown', function(e) {
+        function handleKeydown(event) {
             // Left arrow key for previous chapter
-            if (e.key === 'ArrowLeft' && currentChapter > 1) {
-                loadChapter(currentChapter - 1);
+            if (event.key === 'ArrowLeft' && !prevChapterButton.disabled) {
+                prevChapterButton.click();
             }
-            // Right arrow key for next chapter
-            else if (e.key === 'ArrowRight' && currentChapter < Object.keys(chapterFiles).length) {
-                loadChapter(currentChapter + 1);
-            }
-        });
-        
-        // Setup terminal execution listener
-        document.addEventListener('execute-in-terminal', function(e) {
-            console.log('Command to execute in terminal:', e.detail.command);
-            // In a real implementation, this would communicate with a local terminal
-            // For now, we'll just log to console
-        });
-        
-        // Load initial chapter on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            // Default to chapter 1
-            loadChapter(1);
             
-            // Make sidebar visible on desktop by default
-            if (window.innerWidth > 768) {
-                document.getElementById('book-sidebar').style.display = 'block';
+            // Right arrow key for next chapter
+            if (event.key === 'ArrowRight' && !nextChapterButton.disabled) {
+                nextChapterButton.click();
             }
-        });
+            
+            // 'S' key to toggle sidebar
+            if (event.key === 's' || event.key === 'S') {
+                toggleSidebar();
+            }
+        }
         
-        // Handle window resize
-        window.addEventListener('resize', function() {
-            if (window.innerWidth > 768) {
-                document.getElementById('book-sidebar').style.display = 'block';
-            } else {
-                document.getElementById('book-sidebar').style.display = 'none';
-            }
-        });
+        // Initialize the application
+        function initialize() {
+            // Initialize sidebar
+            initializeSidebar();
+            
+            // Set up event listeners
+            sidebarToggle.addEventListener('click', toggleSidebar);
+            downloadPDFButton.addEventListener('click', downloadPDF);
+            printPageButton.addEventListener('click', printPage);
+            document.addEventListener('keydown', handleKeydown);
+            
+            // Load the first chapter
+            loadChapter(currentChapterId);
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 768) {
+                    sidebar.classList.remove('sidebar-hidden');
+                    content.classList.remove('content-full');
+                }
+            });
+        }
+        
+        // Start the application when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', initialize);
     </script>
 </body>
 </html>
