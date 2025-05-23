@@ -3,14 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Visualization & Content Choices:
-        - Report Info: Core Solana Concepts (PDAs, Borsh, Rent, Hybrid Storage). Goal: Inform/Explain. Viz: HTML/CSS diagrams with clear labels and concise text. Interaction: Static visual aids. Justification: Simplifies abstract blockchain concepts for a corporate audience. Method: HTML/CSS/Tailwind.
-        - Report Info: Agent/MCP Registry Data Structures (Tables 1 & 2). Goal: Inform/Reference. Viz: Clean, well-styled HTML tables. Interaction: Potentially hover for tooltips on field names (if space/complexity allows without clutter). Justification: Presents detailed specifications clearly. Method: HTML/CSS.
-        - Report Info: Registration/Management Flows. Goal: Organize/Explain. Viz: Step-by-step visual flows using HTML/CSS. Interaction: Static. Justification: Clarifies procedural information. Method: HTML/CSS/Tailwind.
-        - Report Info: On-chain vs. Off-chain Querying (Table 3). Goal: Compare. Viz: Styled HTML table with clear distinctions. Interaction: Static. Justification: Highlights trade-offs effectively. Method: HTML/CSS.
-        - Report Info: Conceptual Data Distribution (On-chain vs. Off-chain). Goal: Inform. Viz: Simple donut charts. Interaction: Hover for details. Justification: Quick visual summary. Method: Chart.js.
-        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-    <title>Solana AI Registries: A Corporate Technical Overview (90s Monospace)</title>
+    <title>Solana AI Registries: A Corporate Technical Overview (90s Monospace with Endpoints)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -33,6 +26,8 @@
             border-radius: 0; /* Sharp corners for 90s look */
             font-weight: normal; /* Monospace handles weight differently */
             border: 1px solid #404040; /* Border for nav links */
+            display: inline-block; /* Ensure padding and border are respected properly */
+            margin: 0.25rem 0; /* Add some margin for wrapped items */
         }
         .nav-link:hover {
             background-color: #737373; /* Neutral-500 */
@@ -191,10 +186,27 @@
             font-weight: bold;
             color: #262626; /* Neutral-800 */
         }
-        /* Remove unicode icon specific styling if not needed, or adapt */
-        .unicode-icon { display: none; } /* Hide emojis */
-        .subsection-title-text { /* For titles that had icons */
-            /* Add any specific styling if needed, otherwise defaults are fine */
+        .endpoint-card {
+            background-color: #FFFFFF;
+            border: 1px solid #A3A3A3; /* Neutral-400 */
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .endpoint-title {
+            font-weight: bold;
+            color: #262626; /* Neutral-800 */
+            margin-bottom: 0.5rem;
+        }
+        .endpoint-detail {
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+        }
+        .endpoint-detail .label {
+            font-weight: bold;
+            color: #525252; /* Neutral-600 */
+        }
+        .endpoint-detail .value {
+            color: #404040; /* Neutral-700 */
         }
 
     </style>
@@ -202,13 +214,14 @@
 <body class="antialiased">
 
     <header class="header-bg text-white sticky top-0 z-50">
-        <nav class="main-container py-4 flex flex-col sm:flex-row justify-between items-center">
-            <a href="#" class="text-2xl font-bold text-white hover:text-neutral-300 transition-colors">Solana AI Registries Initiative</a>
-            <div class="mt-3 sm:mt-0 space-x-1 text-sm" id="main-nav">
+        <nav class="main-container py-3 flex flex-col sm:flex-row sm:justify-between items-center">
+            <a href="#" class="text-xl sm:text-2xl font-bold text-white hover:text-neutral-300 transition-colors text-center sm:text-left mb-3 sm:mb-0">Solana AI Registries Initiative</a>
+            <div class="flex flex-col items-center space-y-2 sm:flex-row sm:space-y-0 sm:space-x-1 sm:flex-wrap text-sm sm:justify-end" id="main-nav">
                 <a href="#introduction" class="nav-link active">Introduction</a>
                 <a href="#foundational-concepts" class="nav-link">Core Concepts</a>
                 <a href="#agent-registry" class="nav-link">Agent Registry</a>
                 <a href="#mcp-registry" class="nav-link">MCP Registry</a>
+                <a href="#service-endpoints" class="nav-link">Endpoints</a>
                 <a href="#discovery-querying" class="nav-link">Discovery</a>
                 <a href="#security" class="nav-link">Security</a>
                 <a href="#conclusion" class="nav-link">Conclusion</a>
@@ -259,7 +272,7 @@
 
             <div class="card mb-8">
                 <h3 class="subsection-title subsection-title-text">Rent, Storage & Hybrid Data Model</h3>
-                <p class="mb-4">Storing data on Solana incurs "rent." Accounts must be rent-exempt by holding a SOL balance. Given Solana's 10MB per-account limit and rent costs, a hybrid storage model is essential:</p>
+                <p class="mb-4">Storing data on Solana incurs "rent". Accounts must be rent-exempt by holding a SOL balance. Given Solana's 10MB per-account limit and rent costs, a hybrid storage model is essential:</p>
                 <div class="flex flex-col md:flex-row items-stretch justify-around p-4 bg-white rounded-none border border-neutral-300 space-y-4 md:space-y-0 md:space-x-4">
                     <div class="flex-1 p-4 hybrid-box rounded-none">
                         <h4 class="hybrid-box-title mb-2 text-center">On-Chain Core Data</h4>
@@ -296,8 +309,8 @@
                 <p class="mb-4 text-sm">Each agent's data is stored in a PDA. The structure balances on-chain essentials with links to comprehensive off-chain metadata. Key fields from Table 1 of the report include:</p>
                 <ul class="list-disc list-inside space-y-1 mb-4 pl-5 text-sm">
                     <li><code class="code-like">owner_authority</code>, <code class="code-like">agent_id</code>, <code class="code-like">name</code>, <code class="code-like">description</code></li>
-                    <li><code class="code-like">service_endpoints</code> (Vec, limited on-chain)</li>
-                    <li><code class="code-like">capabilities_flags</code> (A2A bitmask), <code class="code-like">skills</code> (Vec summary)</li>
+                    <li><code class="code-like">service_endpoints</code> (Vec, limited to Max 3 on-chain)</li>
+                    <li><code class="code-like">capabilities_flags</code> (A2A bitmask), <code class="code-like">skills</code> (Vec summary, Max 10 on-chain)</li>
                     <li><code class="code-like">status</code>, <code class="code-like">timestamps</code>, <code class="code-like">extended_metadata_uri</code> (link to full AgentCard)</li>
                 </ul>
                 <div class="info-box">
@@ -326,9 +339,9 @@
                 <h3 class="subsection-title">MCP Server Entry Data Specification (`McpServerRegistryEntryV1`)</h3>
                 <p class="mb-4 text-sm">MCP Server entries also use PDAs and a hybrid data model. Key fields from Table 2 of the report include:</p>
                  <ul class="list-disc list-inside space-y-1 mb-4 pl-5 text-sm">
-                    <li><code class="code-like">owner_authority</code>, <code class="code-like">server_id</code>, <code class="code-like">name</code>, <code class="code-like">service_endpoint</code> (HTTPS)</li>
+                    <li><code class="code-like">owner_authority</code>, <code class="code-like">server_id</code>, <code class="code-like">name</code>, <code class="code-like">service_endpoint</code> (HTTPS REQUIRED)</li>
                     <li>Boolean flags: <code class="code-like">supports_tools</code>, <code class="code-like">supports_resources</code>, <code class="code-like">supports_prompts</code></li>
-                    <li>On-chain summaries/hashes for key <code class="code-like">onchain_tool_definitions</code>, <code class="code-like">onchain_resource_definitions</code>, etc. (limited Vecs)</li>
+                    <li>On-chain summaries/hashes for key <code class="code-like">onchain_tool_definitions</code>, <code class="code-like">onchain_resource_definitions</code>, etc. (limited Vecs, Max 5 each)</li>
                     <li><code class="code-like">status</code>, <code class="code-like">timestamps</code>, <code class="code-like">full_capabilities_uri</code> (link to complete MCP schema JSON)</li>
                 </ul>
                  <div class="info-box">
@@ -341,6 +354,56 @@
                     <canvas id="hybridDataChart"></canvas>
                 </div>
                 <p class="text-xs mt-2 text-center">This hybrid model is crucial for scalability and cost-efficiency.</p>
+            </div>
+        </section>
+
+        <section id="service-endpoints" class="mb-16">
+            <h2 class="section-title mb-6">Service Endpoints & Connectivity</h2>
+            <p class="text-lead mb-6">Clear endpoint definitions are crucial for enabling communication and interaction with registered Agents and MCP Servers. The protocol specifies how these endpoints are advertised on-chain.</p>
+
+            <div class="card mb-8">
+                <h3 class="subsection-title">Agent Service Endpoints</h3>
+                <p class="mb-4 text-sm">Agents can expose multiple service endpoints to support various interaction protocols. The <code class="code-like">AgentRegistryEntryV1</code> structure includes a field <code class="code-like">service_endpoints: Vec&lt;ServiceEndpoint&gt;</code> for this purpose.</p>
+                <ul class="list-disc list-inside space-y-1 mb-4 pl-5 text-sm">
+                    <li>Each <code class="code-like">ServiceEndpoint</code> struct contains <code class="code-like">protocol</code> (String, e.g., "a2a_http_jsonrpc"), <code class="code-like">url</code> (String), and <code class="code-like">is_default</code> (bool) fields.</li>
+                    <li>A maximum of 3 service endpoints can be stored on-chain per agent.</li>
+                    <li>Exactly one endpoint must be marked as <code class="code-like">is_default</code> if any endpoints are provided.</li>
+                </ul>
+                <p class="text-sm mb-2 font-semibold">Conceptual Example of Agent Endpoint Configurations:</p>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="endpoint-card">
+                        <p class="endpoint-title">Agent_TradingBot_001</p>
+                        <div class="endpoint-detail"><span class="label">Endpoint 1 (Default):</span></div>
+                        <div class="endpoint-detail ml-4"><span class="label">Protocol:</span> <code class="code-like">a2a_http_jsonrpc</code></div>
+                        <div class="endpoint-detail ml-4"><span class="label">URL:</span> <code class="code-like">https://trading.example.com/api/a2a</code></div>
+                        <div class="endpoint-detail"><span class="label">Endpoint 2:</span></div>
+                        <div class="endpoint-detail ml-4"><span class="label">Protocol:</span> <code class="code-like">websocket_feed</code></div>
+                        <div class="endpoint-detail ml-4"><span class="label">URL:</span> <code class="code-like">wss://trading.example.com/feed</code></div>
+                    </div>
+                    <div class="endpoint-card">
+                        <p class="endpoint-title">Agent_InfoOracle_002</p>
+                        <div class="endpoint-detail"><span class="label">Endpoint 1 (Default):</span></div>
+                        <div class="endpoint-detail ml-4"><span class="label">Protocol:</span> <code class="code-like">rest_api_v1</code></div>
+                        <div class="endpoint-detail ml-4"><span class="label">URL:</span> <code class="code-like">https://info.example.com/v1/query</code></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="subsection-title">MCP Server Service Endpoint</h3>
+                <p class="mb-4 text-sm">MCP Servers advertise a primary service endpoint for standardized communication, typically JSON-RPC 2.0 over HTTP(S). The <code class="code-like">McpServerRegistryEntryV1</code> structure includes a field <code class="code-like">service_endpoint: String</code> for this.</p>
+                 <ul class="list-disc list-inside space-y-1 mb-4 pl-5 text-sm">
+                    <li>This URL is the main point of contact for clients wishing to utilize the server's Tools, Resources, or Prompts.</li>
+                    <li>The protocol specifies that this endpoint URL must be HTTPS for secure communication.</li>
+                    <li>The maximum length for this URL is 256 characters.</li>
+                </ul>
+                <p class="text-sm mb-2 font-semibold">Conceptual Example of an MCP Server Endpoint:</p>
+                <div class="endpoint-card">
+                    <p class="endpoint-title">MCPServer_DataTools_XYZ</p>
+                    <div class="endpoint-detail"><span class="label">Primary Service Endpoint:</span></div>
+                    <div class="endpoint-detail ml-4"><span class="label">URL:</span> <code class="code-like">https://mcp.datatools.example.com/rpc</code></div>
+                    <div class="endpoint-detail ml-4"><span class="label">Note:</span> Must be HTTPS. Max 256 Chars.</div>
+                </div>
             </div>
         </section>
 
