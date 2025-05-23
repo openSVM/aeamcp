@@ -171,19 +171,131 @@
             margin-bottom: 1rem;
             color: #525252;
         }
+        
+        /* Enhanced Table styling */
         .markdown-content table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 1rem;
+            margin: 1.5rem 0;
+            border: 1px solid #262626;
+            background-color: #FFFFFF;
         }
-        .markdown-content th, .markdown-content td {
-            border: 1px solid #A3A3A3;
-            padding: 0.5rem;
-        }
+        
         .markdown-content th {
             background-color: #E5E5E5;
             font-weight: bold;
+            text-align: left;
+            padding: 0.75rem;
+            border: 1px solid #A3A3A3;
         }
+        
+        .markdown-content td {
+            padding: 0.75rem;
+            border: 1px solid #D4D4D4;
+            vertical-align: top;
+        }
+        
+        /* Enhanced ASCII diagram styling */
+        .ascii-diagram {
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre;
+            line-height: 1.2;
+            background-color: #F9F9F9;
+            padding: 1.5rem;
+            border: 1px solid #262626;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            margin: 1.5rem 0;
+        }
+        
+        /* Diagram container styling */
+        .diagram-container {
+            border: 1px solid #262626;
+            background-color: #F5F5F5;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .diagram-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #A3A3A3;
+            padding-bottom: 0.5rem;
+        }
+        
+        /* Box styling for key concepts */
+        .concept-box {
+            border: 1px solid #262626;
+            background-color: #F5F5F5;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .concept-box-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #A3A3A3;
+            padding-bottom: 0.5rem;
+        }
+        
+        .concept-box-content {
+            padding: 0.5rem 0;
+        }
+        
+        /* Two-column layout for comparison diagrams */
+        .two-column-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .column {
+            flex: 1;
+            min-width: 300px;
+            border: 1px solid #262626;
+            background-color: #F5F5F5;
+            padding: 1.5rem;
+        }
+        
+        .column-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #A3A3A3;
+            padding-bottom: 0.5rem;
+            text-align: center;
+        }
+        
+        .column-content {
+            padding: 0.5rem;
+        }
+        
+        .column-content ul {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .connector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            padding: 0 1rem;
+        }
+        
+        /* Footer styling for diagrams */
+        .diagram-footer {
+            font-size: 0.85rem;
+            font-style: italic;
+            text-align: center;
+            margin-top: 1rem;
+            color: #525252;
+        }
+        
         .book-navigation {
             display: flex;
             justify-content: space-between;
@@ -205,17 +317,7 @@
         .mobile-menu-button, .mobile-sidebar-button {
             display: none;
         }
-        /* ASCII diagram styling */
-        .ascii-diagram {
-            font-family: 'Courier New', Courier, monospace;
-            white-space: pre;
-            line-height: 1.2;
-            background-color: #F5F5F5;
-            padding: 1rem;
-            border: 1px solid #A3A3A3;
-            overflow-x: auto;
-            font-size: 0.85rem;
-        }
+        
         /* Loading indicator */
         .loading-indicator {
             display: flex;
@@ -301,6 +403,18 @@
             }
             .ascii-diagram {
                 font-size: 0.7rem;
+            }
+            .two-column-container {
+                flex-direction: column;
+            }
+            
+            .column {
+                width: 100%;
+            }
+            
+            .connector {
+                transform: rotate(90deg);
+                padding: 1rem 0;
             }
         }
         /* Print styles */
@@ -462,8 +576,35 @@
                 
                 const content = await response.text();
                 
+                // Configure marked.js renderer to enhance diagrams and tables
+                const renderer = new marked.Renderer();
+                
+                // Enhance code blocks for ASCII diagrams
+                const originalCodeRenderer = renderer.code;
+                renderer.code = function(code, language, isEscaped) {
+                    // Check if this looks like an ASCII diagram
+                    if (code.includes('+---') || (code.includes('|') && code.includes('-'))) {
+                        return `<div class="diagram-container">
+                                    <pre class="ascii-diagram">${code}</pre>
+                                </div>`;
+                    }
+                    return originalCodeRenderer.call(this, code, language, isEscaped);
+                };
+                
+                // Set marked options
+                marked.setOptions({
+                    renderer: renderer,
+                    gfm: true,
+                    breaks: true
+                });
+                
                 // Render markdown content
-                document.getElementById('markdown-content').innerHTML = marked.parse(content);
+                let renderedContent = marked.parse(content);
+                
+                // Post-process the rendered HTML to enhance tables and add concept boxes
+                renderedContent = enhanceRenderedContent(renderedContent);
+                
+                document.getElementById('markdown-content').innerHTML = renderedContent;
                 
                 // Add navigation buttons
                 addNavigation(chapterNum);
@@ -475,9 +616,6 @@
                 
                 // Scroll to top
                 window.scrollTo(0, 0);
-                
-                // Process ASCII diagrams
-                processAsciiDiagrams();
                 
                 // Update document title
                 const chapterTitle = document.querySelector(`.chapter-link:nth-child(${chapterNum})`).textContent;
@@ -502,16 +640,40 @@
             }
         }
         
-        // Process ASCII diagrams
-        function processAsciiDiagrams() {
-            const preElements = document.querySelectorAll('pre');
-            preElements.forEach(pre => {
-                // Check if this looks like an ASCII diagram
-                const content = pre.textContent;
-                if (content.includes('+---') || (content.includes('|') && content.includes('-'))) {
-                    pre.classList.add('ascii-diagram');
-                }
-            });
+        // Enhance rendered content with better styling for tables and concept boxes
+        function enhanceRenderedContent(html) {
+            // Wrap tables in container for better styling
+            html = html.replace(/<table>/g, '<div class="table-container"><table>');
+            html = html.replace(/<\/table>/g, '</table></div>');
+            
+            // Enhance sections that look like concept boxes
+            html = html.replace(/<h3>(Rent, Storage &amp; Hybrid Data Model|Program Derived Addresses \(PDAs\)|Account Structures &amp; Borsh Serialization|Key Strategic Objectives:)(.+?)<\/h3>/g, 
+                '<div class="concept-box"><h3 class="concept-box-title">$1$2</h3><div class="concept-box-content">');
+            
+            // Close concept boxes before the next h2 or h3
+            html = html.replace(/(<\/div>)(\s*<h[23])/g, '$1</div>$2');
+            
+            // Create two-column layouts for comparison sections
+            if (html.includes('On-Chain Core Data') && html.includes('Off-Chain Extended Metadata')) {
+                const pattern = /<h4>On-Chain Core Data<\/h4>([\s\S]*?)<h4>Off-Chain Extended Metadata<\/h4>([\s\S]*?)(<h[23]|<div class="book-navigation">)/;
+                const replacement = `
+                <div class="two-column-container">
+                    <div class="column">
+                        <h4 class="column-title">On-Chain Core Data</h4>
+                        <div class="column-content">$1</div>
+                    </div>
+                    <div class="connector">&lt;---&gt;</div>
+                    <div class="column">
+                        <h4 class="column-title">Off-Chain Extended Metadata</h4>
+                        <div class="column-content">$2</div>
+                    </div>
+                </div>
+                $3`;
+                
+                html = html.replace(pattern, replacement);
+            }
+            
+            return html;
         }
         
         // Add navigation buttons
