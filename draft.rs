@@ -786,9 +786,14 @@ pub mod solana_ai_registries {
 
 // --- Account Context Structs ---
 
+/// Accounts required for the register_agent instruction
+///
+/// This struct defines the accounts that must be provided when calling the register_agent instruction.
+/// It creates a new PDA for the agent entry, using the agent_id as a seed.
 #[derive(Accounts)]
 #[instruction(agent_id: String)]
 pub struct RegisterAgent<'info> {
+    /// The agent registry entry account (PDA) to be created
     #[account(
         init,
         payer = payer,
@@ -797,15 +802,23 @@ pub struct RegisterAgent<'info> {
         bump
     )]
     pub agent_entry: Account<'info, AgentRegistryEntryV1>,
+    /// The authority that will own and control this agent entry
     #[account(mut)]
     pub owner_authority: Signer<'info>, 
+    /// The account that will pay for the rent of the new agent entry account
     #[account(mut)]
     pub payer: Signer<'info>, 
+    /// The system program to create the new account
     pub system_program: Program<'info, System>,
 }
 
+/// Accounts required for agent update instructions (update_agent_details, update_agent_status, deregister_agent)
+///
+/// This struct defines the accounts that must be provided when calling agent update instructions.
+/// It verifies that the signer matches the owner_authority of the agent entry.
 #[derive(Accounts)]
 pub struct UpdateAgent<'info> {
+    /// The existing agent registry entry account to be modified
     #[account(
         mut,
         seeds = [AGENT_REGISTRY_PDA_SEED, agent_entry.agent_id.as_bytes()],
@@ -813,13 +826,19 @@ pub struct UpdateAgent<'info> {
         has_one = owner_authority @ ErrorCode::Unauthorized
     )]
     pub agent_entry: Account<'info, AgentRegistryEntryV1>,
+    /// The authority that owns this agent entry, must sign to authorize changes
     #[account(mut)]
     pub owner_authority: Signer<'info>,
 }
 
+/// Accounts required for the register_mcp_server instruction
+///
+/// This struct defines the accounts that must be provided when calling the register_mcp_server instruction.
+/// It creates a new PDA for the MCP server entry, using the server_id as a seed.
 #[derive(Accounts)]
 #[instruction(server_id: String)]
 pub struct RegisterMcpServer<'info> {
+    /// The MCP server registry entry account (PDA) to be created
     #[account(
         init,
         payer = payer,
@@ -828,15 +847,23 @@ pub struct RegisterMcpServer<'info> {
         bump
     )]
     pub mcp_server_entry: Account<'info, McpServerRegistryEntryV1>,
+    /// The authority that will own and control this MCP server entry
     #[account(mut)]
     pub owner_authority: Signer<'info>,
+    /// The account that will pay for the rent of the new MCP server entry account
     #[account(mut)]
     pub payer: Signer<'info>,
+    /// The system program to create the new account
     pub system_program: Program<'info, System>,
 }
 
+/// Accounts required for MCP server update instructions (update_mcp_server_details, update_mcp_server_status, deregister_mcp_server)
+///
+/// This struct defines the accounts that must be provided when calling MCP server update instructions.
+/// It verifies that the signer matches the owner_authority of the MCP server entry.
 #[derive(Accounts)]
 pub struct UpdateMcpServer<'info> {
+    /// The existing MCP server registry entry account to be modified
     #[account(
         mut,
         seeds = [MCP_SERVER_REGISTRY_PDA_SEED, mcp_server_entry.server_id.as_bytes()],
@@ -844,6 +871,7 @@ pub struct UpdateMcpServer<'info> {
         has_one = owner_authority @ ErrorCode::Unauthorized
     )]
     pub mcp_server_entry: Account<'info, McpServerRegistryEntryV1>,
+    /// The authority that owns this MCP server entry, must sign to authorize changes
     #[account(mut)]
     pub owner_authority: Signer<'info>,
 }
@@ -851,35 +879,72 @@ pub struct UpdateMcpServer<'info> {
 
 // --- State Structs (Accounts) ---
 
+/// Agent Registry Entry (V1) - Solana account structure for storing agent data on-chain
+///
+/// This structure represents the on-chain data for a registered agent, following a hybrid approach:
+/// - Core, frequently accessed data is stored directly on-chain
+/// - Large or complex data can be referenced via off-chain URIs
+/// - Verification hashes ensure integrity of off-chain data
+///
+/// The struct maps closely to concepts from the A2A AgentCard specification and AEA framework,
+/// optimized for Solana's account model and storage constraints.
 #[account]
 #[derive(Default, Clone)]
 pub struct AgentRegistryEntryV1 {
+    /// Bump seed used for this PDA's derivation
     pub bump: u8,                           // 1
+    /// Schema version of this entry (e.g., 1)
     pub registry_version: u8,               // 1
+    /// Solana public key of the entry's owner/manager
     pub owner_authority: Pubkey,            // 32
+    /// Unique identifier for the agent
     pub agent_id: String,                   // 4 + MAX_AGENT_ID_LEN
+    /// Human-readable name of the agent
     pub name: String,                       // 4 + MAX_AGENT_NAME_LEN
+    /// Human-readable description of the agent (can use CommonMark)
     pub description: String,                // 4 + MAX_AGENT_DESCRIPTION_LEN
+    /// Version of the agent software/implementation
     pub agent_version: String,              // 4 + MAX_AGENT_VERSION_LEN
+    /// Optional name of the agent's provider organization
     pub provider_name: Option<String>,      // 1 + (4 + MAX_PROVIDER_NAME_LEN)
+    /// Optional URL of the agent's provider
     pub provider_url: Option<String>,       // 1 + (4 + MAX_PROVIDER_URL_LEN)
+    /// Optional URL to human-readable documentation
     pub documentation_url: Option<String>,  // 1 + (4 + MAX_DOCUMENTATION_URL_LEN)
+    /// List of service endpoints where the agent can be reached
     pub service_endpoints: Vec<ServiceEndpoint>, // 4 + MAX_SERVICE_ENDPOINTS * ServiceEndpoint::ACCOUNT_SIZE
+    /// Bitmask for core A2A capabilities
     pub capabilities_flags: u64,            // 8
+    /// Default accepted input MIME types
     pub supported_input_modes: Vec<String>, // 4 + MAX_SUPPORTED_MODES * (4 + MAX_MODE_LEN)
+    /// Default produced output MIME types
     pub supported_output_modes: Vec<String>,// 4 + MAX_SUPPORTED_MODES * (4 + MAX_MODE_LEN)
+    /// Summary of key agent skills
     pub skills: Vec<AgentSkill>,            // 4 + MAX_SKILLS * AgentSkill::ACCOUNT_SIZE
+    /// Optional URI to detailed security scheme definitions (e.g., OpenAPI format)
     pub security_info_uri: Option<String>,  // 1 + (4 + MAX_SECURITY_INFO_URI_LEN)
+    /// Optional Fetch.ai AEA address/ID
     pub aea_address: Option<String>,        // 1 + (4 + MAX_AEA_ADDRESS_LEN)
+    /// Optional brief summary of the agent's economic goals
     pub economic_intent_summary: Option<String>, // 1 + (4 + MAX_ECONOMIC_INTENT_LEN)
+    /// Optional SHA256 hash of a list of supported AEA protocol IDs
     pub supported_aea_protocols_hash: Option<[u8; HASH_SIZE]>, // 1 + HASH_SIZE
+    /// Agent status (0:Pending, 1:Active, 2:Inactive, 3:Deregistered)
     pub status: u8,                         // 1 (Enum AgentStatus)
+    /// Timestamp of initial registration
     pub registration_timestamp: i64,        // 8
+    /// Timestamp of the last update
     pub last_update_timestamp: i64,         // 8
+    /// Optional URI to extensive off-chain metadata (e.g., full AgentCard JSON)
     pub extended_metadata_uri: Option<String>,// 1 + (4 + MAX_EXTENDED_METADATA_URI_LEN)
+    /// General discoverability tags for the agent
     pub tags: Vec<String>,                  // 4 + MAX_AGENT_TAGS * (4 + MAX_AGENT_TAG_LEN)
 }
 
+/// Implementation of the AccountSize trait for AgentRegistryEntryV1
+///
+/// Calculates the total space required for an AgentRegistryEntryV1 account when serialized with Borsh.
+/// This includes the Anchor discriminator and all fields with their maximum possible sizes.
 impl AccountSize for AgentRegistryEntryV1 { // Renamed from LEN to ACCOUNT_SIZE for consistency with trait
     const ACCOUNT_SIZE: usize = 8 // Anchor Discriminator
         + 1  // bump
@@ -909,12 +974,21 @@ impl AccountSize for AgentRegistryEntryV1 { // Renamed from LEN to ACCOUNT_SIZE 
 }
 
 
+/// Service Endpoint definition for agents
+///
+/// Represents an endpoint where an agent can be accessed, including the protocol
+/// type (e.g., "a2a_http_jsonrpc") and URL, with a flag indicating if this is
+/// the default endpoint for the agent.
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Debug)]
 pub struct ServiceEndpoint {
+    /// Protocol type (e.g., "a2a_http_jsonrpc", "aea_p2p")
     pub protocol: String, 
+    /// Endpoint URL
     pub url: String,      
+    /// Indicates if this is the primary endpoint (only one can be true)
     pub is_default: bool,
 }
+/// Implementation of the AccountSize trait for ServiceEndpoint
 impl AccountSize for ServiceEndpoint {
     const ACCOUNT_SIZE: usize = borsh_size_string(MAX_ENDPOINT_PROTOCOL_LEN) 
                               + borsh_size_string(MAX_ENDPOINT_URL_LEN) 
@@ -922,13 +996,23 @@ impl AccountSize for ServiceEndpoint {
 }
 
 
+/// Agent Skill definition
+///
+/// Represents a capability or function that an agent provides, including
+/// an identifier, name, optional hash of a more detailed description (stored off-chain),
+/// and associated tags for discovery and classification.
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Debug)]
 pub struct AgentSkill {
+    /// Skill's unique ID within the agent
     pub id: String, 
+    /// Human-readable skill name
     pub name: String, 
+    /// Optional SHA256 hash of detailed skill description (full description off-chain)
     pub description_hash: Option<[u8; HASH_SIZE]>,
+    /// Tags associated with the skill
     pub tags: Vec<String>, 
 }
+/// Implementation of the AccountSize trait for AgentSkill
 impl AccountSize for AgentSkill {
      const ACCOUNT_SIZE: usize = borsh_size_string(MAX_SKILL_ID_LEN) 
                                + borsh_size_string(MAX_SKILL_NAME_LEN) 
@@ -936,31 +1020,66 @@ impl AccountSize for AgentSkill {
                                + borsh_size_vec_string(MAX_SKILL_TAGS, MAX_SKILL_TAG_LEN); // tags
 }
 
+/// MCP Server Registry Entry (V1) - Solana account structure for storing MCP server data on-chain
+///
+/// This structure represents the on-chain data for a registered Model Context Protocol (MCP) server,
+/// using a hybrid approach similar to the Agent Registry:
+/// - Core server information is stored on-chain
+/// - A limited number of key tools, resources, and prompts are summarized on-chain
+/// - Full definitions are accessible via the full_capabilities_uri, pointing to off-chain storage
+///
+/// The struct aligns with the MCP specification, particularly the information conveyed during
+/// the MCP initialization handshake (ServerInfo, ServerCapabilities) and definitions
+/// of offered tools, resources, and prompts.
 #[account]
 #[derive(Default, Clone)]
 pub struct McpServerRegistryEntryV1 {
+    /// Bump seed used for this PDA's derivation
     pub bump: u8,
+    /// Schema version of this entry (e.g., 1)
     pub registry_version: u8,
+    /// Solana public key of the entry's owner/manager
     pub owner_authority: Pubkey,
+    /// Unique identifier for the MCP server
     pub server_id: String, 
+    /// Human-readable server name
     pub name: String, 
+    /// Version of the MCP server software
     pub server_version: String, 
+    /// Primary URL for MCP communication (HTTP/SSE)
     pub service_endpoint: String, 
+    /// Optional URL to human-readable documentation
     pub documentation_url: Option<String>, 
+    /// Optional brief summary of server offerings
     pub server_capabilities_summary: Option<String>, 
+    /// Whether server offers MCP Resources
     pub supports_resources: bool,
+    /// Whether server offers MCP Tools
     pub supports_tools: bool,
+    /// Whether server offers MCP Prompts
     pub supports_prompts: bool,
+    /// Summary of key on-chain advertised tools
     pub onchain_tool_definitions: Vec<McpToolDefinitionOnChain>, 
+    /// Summary of key on-chain advertised resources
     pub onchain_resource_definitions: Vec<McpResourceDefinitionOnChain>, 
+    /// Summary of key on-chain advertised prompts
     pub onchain_prompt_definitions: Vec<McpPromptDefinitionOnChain>, 
+    /// Server status (0:Pending, 1:Active, 2:Inactive, 3:Deregistered)
     pub status: u8, 
+    /// Timestamp of initial registration
     pub registration_timestamp: i64,
+    /// Timestamp of the last update
     pub last_update_timestamp: i64,
+    /// Optional URI to off-chain JSON with full tool/resource/prompt definitions
     pub full_capabilities_uri: Option<String>, 
+    /// General discoverability tags for the server
     pub tags: Vec<String>, 
 }
 
+/// Implementation of the AccountSize trait for McpServerRegistryEntryV1
+///
+/// Calculates the total space required for a McpServerRegistryEntryV1 account when serialized with Borsh.
+/// This includes the Anchor discriminator and all fields with their maximum possible sizes.
 impl AccountSize for McpServerRegistryEntryV1 {
     const ACCOUNT_SIZE: usize = 8 // Anchor Discriminator
         + 1  // bump
