@@ -1,0 +1,18 @@
+{
+  "network": "devnet",
+  "timestamp": "2025-05-24T14:45:21.138Z",
+  "programs": {
+    "agent_registry": {
+      "program_id": "15763c51020f15ab21bd789f9ef011edb3f5ceedd24e",
+      "idl_file": "idl/agent_registry.json",
+      "binary_file": "target/deploy/solana_agent_registry.so"
+    },
+    "mcp_server_registry": {
+      "program_id": "1f22e2f4e87f9a6376f19090e0c22f2d7091bb6de223",
+      "idl_file": "idl/mcp_server_registry.json",
+      "binary_file": "target/deploy/solana_mcp.so"
+    }
+  },
+  "rpc_url": "https://api.devnet.solana.com",
+  "explorer_base": "https://explorer.solana.com"
+}

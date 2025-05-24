@@ -1,0 +1,896 @@
+{
+  "version": "0.1.0",
+  "name": "mcp_server_registry",
+  "instructions": [
+    {
+      "name": "registerMcpServer",
+      "accounts": [
+        {
+          "name": "mcpServerEntry",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "MCP server entry account (PDA)"
+        },
+        {
+          "name": "ownerAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "desc": "Owner authority"
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "desc": "Payer account"
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "desc": "System program"
+        }
+      ],
+      "args": [
+        {
+          "name": "serverId",
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "serverVersion",
+          "type": "string"
+        },
+        {
+          "name": "serviceEndpoint",
+          "type": "string"
+        },
+        {
+          "name": "documentationUrl",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "serverCapabilitiesSummary",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "supportsResources",
+          "type": "bool"
+        },
+        {
+          "name": "supportsTools",
+          "type": "bool"
+        },
+        {
+          "name": "supportsPrompts",
+          "type": "bool"
+        },
+        {
+          "name": "onchainToolDefinitions",
+          "type": {
+            "vec": {
+              "defined": "McpToolDefinitionOnChainInput"
+            }
+          }
+        },
+        {
+          "name": "onchainResourceDefinitions",
+          "type": {
+            "vec": {
+              "defined": "McpResourceDefinitionOnChainInput"
+            }
+          }
+        },
+        {
+          "name": "onchainPromptDefinitions",
+          "type": {
+            "vec": {
+              "defined": "McpPromptDefinitionOnChainInput"
+            }
+          }
+        },
+        {
+          "name": "fullCapabilitiesUri",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "tags",
+          "type": {
+            "vec": "string"
+          }
+        }
+      ]
+    },
+    {
+      "name": "updateMcpServerDetails",
+      "accounts": [
+        {
+          "name": "mcpServerEntry",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "MCP server entry account (PDA)"
+        },
+        {
+          "name": "ownerAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "desc": "Owner authority"
+        }
+      ],
+      "args": [
+        {
+          "name": "details",
+          "type": {
+            "defined": "McpServerUpdateDetailsInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "updateMcpServerStatus",
+      "accounts": [
+        {
+          "name": "mcpServerEntry",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "MCP server entry account (PDA)"
+        },
+        {
+          "name": "ownerAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "desc": "Owner authority"
+        }
+      ],
+      "args": [
+        {
+          "name": "newStatus",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "deregisterMcpServer",
+      "accounts": [
+        {
+          "name": "mcpServerEntry",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "MCP server entry account (PDA)"
+        },
+        {
+          "name": "ownerAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "desc": "Owner authority"
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "McpServerRegistryEntryV1",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "registryVersion",
+            "type": "u8"
+          },
+          {
+            "name": "ownerAuthority",
+            "type": "publicKey"
+          },
+          {
+            "name": "serverId",
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "serverVersion",
+            "type": "string"
+          },
+          {
+            "name": "serviceEndpoint",
+            "type": "string"
+          },
+          {
+            "name": "documentationUrl",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "serverCapabilitiesSummary",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "supportsResources",
+            "type": "bool"
+          },
+          {
+            "name": "supportsTools",
+            "type": "bool"
+          },
+          {
+            "name": "supportsPrompts",
+            "type": "bool"
+          },
+          {
+            "name": "onchainToolDefinitions",
+            "type": {
+              "vec": {
+                "defined": "McpToolDefinitionOnChain"
+              }
+            }
+          },
+          {
+            "name": "onchainResourceDefinitions",
+            "type": {
+              "vec": {
+                "defined": "McpResourceDefinitionOnChain"
+              }
+            }
+          },
+          {
+            "name": "onchainPromptDefinitions",
+            "type": {
+              "vec": {
+                "defined": "McpPromptDefinitionOnChain"
+              }
+            }
+          },
+          {
+            "name": "status",
+            "type": "u8"
+          },
+          {
+            "name": "registrationTimestamp",
+            "type": "i64"
+          },
+          {
+            "name": "lastUpdateTimestamp",
+            "type": "i64"
+          },
+          {
+            "name": "fullCapabilitiesUri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "tags",
+            "type": {
+              "vec": "string"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "McpToolDefinitionOnChain",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "descriptionHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "inputSchemaHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "outputSchemaHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "tags",
+            "type": {
+              "vec": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "McpToolDefinitionOnChainInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "descriptionHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "inputSchemaHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "outputSchemaHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "tags",
+            "type": {
+              "vec": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "McpResourceDefinitionOnChain",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "uriPattern",
+            "type": "string"
+          },
+          {
+            "name": "descriptionHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "tags",
+            "type": {
+              "vec": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "McpResourceDefinitionOnChainInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "uriPattern",
+            "type": "string"
+          },
+          {
+            "name": "descriptionHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "tags",
+            "type": {
+              "vec": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "McpPromptDefinitionOnChain",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "descriptionHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "tags",
+            "type": {
+              "vec": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "McpPromptDefinitionOnChainInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "descriptionHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "tags",
+            "type": {
+              "vec": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "McpServerUpdateDetailsInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "serverVersion",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "serviceEndpoint",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "documentationUrl",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "clearDocumentationUrl",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "serverCapabilitiesSummary",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "clearServerCapabilitiesSummary",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "supportsResources",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "supportsTools",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "supportsPrompts",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "onchainToolDefinitions",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "McpToolDefinitionOnChainInput"
+                }
+              }
+            }
+          },
+          {
+            "name": "onchainResourceDefinitions",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "McpResourceDefinitionOnChainInput"
+                }
+              }
+            }
+          },
+          {
+            "name": "onchainPromptDefinitions",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "McpPromptDefinitionOnChainInput"
+                }
+              }
+            }
+          },
+          {
+            "name": "fullCapabilitiesUri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "clearFullCapabilitiesUri",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "tags",
+            "type": {
+              "option": {
+                "vec": "string"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "McpServerRegistered",
+      "fields": [
+        {
+          "name": "registryVersion",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "ownerAuthority",
+          "type": "publicKey",
+          "index": true
+        },
+        {
+          "name": "serverId",
+          "type": "string",
+          "index": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "serverVersion",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "serviceEndpoint",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "documentationUrl",
+          "type": {
+            "option": "string"
+          },
+          "index": false
+        },
+        {
+          "name": "serverCapabilitiesSummary",
+          "type": {
+            "option": "string"
+          },
+          "index": false
+        },
+        {
+          "name": "supportsResources",
+          "type": "bool",
+          "index": false
+        },
+        {
+          "name": "supportsTools",
+          "type": "bool",
+          "index": false
+        },
+        {
+          "name": "supportsPrompts",
+          "type": "bool",
+          "index": false
+        },
+        {
+          "name": "onchainToolDefinitions",
+          "type": {
+            "vec": {
+              "defined": "McpToolDefinitionOnChain"
+            }
+          },
+          "index": false
+        },
+        {
+          "name": "onchainResourceDefinitions",
+          "type": {
+            "vec": {
+              "defined": "McpResourceDefinitionOnChain"
+            }
+          },
+          "index": false
+        },
+        {
+          "name": "onchainPromptDefinitions",
+          "type": {
+            "vec": {
+              "defined": "McpPromptDefinitionOnChain"
+            }
+          },
+          "index": false
+        },
+        {
+          "name": "status",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "registrationTimestamp",
+          "type": "i64",
+          "index": false
+        },
+        {
+          "name": "lastUpdateTimestamp",
+          "type": "i64",
+          "index": false
+        },
+        {
+          "name": "fullCapabilitiesUri",
+          "type": {
+            "option": "string"
+          },
+          "index": false
+        },
+        {
+          "name": "tags",
+          "type": {
+            "vec": "string"
+          },
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "McpServerUpdated",
+      "fields": [
+        {
+          "name": "serverId",
+          "type": "string",
+          "index": true
+        },
+        {
+          "name": "changedFields",
+          "type": {
+            "vec": "string"
+          },
+          "index": false
+        },
+        {
+          "name": "lastUpdateTimestamp",
+          "type": "i64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "McpServerStatusChanged",
+      "fields": [
+        {
+          "name": "serverId",
+          "type": "string",
+          "index": true
+        },
+        {
+          "name": "newStatus",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "lastUpdateTimestamp",
+          "type": "i64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "McpServerDeregistered",
+      "fields": [
+        {
+          "name": "serverId",
+          "type": "string",
+          "index": true
+        },
+        {
+          "name": "deregistrationTimestamp",
+          "type": "i64",
+          "index": false
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidServerId",
+      "msg": "Invalid server ID"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidServerName",
+      "msg": "Invalid server name"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidServerVersion",
+      "msg": "Invalid server version"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidServiceEndpoint",
+      "msg": "Invalid service endpoint"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidDocumentationUrl",
+      "msg": "Invalid documentation URL"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidServerCapabilitiesSummary",
+      "msg": "Invalid server capabilities summary"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidToolDefinition",
+      "msg": "Invalid tool definition"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidResourceDefinition",
+      "msg": "Invalid resource definition"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidPromptDefinition",
+      "msg": "Invalid prompt definition"
+    },
+    {
+      "code": 6009,
+      "name": "InvalidFullCapabilitiesUri",
+      "msg": "Invalid full capabilities URI"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidTag",
+      "msg": "Invalid tag"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidStatus",
+      "msg": "Invalid status"
+    },
+    {
+      "code": 6012,
+      "name": "UnauthorizedAccess",
+      "msg": "Unauthorized access"
+    },
+    {
+      "code": 6013,
+      "name": "ServerAlreadyExists",
+      "msg": "Server already exists"
+    },
+    {
+      "code": 6014,
+      "name": "ServerNotFound",
+      "msg": "Server not found"
+    },
+    {
+      "code": 6015,
+      "name": "ServerDeregistered",
+      "msg": "Server is deregistered"
+    },
+    {
+      "code": 6016,
+      "name": "TooManyToolDefinitions",
+      "msg": "Too many tool definitions"
+    },
+    {
+      "code": 6017,
+      "name": "TooManyResourceDefinitions",
+      "msg": "Too many resource definitions"
+    },
+    {
+      "code": 6018,
+      "name": "TooManyPromptDefinitions",
+      "msg": "Too many prompt definitions"
+    },
+    {
+      "code": 6019,
+      "name": "TooManyTags",
+      "msg": "Too many tags"
+    },
+    {
+      "code": 6020,
+      "name": "NoCapabilitiesSpecified",
+      "msg": "No capabilities specified"
+    }
+  ],
+  "metadata": {
+    "address": "McpServerRegistryProgram1111111111111111111"
+  }
+}
