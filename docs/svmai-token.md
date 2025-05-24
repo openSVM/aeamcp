@@ -79,50 +79,31 @@ The $SVMAI token is the native utility token of the Solana AI Registries ecosyst
 
 ## Economic Model
 
-### Token Allocation
+### Token Allocation & Circulation Status
 
-The total supply of $SVMAI tokens is capped at 1,000,000,000 (1 billion) tokens, with the following allocation:
+The $SVMAI token was launched with 100% of the tokens already unlocked and in circulation. The token contract address is: `Cpzvdx6pppc9TNArsGsqgShCsKC9NCCjA2gtzHvUpump`
 
-- **Protocol Development & Treasury**: 30% (300M tokens)
-  - Initial development funding
-  - Ongoing protocol improvements
-  - Security audits and technical infrastructure
+Key characteristics:
+- **Total Supply**: Fixed supply as defined at launch
+- **Circulation Status**: 100% of tokens already unlocked and in circulation
+- **Initial Distribution**: Completed during token launch
 
-- **Ecosystem Growth**: 25% (250M tokens)
-  - Grants for builders and integrators
-  - Hackathons and developer incentives
-  - Strategic partnerships and integrations
+### Token Utility Focus
 
-- **Community Rewards**: 20% (200M tokens)
-  - Staking rewards
-  - Curation incentives
-  - Participation incentives
+With all tokens already in circulation, the $SVMAI token utility focuses on:
 
-- **Team & Advisors**: 15% (150M tokens)
-  - Core team allocation (4-year vesting with 1-year cliff)
-  - Advisors and early contributors
-
-- **Public Distribution**: 10% (100M tokens)
-  - Initial exchange offerings
-  - Community sales
-  - Liquidity provision
-
-### Token Release Schedule
-
-To ensure sustainable growth and minimize market volatility, $SVMAI tokens are released according to the following schedule:
-
-- **Initial Circulation**: 15% of total supply available at launch
-- **Linear Release**: Remaining tokens released linearly over 4 years
-- **Stakeholder-Specific Vesting**: Customized vesting schedules for team, advisors, and strategic partners
-- **Governance-Controlled Treasury**: Release of treasury tokens subject to governance votes
+- **Ecosystem Participation**: Enabling participation in the protocol ecosystem
+- **Governance Rights**: Providing voting power for protocol governance
+- **Service Access**: Facilitating access to registry services
+- **Future Revenue Sharing**: Potential for token holders to benefit from protocol revenue
 
 ### Value Capture Mechanisms
 
-The $SVMAI token is designed with multiple value capture mechanisms:
+The $SVMAI token is designed with value capture mechanisms primarily focused on future revenue:
 
-1. **Fee Capture**: A percentage of registration and service fees are used to buy back and burn $SVMAI tokens
-2. **Staking Requirements**: Various protocol functions require active staking, reducing circulating supply
-3. **Governance-Driven Scarcity**: Token holders can vote to adjust monetary policy including potential burn rates
+1. **Future Revenue Sharing**: Protocol revenue may be distributed to token holders in various forms
+2. **Staking Opportunities**: Potential for staking-based rewards from future protocol revenue
+3. **Governance-Driven Value**: Token holders can vote on revenue distribution models
 4. **Utility-Driven Demand**: Increasing usage of the protocol drives demand for the utility functions of the token
 
 ## Token Integration with Protocol Components
@@ -147,12 +128,14 @@ The $SVMAI token is designed with multiple value capture mechanisms:
 
 ## Protocol Revenue Distribution
 
-Revenue generated from the protocol is distributed as follows:
+Future revenue generated from the protocol may be distributed according to a model determined through governance, which could include:
 
-- **Token Burning**: 40% of revenue used for token burning
-- **Staking Rewards**: 30% distributed to token stakers
-- **Development Fund**: 20% allocated to ongoing protocol development
-- **Community Treasury**: 10% managed by governance for ecosystem initiatives
+- **Holder Benefits**: Direct or indirect benefits to token holders
+- **Development Fund**: Allocation to ongoing protocol development
+- **Treasury Building**: Building protocol reserves for sustainability
+- **Community Programs**: Funding for ecosystem growth initiatives
+
+The specific revenue distribution model will be determined through governance processes and may evolve as the protocol matures.
 
 ## Ecosystem Sustainability
 
