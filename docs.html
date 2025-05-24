@@ -218,6 +218,22 @@
             margin: 0 auto;
         }
 
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 250px;
+            }
+            
+            .infographic-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .book-nav {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: center;
+            }
+        }
+
         .infographic-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -238,6 +254,47 @@
             font-size: 1.05rem;
             border-bottom: 1px solid #D4D4D4;
             padding-bottom: 0.25rem;
+        }
+
+        /* Print styles for book-like printing */
+        @media print {
+            body {
+                font-size: 12pt;
+            }
+
+            .header, .footer, #sidebar, .book-nav {
+                display: none !important;
+            }
+
+            #content {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            #markdown-content {
+                box-shadow: none !important;
+                padding: 0 !important;
+                background-color: white !important;
+            }
+
+            .book-chapter {
+                page-break-after: always;
+                border-bottom: none;
+            }
+
+            .chart-container {
+                height: 400px !important;
+                page-break-inside: avoid;
+            }
+
+            .diagram-container {
+                page-break-inside: avoid;
+            }
+
+            .infographic-grid {
+                page-break-inside: avoid;
+            }
         }
     </style>
 </head>
@@ -414,6 +471,8 @@
         }
 
         // Override the original loadMarkdown function to add our enhancement logic
+        // We no longer need this since we modified the original loadMarkdown function
+        /* 
         const originalLoadMarkdown = loadMarkdown;
         loadMarkdown = async function(path) {
             await originalLoadMarkdown(path);
@@ -422,6 +481,7 @@
                 checkAndEnhanceContent();
             }, 100);
         };
+        */
 
         // Functions to add specific diagrams
         function addServiceEscrowDiagram() {
