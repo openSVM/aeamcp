@@ -1,0 +1,29 @@
+[package]
+name = "solana-mcp"
+version = "0.1.0"
+description = "MCP Server Registry program for Solana AI Registries"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/openSVM/aeamcp"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[features]
+no-entrypoint = []
+test-bpf = []
+
+[dependencies]
+solana-program = "1.18"
+borsh = "0.10"
+thiserror = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Local dependencies
+aeamcp-common = { path = "../common" }
+
+[dev-dependencies]
+solana-program-test = "1.18"
+solana-sdk = "1.18"
+tokio = { version = "1.0", features = ["macros"] }
