@@ -1,9 +1,11 @@
 #!/bin/bash
 
-# Deploy script for Devnet
+# Simple Devnet Deployment Script
+# This script attempts to deploy to devnet using alternative methods
+
 set -e
 
-echo "🚀 Deploying Solana AI Registries to Devnet..."
+echo "🚀 Simple Devnet Deployment for Solana AI Registries..."
 
 # Colors for output
 RED='\033[0;31m'
@@ -12,7 +14,6 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Function to print colored output
 print_status() {
     echo -e "${GREEN}[INFO]${NC} $1"
 }
@@ -29,20 +30,9 @@ print_header() {
     echo -e "${BLUE}[DEPLOY]${NC} $1"
 }
 
-# Check if programs are built
-if [ ! -f "target/deploy/solana_a2a.so" ]; then
-    print_error "Agent Registry program not found. Run ./scripts/build.sh first"
-    exit 1
-fi
-
-if [ ! -f "target/deploy/solana_mcp.so" ]; then
-    print_error "MCP Server Registry program not found. Run ./scripts/build.sh first"
-    exit 1
-fi
-
-# Set Solana config for devnet
-print_status "Configuring Solana for devnet..."
-solana config set --url devnet
+# Check Solana configuration
+print_status "Checking Solana configuration..."
+solana config get
 
 # Check wallet balance
 BALANCE=$(solana balance --lamports)
@@ -75,11 +65,60 @@ print_header "Program IDs:"
 echo "  Agent Registry: $AGENT_REGISTRY_ID"
 echo "  MCP Server Registry: $MCP_SERVER_REGISTRY_ID"
 
-# Deploy Agent Registry
+# Check if we have .so files
+if [ ! -f "target/deploy/solana_agent_registry.so" ] || [ ! -f "target/deploy/solana_mcp.so" ]; then
+    print_error "Program binaries not found. You need to build the programs first."
+    print_warning "Due to GLIBC compatibility issues, you have several options:"
+    echo ""
+    echo "1. Use Docker (recommended):"
+    echo "   docker build -t solana-ai-registries ."
+    echo "   docker run --rm -v \$(pwd)/target:/workspace/target solana-ai-registries"
+    echo ""
+    echo "2. Use GitHub Actions (see .github/workflows/build-and-deploy.yml)"
+    echo ""
+    echo "3. Use Solana Playground (https://beta.solpg.io/)"
+    echo ""
+    echo "4. Use a different environment with GLIBC 2.32+"
+    echo ""
+    print_status "For now, creating placeholder deployment info..."
+    
+    # Create deployment info with placeholder
+    cat > deployment-info-devnet.json << EOF
+{
+  "network": "devnet",
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "status": "ready_for_deployment",
+  "programs": {
+    "agent_registry": {
+      "program_id": "$AGENT_REGISTRY_ID",
+      "keypair_file": "keypairs/agent-registry-keypair.json",
+      "status": "keypair_generated"
+    },
+    "mcp_server_registry": {
+      "program_id": "$MCP_SERVER_REGISTRY_ID",
+      "keypair_file": "keypairs/mcp-server-registry-keypair.json",
+      "status": "keypair_generated"
+    }
+  },
+  "rpc_url": "https://api.devnet.solana.com",
+  "explorer_base": "https://explorer.solana.com",
+  "next_steps": [
+    "Build programs using Docker or alternative method",
+    "Run deployment script with built .so files"
+  ]
+}
+EOF
+
+    print_status "Deployment preparation completed!"
+    print_warning "Build the programs using one of the methods above, then run this script again."
+    exit 0
+fi
+
+# If we have .so files, proceed with deployment
 print_header "Deploying Agent Registry..."
 solana program deploy \
     --program-id keypairs/agent-registry-keypair.json \
-    target/deploy/solana_a2a.so
+    target/deploy/solana_agent_registry.so
 
 if [ $? -eq 0 ]; then
     print_status "✅ Agent Registry deployed successfully"
@@ -88,7 +127,6 @@ else
     exit 1
 fi
 
-# Deploy MCP Server Registry
 print_header "Deploying MCP Server Registry..."
 solana program deploy \
     --program-id keypairs/mcp-server-registry-keypair.json \
@@ -106,14 +144,17 @@ cat > deployment-info-devnet.json << EOF
 {
   "network": "devnet",
   "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "status": "deployed",
   "programs": {
     "agent_registry": {
       "program_id": "$AGENT_REGISTRY_ID",
-      "keypair_file": "keypairs/agent-registry-keypair.json"
+      "keypair_file": "keypairs/agent-registry-keypair.json",
+      "status": "deployed"
     },
     "mcp_server_registry": {
       "program_id": "$MCP_SERVER_REGISTRY_ID",
-      "keypair_file": "keypairs/mcp-server-registry-keypair.json"
+      "keypair_file": "keypairs/mcp-server-registry-keypair.json",
+      "status": "deployed"
     }
   },
   "rpc_url": "https://api.devnet.solana.com",

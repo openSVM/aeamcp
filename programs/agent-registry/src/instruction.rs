@@ -2,13 +2,14 @@
 
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
+use shank::ShankInstruction;
 use aeamcp_common::{
     constants::HASH_SIZE,
     serialization::{ServiceEndpointInput, AgentSkillInput},
 };
 
 /// Instructions supported by the Agent Registry program
-#[derive(BorshSerialize, BorshDeserialize, Debug, Clone, PartialEq)]
+#[derive(BorshSerialize, BorshDeserialize, Debug, Clone, PartialEq, ShankInstruction)]
 pub enum AgentRegistryInstruction {
     /// Register a new agent in the Agent Registry
     /// 

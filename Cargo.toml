@@ -1,7 +1,8 @@
 [workspace]
+resolver = "2"
 members = [
     "programs/agent-registry",
-    "programs/mcp-server-registry", 
+    "programs/mcp-server-registry",
     "programs/common"
 ]
 
@@ -11,6 +12,7 @@ borsh = "0.10"
 thiserror = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+getrandom = { version = "0.2", features = ["js"] }
 
 [workspace.dependencies.solana-program-test]
 version = "1.18"

@@ -1,0 +1,16 @@
+{
+  "network": "devnet",
+  "timestamp": "2025-05-24T20:08:21Z",
+  "programs": {
+    "agent_registry": {
+      "program_id": "BCBVehUHR3yhbDbvhV3QHS3s27k3LTbpX5CrXQ2sR2SR",
+      "keypair_file": "keypairs/agent-registry-keypair.json"
+    },
+    "mcp_server_registry": {
+      "program_id": "BruRLHGfNaf6C5HKUqFu6md5ePJNELafm1vZdhctPkpr",
+      "keypair_file": "keypairs/mcp-server-registry-keypair.json"
+    }
+  },
+  "rpc_url": "https://api.devnet.solana.com",
+  "explorer_base": "https://explorer.solana.com"
+}

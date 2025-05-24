@@ -42,7 +42,7 @@ The Solana AI Registries protocol provides essential infrastructure for discover
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # Install Solana CLI
-sh -c "$(curl -sSfL https://release.solana.com/v1.18.18/install)"
+curl --proto '=https' --tlsv1.2 -sSfL https://solana-install.solana.workers.dev | bash
 
 # Set up Solana for local development
 solana config set --url localhost

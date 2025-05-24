@@ -41,6 +41,7 @@ name = "aeamcp-common"
 version = "0.1.0"
 dependencies = [
  "borsh 0.10.4",
+ "getrandom 0.2.16",
  "serde",
  "serde_json",
  "solana-program",
@@ -3522,6 +3523,52 @@ dependencies = [
 ]
 
 [[package]]
+name = "shank"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b886438a24e923491c6e0f55fef7a414262e8b6bc3a69e055f591d5106959f6e"
+dependencies = [
+ "shank_macro",
+]
+
+[[package]]
+name = "shank_macro"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9ea4973210898ea3412d187d33a846ad79090acec61032faed89c20630c72e14"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "shank_macro_impl",
+ "shank_render",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "shank_macro_impl"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77600cea17431d53e8aa47c44d340da7ff0601eec934aca3c6676de367e5ce83"
+dependencies = [
+ "anyhow",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "shank_render"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bb0893a9854124be3e16295986df3d1a546b916d98b390212552ddf6eeba7042"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "shank_macro_impl",
+]
+
+[[package]]
 name = "sharded-slab"
 version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3604,8 +3651,10 @@ version = "0.1.0"
 dependencies = [
  "aeamcp-common",
  "borsh 0.10.4",
+ "getrandom 0.2.16",
  "serde",
  "serde_json",
+ "shank",
  "solana-program",
  "solana-program-test",
  "solana-sdk",
@@ -3991,8 +4040,10 @@ version = "0.1.0"
 dependencies = [
  "aeamcp-common",
  "borsh 0.10.4",
+ "getrandom 0.2.16",
  "serde",
  "serde_json",
+ "shank",
  "solana-program",
  "solana-program-test",
  "solana-sdk",

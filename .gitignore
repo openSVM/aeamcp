@@ -44,3 +44,4 @@ node_modules/
 # Solana specific
 test-ledger/
 .anchor/
+keypairs/

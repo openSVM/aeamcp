@@ -12,7 +12,9 @@ borsh = { workspace = true }
 thiserror = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+getrandom = { workspace = true }
 aeamcp-common = { path = "../common" }
+shank = "0.4.3"
 
 [dev-dependencies]
 solana-program-test = { workspace = true }

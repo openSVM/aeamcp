@@ -39,7 +39,7 @@ fi
 # Check if Solana CLI is installed
 if ! command -v solana &> /dev/null; then
     print_error "Solana CLI is not installed. Please install Solana CLI first:"
-    echo "sh -c \"\$(curl -sSfL https://release.solana.com/v1.18.0/install)\""
+    echo "curl --proto '=https' --tlsv1.2 -sSfL https://solana-install.solana.workers.dev | bash"
     exit 1
 fi
 
@@ -56,7 +56,7 @@ print_status "Solana CLI version: $(solana --version)"
 
 # Set up Solana for BPF compilation
 print_header "Setting up Solana BPF toolchain..."
-solana install
+# Modern Solana CLI doesn't need explicit install command
 
 # Clean previous builds
 print_header "Cleaning previous builds..."
@@ -65,18 +65,18 @@ cargo clean
 # Build the programs
 print_header "Building Agent Registry program..."
 cd programs/agent-registry
-cargo build-bpf --manifest-path Cargo.toml
+cargo build-sbf --manifest-path Cargo.toml
 cd ../..
 
 print_header "Building MCP Server Registry program..."
 cd programs/mcp-server-registry
-cargo build-bpf --manifest-path Cargo.toml
+cargo build-sbf --manifest-path Cargo.toml
 cd ../..
 
 # Verify builds
 print_header "Verifying builds..."
-if [ -f "target/deploy/solana_agent_registry.so" ]; then
-    AGENT_SIZE=$(stat -c%s target/deploy/solana_agent_registry.so)
+if [ -f "target/deploy/solana_a2a.so" ]; then
+    AGENT_SIZE=$(stat -c%s target/deploy/solana_a2a.so)
     print_status "✅ Agent Registry built successfully (${AGENT_SIZE} bytes)"
 else
     print_error "❌ Agent Registry build failed"
@@ -98,7 +98,7 @@ cargo test --verbose
 print_header "🎉 Build completed successfully!"
 echo ""
 echo "📋 Build Summary:"
-echo "  Agent Registry: target/deploy/solana_agent_registry.so (${AGENT_SIZE} bytes)"
+echo "  Agent Registry: target/deploy/solana_a2a.so (${AGENT_SIZE} bytes)"
 echo "  MCP Server Registry: target/deploy/solana_mcp.so (${MCP_SIZE} bytes)"
 echo ""
 echo "🚀 Ready for deployment:"

@@ -2,6 +2,7 @@
 
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::pubkey::Pubkey;
+use shank::ShankAccount;
 use aeamcp_common::{
     constants::*,
     serialization::*,
@@ -9,7 +10,7 @@ use aeamcp_common::{
 };
 
 /// Agent Registry Entry (V1) - Solana account structure for storing agent data on-chain
-#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, PartialEq)]
+#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, PartialEq, ShankAccount)]
 pub struct AgentRegistryEntryV1 {
     /// Bump seed used for this PDA's derivation
     pub bump: u8,
