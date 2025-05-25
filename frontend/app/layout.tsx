@@ -59,12 +59,16 @@ export default function RootLayout({
                       GitHub
                     </a>
                     <a 
-                      href="https://docs.solana.com" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
+                      href="/index.html" 
                       className="text-[#14F195] hover:underline"
                     >
-                      Solana Docs
+                      Project Website
+                    </a>
+                    <a 
+                      href="/docs.html" 
+                      className="text-[#14F195] hover:underline"
+                    >
+                      Documentation
                     </a>
                     <a 
                       href="/tokenomics" 
