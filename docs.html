@@ -11,136 +11,581 @@
     <meta property="og:url" content="https://aeamcp.com/docs.html" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
     <style>
         body {
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Courier New', Courier, monospace; /* Monospace font */
             background-color: #FFFFFF;
-            color: #262626;
+            color: #262626; /* Neutral-800 */
+            scroll-behavior: smooth;
+            font-size: 16px; /* Base font size for monospace for readability */
+            line-height: 1.6; /* Improved readability for dense text */
         }
-        .header {
-            background-color: #171717;
-            padding: 1rem;
-            color: white;
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem; /* 24px */
         }
+        
+        .header-bg {
+            background-color: #404040; /* Neutral-700 */
+            border-bottom: 2px solid #171717; /* Neutral-900 */
+        }
+        
         .nav-link {
-            display: inline-block;
+            color: #E5E5E5; /* Neutral-200 */
+            transition: color 0.3s ease, background-color 0.3s ease;
             padding: 0.5rem 1rem;
-            margin: 0.25rem;
-            border: 1px solid #525252;
-            border-radius: 0.25rem;
-            color: #A3A3A3;
+            border-radius: 0; /* Sharp corners for 90s look */
+            font-weight: normal; /* Monospace handles weight differently */
+            border: 1px solid #404040; /* Border for nav links */
+            display: inline-block; /* Ensure padding and border are respected properly */
+            margin: 0.25rem 0; /* Add some margin for wrapped items */
             text-decoration: none;
-            transition: all 0.2s ease;
-            background-color: #262626;
         }
+        
         .nav-link:hover {
-            background-color: #737373;
+            background-color: #737373; /* Neutral-500 */
             color: #FFFFFF;
             border-color: #737373;
         }
+        
         .nav-link.active {
-            background-color: #404040;
+            background-color: #404040; /* Neutral-700 */
             color: #FFFFFF;
-            font-weight: bold;
+            font-weight: bold; /* Monospace can use bold */
             border-color: #404040;
         }
-        .main-container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
-        }
+        
         #content {
             padding: 2rem 0;
         }
+        
         #markdown-content {
-            background-color: #f5f5f5;
+            background-color: #F5F5F5; /* Neutral-100 */
             padding: 2rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 0; /* Sharp corners */
+            box-shadow: 2px 2px 0px #A3A3A3; /* Simple shadow for 90s */
+            border: 1px solid #A3A3A3; /* Border for cards */
             line-height: 1.6;
         }
+        
         #markdown-content h1 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #525252;
+            color: #171717; /* Neutral-900 */
+            border-bottom: 2px solid #525252; /* Neutral-600 */
+            padding-bottom: 0.75rem; /* 12px */
+            font-size: 1.75rem; /* Adjusted for monospace */
+            font-weight: bold;
+            text-transform: uppercase; /* 90s style */
+            margin-bottom: 1.5rem; /* Increased bottom margin */
         }
+        
         #markdown-content h2 {
-            font-size: 1.5rem;
-            margin-top: 2rem;
-            margin-bottom: 1rem;
+            color: #262626; /* Neutral-800 */
+            font-size: 1.25rem; /* Adjusted for monospace */
+            font-weight: bold;
+            margin-top: 2rem; /* Increased top margin */
+            margin-bottom: 1rem; /* Increased bottom margin */
+            border-bottom: 1px dotted #737373; /* Dotted underline for subsections */
             padding-bottom: 0.25rem;
-            border-bottom: 1px solid #737373;
         }
+        
         #markdown-content h3 {
-            font-size: 1.25rem;
-            margin-top: 1.5rem;
-            margin-bottom: 0.75rem;
+            color: #404040; /* Neutral-700 */
+            font-size: 1.05rem;
+            font-weight: bold;
+            margin-top: 1.25rem;
+            margin-bottom: 0.5rem;
         }
+        
         #markdown-content ul, #markdown-content ol {
             padding-left: 1.5rem;
             margin-bottom: 1rem;
         }
+        
         #markdown-content ul {
             list-style-type: disc;
         }
+        
         #markdown-content ol {
             list-style-type: decimal;
         }
+        
         #markdown-content pre {
-            background-color: #262626;
+            background-color: #404040;
             color: #ffffff;
             padding: 1rem;
-            border-radius: 0.25rem;
+            border-radius: 0;
             overflow-x: auto;
             margin: 1rem 0;
+            border: 1px solid #A3A3A3;
         }
+        
         #markdown-content code {
             background-color: #d4d4d4;
             padding: 0.2rem 0.4rem;
-            border-radius: 0.25rem;
-            font-family: monospace;
+            border-radius: 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+            color: #171717;
+            word-break: break-all;
+            border: 1px solid #A3A3A3;
         }
+        
         #markdown-content pre code {
             background-color: transparent;
             padding: 0;
+            border: none;
+            color: #e5e5e5;
+            word-break: normal;
         }
+        
         #markdown-content table {
             width: 100%;
             border-collapse: collapse;
             margin: 1.5rem 0;
+            border: 1px solid #737373; /* Table border */
         }
+        
         #markdown-content th, #markdown-content td {
-            border: 1px solid #d4d4d4;
-            padding: 0.5rem 1rem;
+            border: 1px solid #A3A3A3; /* Neutral-400 */
+            padding: 0.5rem 0.75rem; /* Adjusted padding */
             text-align: left;
+            vertical-align: top; /* Better for long text in cells */
         }
+        
         #markdown-content th {
-            background-color: #e5e5e5;
+            background-color: #A3A3A3; /* Neutral-400 */
+            color: #171717; /* Neutral-900 */
+            font-weight: bold;
         }
+        
+        #markdown-content tbody tr:nth-child(even) {
+            background-color: #E5E5E5; /* Neutral-200 */
+        }
+        
+        #markdown-content tbody tr:hover {
+            background-color: #D4D4D4; /* Neutral-300 */
+        }
+        
         #markdown-content blockquote {
             border-left: 4px solid #737373;
             padding-left: 1rem;
             margin: 1rem 0;
             color: #525252;
+            background-color: #E5E5E5; /* Neutral-200 */
+            border: 1px dashed #A3A3A3; /* Dashed border */
+            padding: 1rem;
+            border-radius: 0;
         }
+        
         #markdown-content a {
             color: #0ea5e9;
             text-decoration: none;
         }
+        
         #markdown-content a:hover {
             text-decoration: underline;
         }
+        
         #sidebar {
             width: 250px;
             min-width: 250px;
             padding-right: 1.5rem;
         }
+        
+        #doc-nav a {
+            display: block;
+            padding: 0.5rem 1rem;
+            margin: 0.25rem 0;
+            border: 1px solid #525252;
+            border-radius: 0;
+            color: #404040;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            background-color: #F5F5F5;
+        }
+        
+        #doc-nav a:hover {
+            background-color: #E5E5E5;
+            color: #171717;
+        }
+        
+        #doc-nav a.active, 
+        #doc-nav a.font-bold {
+            background-color: #404040;
+            color: #FFFFFF;
+            font-weight: bold;
+            border-color: #404040;
+        }
+
+        /* Book-like styling */
+        .book-layout {
+            display: flex;
+            flex-direction: column;
+            margin: 0 auto;
+        }
+
+        .book-chapter {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px dotted #737373;
+        }
+
+        .book-chapter:last-child {
+            border-bottom: none;
+        }
+
+        .chapter-title {
+            font-size: 1.5rem;
+            color: #171717;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #525252;
+            font-weight: bold;
+        }
+
+        .book-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e5e5;
+        }
+
+        .book-nav a {
+            padding: 0.5rem 1rem;
+            border: 1px solid #525252;
+            border-radius: 0;
+            color: #404040;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            background-color: #F5F5F5;
+        }
+
+        .book-nav a:hover {
+            background-color: #E5E5E5;
+            color: #171717;
+        }
+
+        /* Diagram styling */
+        .diagram-container {
+            margin: 2rem 0;
+            padding: 1rem;
+            background-color: #F5F5F5;
+            border: 1px solid #A3A3A3;
+            border-radius: 0;
+            box-shadow: 2px 2px 0px #A3A3A3;
+        }
+
+        .diagram-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #171717;
+            text-align: center;
+        }
+
+        .diagram-description {
+            margin-bottom: 1rem;
+            color: #525252;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+            padding: 1rem;
+            border-radius: 0;
+            border: 1px solid #D4D4D4;
+            overflow-x: hidden;
+        }
+        
+        .code-example {
+            background-color: #FFFFFF;
+            padding: 0.5rem;
+            border: 1px solid #A3A3A3;
+        }
+
+        .infographic-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .infographic-block {
+            border: 1px solid #A3A3A3;
+            padding: 1rem;
+            background-color: #FFFFFF;
+        }
+
+        .infographic-block-title {
+            font-weight: bold;
+            color: #171717;
+            margin-bottom: 0.5rem;
+            font-size: 1.05rem;
+            border-bottom: 1px solid #D4D4D4;
+            padding-bottom: 0.25rem;
+        }
+        
+        .mermaid-container {
+            background-color: #FFFFFF;
+            padding: 1rem;
+            border: 1px solid #D4D4D4;
+            margin: 1rem auto;
+            overflow-x: auto;
+        }
+        
+        .mermaid-container svg {
+            max-width: 100%;
+            height: auto;
+            margin: 0 auto;
+            display: block;
+        }
+        
+        .footer-bg {
+            background-color: #404040; /* Neutral-700 */
+            border-top: 2px solid #171717; /* Neutral-900 */
+        }
+        
+        .footer-text {
+            color: #D4D4D4; /* Neutral-300 */
+        }
+
+        /* Enhanced responsive styles */
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px; /* Smaller base font size on mobile */
+                overflow-x: hidden; /* Prevent horizontal scrolling */
+            }
+            
+            .main-container {
+                padding: 0 1rem;
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .chart-container {
+                height: 250px;
+                width: 100%;
+                max-width: 100%;
+                overflow-x: hidden;
+            }
+            
+            .infographic-grid {
+                grid-template-columns: 1fr;
+                margin: 1rem 0;
+                width: 100%;
+                overflow-x: hidden;
+            }
+            
+            .book-nav {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: center;
+                width: 100%;
+            }
+            
+            #markdown-content {
+                padding: 1rem;
+                overflow-x: hidden;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            #content {
+                width: 100%;
+                box-sizing: border-box;
+                overflow-x: hidden;
+            }
+            
+            #sidebar {
+                width: 100%;
+                min-width: 100%;
+                padding-right: 0;
+                padding-bottom: 1rem;
+                border-bottom: 1px solid #A3A3A3;
+                margin-bottom: 1rem;
+                box-sizing: border-box;
+            }
+            
+            .flex.flex-col.md\\:flex-row {
+                flex-direction: column !important;
+                width: 100%;
+            }
+            
+            #markdown-content h1 {
+                font-size: 1.5rem;
+            }
+            
+            #markdown-content h2 {
+                font-size: 1.2rem;
+            }
+            
+            #markdown-content h3 {
+                font-size: 1rem;
+            }
+            
+            .diagram-container {
+                padding: 0.75rem;
+                margin: 1rem 0;
+                overflow-x: hidden;
+                max-width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .nav-link {
+                display: block;
+                width: 100%;
+                text-align: center;
+                margin: 0.25rem 0;
+            }
+            
+            .header-bg nav {
+                padding-top: 0.5rem;
+                padding-bottom: 0.5rem;
+            }
+            
+            .diagram-title {
+                font-size: 1rem;
+            }
+            
+            .infographic-block {
+                padding: 0.75rem;
+                margin-bottom: 0.75rem;
+                max-width: 100%;
+                box-sizing: border-box;
+            }
+            
+            table {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            pre {
+                overflow-x: auto;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                max-width: 100%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                font-size: 13px;
+                overflow-x: hidden;
+            }
+            
+            .chart-container {
+                height: 200px;
+                max-width: 100%;
+                overflow-x: hidden;
+            }
+            
+            #markdown-content {
+                padding: 0.75rem;
+                overflow-x: hidden;
+            }
+            
+            .book-chapter {
+                margin-bottom: 1.5rem;
+                padding-bottom: 0.75rem;
+            }
+            
+            .chapter-title {
+                font-size: 1.3rem;
+                margin-bottom: 0.75rem;
+            }
+            
+            .diagram-description {
+                font-size: 0.8rem;
+            }
+            
+            .infographic-block-title {
+                font-size: 0.95rem;
+            }
+            
+            table {
+                font-size: 0.85rem;
+            }
+            
+            pre, code {
+                font-size: 0.85rem;
+            }
+            
+            .infographic-grid {
+                display: block;
+            }
+            
+            .infographic-block {
+                margin-bottom: 1rem;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .main-container {
+                padding: 0 0.5rem;
+            }
+        }
+
+        /* Print styles for book-like printing */
+        @media print {
+            body {
+                font-size: 12pt;
+            }
+
+            .header-bg, .footer-bg, #sidebar, .book-nav {
+                display: none !important;
+            }
+
+            #content {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            #markdown-content {
+                box-shadow: none !important;
+                padding: 0 !important;
+                background-color: white !important;
+                border: none !important;
+            }
+
+            .book-chapter {
+                page-break-after: always;
+                border-bottom: none;
+            }
+
+            .chart-container {
+                height: 400px !important;
+                page-break-inside: avoid;
+                border: 1px solid #000;
+            }
+
+            .diagram-container {
+                page-break-inside: avoid;
+                border: 1px solid #000;
+            }
+
+            .infographic-grid {
+                page-break-inside: avoid;
+            }
+        }
     </style>
 </head>
 <body>
-    <header class="header">
+    <header class="header-bg text-white sticky top-0 z-50">
         <nav class="main-container py-3 flex flex-col sm:flex-row sm:justify-between items-center">
             <a href="index.html" class="text-xl sm:text-2xl font-bold text-white hover:text-neutral-300 transition-colors text-center sm:text-left mb-3 sm:mb-0">Solana AI Registries Initiative</a>
             <div class="flex flex-col items-center space-y-2 sm:flex-row sm:space-y-0 sm:space-x-1 sm:flex-wrap text-sm sm:justify-end">
@@ -161,18 +606,22 @@
         </div>
     </main>
 
-    <footer class="bg-neutral-800 text-white py-6">
+    <footer class="footer-bg text-white py-6">
         <div class="main-container text-center">
-            <p>© 2024 Solana AI Registries Initiative. All rights reserved.</p>
+            <p class="footer-text">© 2024 Solana AI Registries Initiative. All rights reserved.</p>
         </div>
     </footer>
 
     <script>
+        // Initialize mermaid
+        mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
+
         // Available documentation files
         const docFiles = [
             { id: 'readme', name: 'Overview', path: 'docs/README.md' },
             { id: 'protocol', name: 'Protocol Specification', path: 'docs/protocol-specification.md' },
             { id: 'svmai', name: '$SVMAI Token', path: 'docs/svmai-token.md' },
+            { id: 'tokenomics', name: 'SVMAI Tokenomics', path: 'docs/svmai-tokenomics.md' },
             { id: 'usecases', name: 'Use Cases', path: 'docs/use-cases.md' },
             { id: 'developer', name: 'Developer Guide', path: 'docs/developer-guide.md' }
         ];
@@ -212,6 +661,13 @@
                 }
                 const markdown = await response.text();
                 document.getElementById('markdown-content').innerHTML = marked.parse(markdown);
+                
+                // Check if this is the tokenomics document
+                if (path === 'docs/svmai-tokenomics.md') {
+                    setTimeout(() => {
+                        enhanceTokenomicsDocument();
+                    }, 100);
+                }
             } catch (error) {
                 console.error('Error loading markdown:', error);
                 document.getElementById('markdown-content').innerHTML = `
@@ -221,6 +677,56 @@
                     </div>
                 `;
             }
+        }
+        
+        // Helper function to find a section by heading text
+        function findSection(sectionTitle) {
+            const content = document.getElementById('markdown-content');
+            const h2s = content.querySelectorAll('h2');
+            
+            for (let i = 0; i < h2s.length; i++) {
+                if (h2s[i].textContent.includes(sectionTitle)) {
+                    // Find the next h2 to determine section end
+                    let section = document.createElement('div');
+                    let currentNode = h2s[i];
+                    section.appendChild(currentNode.cloneNode(true));
+                    
+                    currentNode = currentNode.nextElementSibling;
+                    while (currentNode && currentNode.tagName !== 'H2') {
+                        section.appendChild(currentNode.cloneNode(true));
+                        currentNode = currentNode.nextElementSibling;
+                    }
+                    
+                    return section;
+                }
+            }
+            
+            return null;
+        }
+        
+        // Helper function to find a subsection within a section
+        function findSubsection(section, subsectionTitle) {
+            if (!section) return null;
+            
+            const h3s = section.querySelectorAll('h3');
+            for (let i = 0; i < h3s.length; i++) {
+                if (h3s[i].textContent.includes(subsectionTitle)) {
+                    // Find the next h3 to determine subsection end
+                    let subsection = document.createElement('div');
+                    let currentNode = h3s[i];
+                    subsection.appendChild(currentNode.cloneNode(true));
+                    
+                    currentNode = currentNode.nextElementSibling;
+                    while (currentNode && currentNode.tagName !== 'H3' && currentNode.tagName !== 'H2') {
+                        subsection.appendChild(currentNode.cloneNode(true));
+                        currentNode = currentNode.nextElementSibling;
+                    }
+                    
+                    return subsection;
+                }
+            }
+            
+            return null;
         }
 
         // Load default document or from hash
@@ -245,6 +751,2276 @@
                 navItem.classList.add('font-bold', 'bg-neutral-200');
             }
         });
+
+        // Function to enhance tokenomics document with diagrams and infographics
+        function enhanceTokenomicsDocument() {
+            console.log('Enhancing tokenomics document with diagrams...');
+            
+            // Apply book-like styling
+            const content = document.getElementById('markdown-content');
+            content.classList.add('book-layout');
+
+            // Organize content into chapters
+            const headings = content.querySelectorAll('h2');
+            if (headings.length > 0) {
+                // Wrap sections between h2s in chapter divs
+                let currentHeading = headings[0];
+                let chapterContent = document.createElement('div');
+                chapterContent.className = 'book-chapter';
+                
+                currentHeading.parentNode.insertBefore(chapterContent, currentHeading);
+                chapterContent.appendChild(currentHeading);
+                
+                let element = currentHeading.nextElementSibling;
+                while (element) {
+                    let nextElement = element.nextElementSibling;
+                    
+                    // If we hit another h2, create a new chapter
+                    if (element.tagName === 'H2') {
+                        chapterContent = document.createElement('div');
+                        chapterContent.className = 'book-chapter';
+                        element.parentNode.insertBefore(chapterContent, element);
+                        chapterContent.appendChild(element);
+                    } else if (chapterContent) {
+                        chapterContent.appendChild(element);
+                    }
+                    
+                    element = nextElement;
+                }
+            }
+
+            // Add diagrams for executive summary
+            addExecutiveSummaryCharts();
+
+            // Add diagrams for introduction section
+            addIntroductionCharts();
+
+            // Add diagrams based on section content
+            addServiceEscrowDiagram();
+            addSmartContractDiagram();
+            addTransactionLifecycleDiagram();
+            addDisputeResolutionDiagram();
+            addDisputeFrameworkDiagram();
+            addEconomicImpactCharts();
+            addTokenDistributionChart();
+            addTokenUtilityDiagram();
+            addValueAccrualDiagram();
+            addTokenSupplyDemandDiagram();
+            addImplementationChallengesDiagram();
+            addUXConsiderationsDiagram();
+            addRecommendationsDiagram();
+            
+            // Add process flow diagrams with mermaid
+            addTokenomicsProcessFlows();
+            
+            // Add navigation between chapters
+            addChapterNavigation();
+        }
+
+        // Check if the loaded content is tokenomics and enhance if needed
+        function checkAndEnhanceContent() {
+            const contentElem = document.getElementById('markdown-content');
+            const h1 = contentElem.querySelector('h1');
+            
+            if (h1 && h1.innerText.includes('Service Escrow Tokenomic Model for the SVMAI Token')) {
+                enhanceTokenomicsDocument();
+            }
+        }
+
+        // Override the original loadMarkdown function to add our enhancement logic
+        // We no longer need this since we modified the original loadMarkdown function
+        /* 
+        const originalLoadMarkdown = loadMarkdown;
+        loadMarkdown = async function(path) {
+            await originalLoadMarkdown(path);
+            // Wait a bit for the markdown to render
+            setTimeout(() => {
+                checkAndEnhanceContent();
+            }, 100);
+        };
+        */
+
+        // Additional visualization functions for tokenomics page
+
+        function addExecutiveSummaryCharts() {
+            const summarySection = findSection('Executive Summary');
+            if (!summarySection) return;
+
+            // Create diagram container
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">Key Model Components Overview</div>
+                <div class="diagram-description">Core elements of the SVMAI service escrow model</div>
+                <div class="infographic-grid">
+                    <div class="infographic-block">
+                        <div class="infographic-block-title">Client Escrow Mechanism</div>
+                        <p>Client stakes SVMAI tokens as escrow guarantee, which are returned upon service approval</p>
+                    </div>
+                    <div class="infographic-block">
+                        <div class="infographic-block-title">Agent Fee Lock</div>
+                        <p>Service provider's fee is locked into escrow until completion and client approval</p>
+                    </div>
+                    <div class="infographic-block">
+                        <div class="infographic-block-title">Decentralized Dispute Resolution</div>
+                        <p>Fair arbitration process to handle disputes, protecting both client and agent interests</p>
+                    </div>
+                </div>
+            `;
+
+            // Insert after the first paragraph
+            const firstPara = summarySection.querySelector('p');
+            if (firstPara) {
+                firstPara.parentNode.insertBefore(diagramContainer, firstPara.nextSibling);
+            }
+
+            // Add second visualization
+            const riskChart = document.createElement('div');
+            riskChart.className = 'diagram-container';
+            riskChart.innerHTML = `
+                <div class="diagram-title">Risk-Benefit Analysis</div>
+                <div class="diagram-description">Critical factors affecting the SVMAI tokenomic model</div>
+                <div class="chart-container">
+                    <canvas id="riskBenefitChart"></canvas>
+                </div>
+            `;
+
+            const lastPara = summarySection.lastElementChild;
+            if (lastPara) {
+                summarySection.insertBefore(riskChart, lastPara);
+                
+                // Create the chart
+                setTimeout(() => {
+                    const ctx = document.getElementById('riskBenefitChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'radar',
+                        data: {
+                            labels: [
+                                'Security',
+                                'Fairness',
+                                'User Adoption',
+                                'Economic Stability',
+                                'Legal Compliance',
+                                'Technical Feasibility'
+                            ],
+                            datasets: [
+                                {
+                                    label: 'Current Model',
+                                    data: [4.5, 2.8, 3.9, 3.5, 3.8, 4.2],
+                                    backgroundColor: 'rgba(115, 115, 115, 0.2)',
+                                    borderColor: '#737373',
+                                    pointBackgroundColor: '#404040',
+                                    pointBorderColor: '#FFFFFF',
+                                    pointHoverBackgroundColor: '#FFFFFF',
+                                    pointHoverBorderColor: '#404040'
+                                },
+                                {
+                                    label: 'With Recommended Improvements',
+                                    data: [4.8, 4.7, 4.5, 4.3, 4.1, 4.6],
+                                    backgroundColor: 'rgba(66, 66, 66, 0.2)',
+                                    borderColor: '#404040',
+                                    pointBackgroundColor: '#262626',
+                                    pointBorderColor: '#FFFFFF',
+                                    pointHoverBackgroundColor: '#FFFFFF',
+                                    pointHoverBorderColor: '#262626'
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            elements: {
+                                line: {
+                                    borderWidth: 2
+                                }
+                            },
+                            scales: {
+                                r: {
+                                    angleLines: {
+                                        color: '#A3A3A3'
+                                    },
+                                    grid: {
+                                        color: '#D4D4D4'
+                                    },
+                                    pointLabels: {
+                                        font: {
+                                            family: "'Courier New', Courier, monospace"
+                                        }
+                                    },
+                                    suggestedMin: 0,
+                                    suggestedMax: 5
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        font: {
+                                            family: "'Courier New', Courier, monospace"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }, 100);
+            }
+        }
+
+        function addIntroductionCharts() {
+            const introSection = findSection('Introduction to the SVMAI Service Escrow Model');
+            if (!introSection) return;
+
+            // Create comparison diagram
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">Token Model Evolution</div>
+                <div class="diagram-description">Transition from previous models to the SVMAI service escrow model</div>
+                <div class="chart-container">
+                    <canvas id="modelEvolutionChart"></canvas>
+                </div>
+            `;
+
+            // Find subsection by heading text
+            const contextSection = findSubsection(introSection, 'Context: The SVMAI Token and the Need for a New Tokenomic Framework');
+            if (contextSection) {
+                const firstPara = contextSection.querySelector('p');
+                if (firstPara) {
+                    firstPara.parentNode.insertBefore(diagramContainer, firstPara.nextSibling);
+                    
+                    // Create the chart
+                    setTimeout(() => {
+                        const ctx = document.getElementById('modelEvolutionChart').getContext('2d');
+                        new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: [
+                                    'Simplicity',
+                                    'Direct Utility',
+                                    'Liquidity',
+                                    'Security',
+                                    'Governance Potential'
+                                ],
+                                datasets: [
+                                    {
+                                        label: 'NFT Model',
+                                        data: [2.5, 3.7, 2.1, 4.0, 2.8],
+                                        backgroundColor: '#D4D4D4'
+                                    },
+                                    {
+                                        label: 'veToken Model',
+                                        data: [1.9, 3.4, 3.5, 3.8, 4.5],
+                                        backgroundColor: '#A3A3A3'
+                                    },
+                                    {
+                                        label: 'Service Escrow Model',
+                                        data: [4.1, 4.6, 4.2, 4.0, 3.8],
+                                        backgroundColor: '#737373'
+                                    }
+                                ]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        max: 5,
+                                        ticks: {
+                                            font: {
+                                                family: "'Courier New', Courier, monospace"
+                                            }
+                                        }
+                                    },
+                                    x: {
+                                        ticks: {
+                                            font: {
+                                                family: "'Courier New', Courier, monospace"
+                                            }
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        position: 'bottom',
+                                        labels: {
+                                            font: {
+                                                family: "'Courier New', Courier, monospace"
+                                            }
+                                        }
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                return context.dataset.label + ': ' + context.raw + '/5';
+                                            }
+                                        },
+                                        bodyFont: {
+                                            family: "'Courier New', Courier, monospace"
+                                        },
+                                        titleFont: {
+                                            family: "'Courier New', Courier, monospace"
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }, 100);
+                }
+            }
+
+            // Add flow diagram for overview section
+            const overviewSection = findSubsection(introSection, 'Overview of the Proposed Escrow and Dispute Mechanism');
+            if (overviewSection) {
+                const flowDiagram = document.createElement('div');
+                flowDiagram.className = 'diagram-container';
+                flowDiagram.innerHTML = `
+                    <div class="diagram-title">SVMAI Escrow Process Flow</div>
+                    <div class="diagram-description">Step-by-step visualization of the escrow mechanism</div>
+                    <div class="infographic-grid" style="grid-template-columns: 1fr;">
+                        <div class="infographic-block" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                            <div style="font-weight: bold; margin-bottom: 10px;">Service Initiation</div>
+                            <div style="display: flex; justify-content: center; align-items: center; gap: 20px;">
+                                <div style="border: 1px solid #525252; padding: 10px; background-color: #E5E5E5; width: 120px;">Client</div>
+                                <div style="border: 1px solid #525252; padding: 10px; background-color: #E5E5E5; width: 120px;">Agent</div>
+                            </div>
+                            <div style="margin: 10px 0;">↓</div>
+                            <div style="border: 1px solid #525252; padding: 10px; background-color: #F5F5F5; width: 80%;">
+                                Client locks SVMAI stake & Agent locks service fee
+                            </div>
+                            <div style="margin: 10px 0;">↓</div>
+                            <div style="border: 1px solid #525252; padding: 10px; background-color: #F5F5F5; width: 80%;">
+                                Agent performs agreed service
+                            </div>
+                            <div style="margin: 10px 0;">↓</div>
+                            <div style="border: 1px solid #525252; padding: 10px; background-color: #F5F5F5; width: 80%;">
+                                Client reviews completed work
+                            </div>
+                            <div style="margin: 10px 0;">↙︎ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ↘︎</div>
+                            <div style="display: flex; justify-content: space-around; width: 100%;">
+                                <div style="border: 1px solid #525252; padding: 10px; background-color: #F5F5F5; width: 40%;">
+                                    Client Approves
+                                </div>
+                                <div style="border: 1px solid #525252; padding: 10px; background-color: #F5F5F5; width: 40%;">
+                                    Client Disputes
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-around; width: 100%;">
+                                <div style="margin: 10px 0;">↓</div>
+                                <div style="margin: 10px 0;">↓</div>
+                            </div>
+                            <div style="display: flex; justify-content: space-around; width: 100%;">
+                                <div style="border: 1px solid #525252; padding: 10px; background-color: #D4D4D4; width: 40%;">
+                                    Agent receives fee<br>Client gets stake back
+                                </div>
+                                <div style="border: 1px solid #525252; padding: 10px; background-color: #D4D4D4; width: 40%;">
+                                    Dispute Resolution<br>Process
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                const secondPara = overviewSection.querySelectorAll('p')[1];
+                if (secondPara) {
+                    secondPara.parentNode.insertBefore(flowDiagram, secondPara.nextSibling);
+                }
+            }
+        }
+
+        function addSmartContractDiagram() {
+            // Find section for smart contract architecture
+            const smartContractSection = findSubsection(findSection('Core Tokenomic Design: The SVMAI Service Escrow'), 'Smart Contract Architecture: Key Functions and Design Patterns for Security and Efficiency');
+            if (!smartContractSection) return;
+
+            // Create diagram container
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">Smart Contract Architecture</div>
+                <div class="diagram-description">Key components and functions of the SVMAI escrow system</div>
+                <div class="infographic-grid">
+                    <div class="infographic-block">
+                        <div class="infographic-block-title">Core Functions</div>
+                        <ul style="list-style-type: none; padding-left: 0;">
+                            <li>• initiateEscrow()</li>
+                            <li>• lockStakeAndFee()</li>
+                            <li>• approveWork()</li>
+                            <li>• disputeWork()</li>
+                            <li>• resolveDispute()</li>
+                            <li>• withdrawAgentFee()</li>
+                            <li>• withdrawClientStake()</li>
+                        </ul>
+                    </div>
+                    <div class="infographic-block">
+                        <div class="infographic-block-title">Security Patterns</div>
+                        <ul style="list-style-type: none; padding-left: 0;">
+                            <li>• Checks-Effects-Interactions</li>
+                            <li>• Role-based access control</li>
+                            <li>• SafeERC20 for transfers</li>
+                            <li>• Overflow/Underflow prevention</li>
+                            <li>• Circuit breaker pattern</li>
+                        </ul>
+                    </div>
+                    <div class="infographic-block">
+                        <div class="infographic-block-title">Data Structures</div>
+                        <ul style="list-style-type: none; padding-left: 0;">
+                            <li>• Escrow { id, clientId, agentId }</li>
+                            <li>• StakeInfo { amount, locked }</li>
+                            <li>• FeeInfo { amount, locked }</li>
+                            <li>• DisputeInfo { id, status }</li>
+                            <li>• TimeConstraints { deadline }</li>
+                        </ul>
+                    </div>
+                    <div class="infographic-block">
+                        <div class="infographic-block-title">State Management</div>
+                        <ul style="list-style-type: none; padding-left: 0;">
+                            <li>• Created</li>
+                            <li>• Funded</li>
+                            <li>• In Progress</li>
+                            <li>• Completed</li>
+                            <li>• Approved</li>
+                            <li>• Disputed</li>
+                            <li>• Resolved</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+
+            // Insert after the second paragraph
+            const paras = smartContractSection.querySelectorAll('p');
+            if (paras.length >= 2) {
+                paras[1].parentNode.insertBefore(diagramContainer, paras[1].nextSibling);
+            }
+            
+            // Add security risk visualization
+            const securityChart = document.createElement('div');
+            securityChart.className = 'diagram-container';
+            securityChart.innerHTML = `
+                <div class="diagram-title">Security Priority Analysis</div>
+                <div class="diagram-description">Relative importance of security considerations in smart contract design</div>
+                <div class="chart-container">
+                    <canvas id="securityPriorityChart"></canvas>
+                </div>
+            `;
+
+            if (smartContractSection.lastElementChild) {
+                smartContractSection.appendChild(securityChart);
+                
+                // Create the chart
+                setTimeout(() => {
+                    const ctx = document.getElementById('securityPriorityChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'polarArea',
+                        data: {
+                            labels: [
+                                'Re-entrancy Protection',
+                                'Access Control',
+                                'Token Transfer Safety',
+                                'Integer Overflow Prevention',
+                                'Circuit Breaker Pattern',
+                                'Gas Optimization'
+                            ],
+                            datasets: [{
+                                data: [9.5, 9.0, 8.5, 8.0, 7.0, 6.0],
+                                backgroundColor: [
+                                    '#404040',
+                                    '#525252',
+                                    '#737373',
+                                    '#A3A3A3',
+                                    '#D4D4D4',
+                                    '#E5E5E5'
+                                ],
+                                borderWidth: 1,
+                                borderColor: '#FFFFFF'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                r: {
+                                    ticks: {
+                                        display: false
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        font: {
+                                            family: "'Courier New', Courier, monospace"
+                                        }
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return context.label + ': ' + context.raw + '/10 priority';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }, 100);
+            }
+        }
+
+        // Helper function to find sections by heading text
+        function findSection(headingText) {
+            const headings = document.querySelectorAll('#markdown-content h2');
+            for (let heading of headings) {
+                if (heading.textContent.includes(headingText)) {
+                    // Find the chapter div this heading is in
+                    let section = heading.closest('.book-chapter');
+                    if (!section) section = heading.parentNode;
+                    return section;
+                }
+            }
+            return null;
+        }
+        
+        // Helper function to find subsections
+        function findSubsection(parentSection, subheadingText) {
+            if (!parentSection) return null;
+            
+            const subHeadings = parentSection.querySelectorAll('h3');
+            for (let heading of subHeadings) {
+                if (heading.textContent.includes(subheadingText)) {
+                    // Return the subsection (everything between this h3 and the next h3 or end of section)
+                    let subsectionContent = document.createElement('div');
+                    subsectionContent.appendChild(heading);
+                    
+                    let currentElement = heading.nextElementSibling;
+                    while (currentElement && currentElement.tagName !== 'H3' && !currentElement.classList.contains('book-nav')) {
+                        // Clone the element to avoid moving it from its original location
+                        subsectionContent.appendChild(currentElement);
+                        currentElement = currentElement.nextElementSibling;
+                    }
+                    
+                    return subsectionContent;
+                }
+            }
+            return null;
+        }
+
+        // Add chapter navigation links
+        function addServiceEscrowDiagram() {
+            const section = findSection('Core Tokenomic Design: The SVMAI Service Escrow');
+            if (!section) return;
+            
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">Service Escrow Model Visualization</div>
+                <div class="diagram-description">Flow of SVMAI tokens in the escrow process</div>
+                <div class="chart-container">
+                    <canvas id="serviceEscrowChart"></canvas>
+                </div>
+            `;
+            
+            const firstPara = section.querySelector('p');
+            if (firstPara) {
+                firstPara.parentNode.insertBefore(diagramContainer, firstPara.nextSibling);
+                
+                setTimeout(() => {
+                    const ctx = document.getElementById('serviceEscrowChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Client Stake', 'Agent Fee', 'Smart Contract Escrow', 'After Approval (Client)', 'After Approval (Agent)'],
+                            datasets: [{
+                                label: 'SVMAI Token Flow',
+                                data: [100, 50, 150, 100, 50],
+                                backgroundColor: [
+                                    '#525252',  // Client stake
+                                    '#737373',  // Agent fee
+                                    '#A3A3A3',  // Smart contract escrow
+                                    '#525252',  // After approval client
+                                    '#737373'   // After approval agent
+                                ],
+                                borderColor: '#FFFFFF',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            indexAxis: 'y',
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.dataset.label || '';
+                                            return label + ': ' + context.parsed.x + ' SVMAI';
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'SVMAI Token Amount',
+                                        font: {
+                                            family: "'Courier New', Courier, monospace"
+                                        }
+                                    },
+                                    ticks: {
+                                        font: {
+                                            family: "'Courier New', Courier, monospace"
+                                        }
+                                    }
+                                },
+                                y: {
+                                    ticks: {
+                                        font: {
+                                            family: "'Courier New', Courier, monospace"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }, 100);
+            }
+        }
+        
+        function addTransactionLifecycleDiagram() {
+            const section = findSubsection(findSection('Core Tokenomic Design: The SVMAI Service Escrow'), 'Transaction Lifecycle: From Job Initiation to Completion or Dispute');
+            if (!section) return;
+            
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">Transaction Lifecycle Visualization</div>
+                <div class="diagram-description">Key stages in the service transaction process</div>
+                <div style="background-color: #F5F5F5; padding: 1rem; border: 1px solid #A3A3A3;">
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <div style="padding: 10px; background-color: #737373; color: white; width: 80%; text-align: center; margin-bottom: 10px;">
+                            Job Posting / Service Discovery
+                        </div>
+                        <div style="font-size: 1.5rem; margin: 5px;">↓</div>
+                        <div style="padding: 10px; background-color: #737373; color: white; width: 80%; text-align: center; margin-bottom: 10px;">
+                            Agreement & Escrow Initiation
+                        </div>
+                        <div style="font-size: 1.5rem; margin: 5px;">↓</div>
+                        <div style="padding: 10px; background-color: #737373; color: white; width: 80%; text-align: center; margin-bottom: 10px;">
+                            Agent Confirmation & Fee Lock
+                        </div>
+                        <div style="font-size: 1.5rem; margin: 5px;">↓</div>
+                        <div style="padding: 10px; background-color: #737373; color: white; width: 80%; text-align: center; margin-bottom: 10px;">
+                            Service in Progress
+                        </div>
+                        <div style="font-size: 1.5rem; margin: 5px;">↓</div>
+                        <div style="padding: 10px; background-color: #737373; color: white; width: 80%; text-align: center; margin-bottom: 10px;">
+                            Service Delivery Confirmation
+                        </div>
+                        <div style="font-size: 1.5rem; margin: 5px;">↓</div>
+                        <div style="padding: 10px; background-color: #737373; color: white; width: 80%; text-align: center; margin-bottom: 10px;">
+                            Client Review Period
+                        </div>
+                        <div style="font-size: 1.5rem; margin: 5px;">↓</div>
+                        <div style="display: flex; width: 80%; justify-content: space-between; margin-bottom: 10px;">
+                            <div style="width: 45%; padding: 10px; background-color: #525252; color: white; text-align: center;">
+                                Approval
+                            </div>
+                            <div style="width: 45%; padding: 10px; background-color: #525252; color: white; text-align: center;">
+                                Dispute
+                            </div>
+                        </div>
+                        <div style="display: flex; width: 80%; justify-content: space-between;">
+                            <div style="width: 45%; text-align: center;">
+                                <div style="font-size: 1.5rem; margin: 5px;">↓</div>
+                                <div style="padding: 10px; background-color: #A3A3A3; color: #171717; text-align: center;">
+                                    Fund Release
+                                </div>
+                            </div>
+                            <div style="width: 45%; text-align: center;">
+                                <div style="font-size: 1.5rem; margin: 5px;">↓</div>
+                                <div style="padding: 10px; background-color: #A3A3A3; color: #171717; text-align: center;">
+                                    Dispute Resolution
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const paras = section.querySelectorAll('p');
+            if (paras.length > 1) {
+                paras[1].parentNode.insertBefore(diagramContainer, paras[1].nextSibling);
+            }
+        }
+
+        function addDisputeResolutionDiagram() {
+            const section = findSection('Dispute Resolution Framework for SVMAI');
+            if (!section) return;
+            
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">Dispute Resolution Assessment</div>
+                <div class="diagram-description">Binary vs. Nuanced Dispute Resolution Outcomes</div>
+                <div class="chart-container">
+                    <canvas id="disputeResolutionChart"></canvas>
+                </div>
+            `;
+            
+            const firstPara = section.querySelector('p');
+            if (firstPara) {
+                firstPara.parentNode.insertBefore(diagramContainer, firstPara.nextSibling);
+                
+                setTimeout(() => {
+                    const ctx = document.getElementById('disputeResolutionChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Fairness', 'Agent Participation', 'Client Satisfaction', 'Dispute Frequency', 'Ecosystem Health'],
+                            datasets: [
+                                {
+                                    label: 'Binary "Client Takes All" Model',
+                                    data: [2.2, 1.8, 4.7, 3.8, 2.5],
+                                    backgroundColor: '#A3A3A3'
+                                },
+                                {
+                                    label: 'Nuanced DDR Model',
+                                    data: [4.5, 4.3, 3.8, 2.2, 4.6],
+                                    backgroundColor: '#525252'
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    ticks: {
+                                        font: {
+                                            family: "'Courier New', Courier, monospace"
+                                        }
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    max: 5,
+                                    title: {
+                                        display: true,
+                                        text: 'Rating (out of 5)',
+                                        font: {
+                                            family: "'Courier New', Courier, monospace"
+                                        }
+                                    },
+                                    ticks: {
+                                        font: {
+                                            family: "'Courier New', Courier, monospace"
+                                        }
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        font: {
+                                            family: "'Courier New', Courier, monospace"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }, 100);
+            }
+        }
+
+        function addDisputeFrameworkDiagram() {
+            const section = findSubsection(findSection('Dispute Resolution Framework for SVMAI'), 'Integrating Robust Decentralized Dispute Resolution (DDR)');
+            if (!section) return;
+            
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">Decentralized Dispute Resolution Flow</div>
+                <div class="diagram-description">Process flow for resolving disputes in the SVMAI ecosystem</div>
+                <div class="chart-container" style="height: 350px;">
+                    <canvas id="ddrFlowChart"></canvas>
+                </div>
+            `;
+            
+            const paras = section.querySelectorAll('p');
+            if (paras.length > 1) {
+                paras[1].parentNode.insertBefore(diagramContainer, paras[1].nextSibling);
+                
+                setTimeout(() => {
+                    const ctx = document.getElementById('ddrFlowChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'scatter',
+                        data: {
+                            datasets: [{
+                                label: 'DDR Process Flow',
+                                data: [
+                                    {x: 1, y: 5, r: 15}, // Dispute Initiated
+                                    {x: 2, y: 4, r: 12}, // Juror Selection
+                                    {x: 3, y: 3, r: 12}, // Evidence Submission
+                                    {x: 4, y: 2, r: 12}, // Juror Voting
+                                    {x: 5, y: 1, r: 15}, // Resolution & Enforcement
+                                ],
+                                backgroundColor: '#737373',
+                                borderColor: '#404040',
+                                borderWidth: 2,
+                                pointRadius: function(context) {
+                                    const index = context.dataIndex;
+                                    const value = context.dataset.data[index];
+                                    return value.r;
+                                },
+                                pointHoverRadius: function(context) {
+                                    const index = context.dataIndex;
+                                    const value = context.dataset.data[index];
+                                    return value.r + 5;
+                                }
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const labels = [
+                                                'Client initiates dispute, stakes SVMAI tokens',
+                                                'Random jurors selected from staked SVMAI holders',
+                                                'Both parties submit evidence to support their case',
+                                                'Jurors vote, incentivized for coherence',
+                                                'Smart contract enforces ruling, distributes funds'
+                                            ];
+                                            const titles = [
+                                                'Dispute Initiated',
+                                                'Juror Selection',
+                                                'Evidence Submission',
+                                                'Juror Voting',
+                                                'Resolution & Enforcement'
+                                            ];
+                                            return titles[context.dataIndex] + ': ' + labels[context.dataIndex];
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    min: 0,
+                                    max: 6,
+                                    ticks: {
+                                        display: false
+                                    },
+                                    grid: {
+                                        display: false
+                                    }
+                                },
+                                y: {
+                                    min: 0,
+                                    max: 6,
+                                    ticks: {
+                                        display: false
+                                    },
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            },
+                            elements: {
+                                line: {
+                                    tension: 0.4
+                                }
+                            }
+                        },
+                        plugins: [{
+                            afterDraw: function(chart) {
+                                const ctx = chart.ctx;
+                                ctx.save();
+                                ctx.strokeStyle = '#525252';
+                                ctx.lineWidth = 2;
+                                
+                                // Connect the dots with arrows
+                                const points = chart.data.datasets[0].data;
+                                ctx.beginPath();
+                                for (let i = 0; i < points.length - 1; i++) {
+                                    const p1 = chart.scales.x.getPixelForValue(points[i].x);
+                                    const p1y = chart.scales.y.getPixelForValue(points[i].y);
+                                    const p2 = chart.scales.x.getPixelForValue(points[i+1].x);
+                                    const p2y = chart.scales.y.getPixelForValue(points[i+1].y);
+                                    
+                                    ctx.moveTo(p1, p1y);
+                                    ctx.lineTo(p2, p2y);
+                                    ctx.stroke();
+                                    
+                                    // Draw arrow at each point
+                                    const labels = [
+                                        'Dispute Initiated',
+                                        'Juror Selection',
+                                        'Evidence Submission',
+                                        'Juror Voting',
+                                        'Resolution'
+                                    ];
+                                    
+                                    ctx.fillStyle = '#171717';
+                                    ctx.textAlign = 'center';
+                                    ctx.font = "12px 'Courier New', Courier, monospace";
+                                    ctx.fillText(labels[i], chart.scales.x.getPixelForValue(points[i].x), chart.scales.y.getPixelForValue(points[i].y) - 25);
+                                }
+                                
+                                // Draw last label
+                                ctx.fillText(
+                                    'Resolution', 
+                                    chart.scales.x.getPixelForValue(points[points.length-1].x), 
+                                    chart.scales.y.getPixelForValue(points[points.length-1].y) - 25
+                                );
+                                
+                                ctx.restore();
+                            }
+                        }]
+                    });
+                }, 100);
+            }
+        }
+
+        function addEconomicImpactCharts() {
+            const section = findSection('Economic and Behavioral Impact Analysis');
+            if (!section) return;
+            
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">Economic Impact of the "Perceived Free Service" Phenomenon</div>
+                <div class="diagram-description">Analysis of positive and negative implications</div>
+                <div class="chart-container">
+                    <canvas id="economicImpactChart"></canvas>
+                </div>
+            `;
+            
+            const firstPara = section.querySelector('p');
+            if (firstPara) {
+                firstPara.parentNode.insertBefore(diagramContainer, firstPara.nextSibling);
+                
+                setTimeout(() => {
+                    const ctx = document.getElementById('economicImpactChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'radar',
+                        data: {
+                            labels: [
+                                'Client Adoption',
+                                'Perceived Value',
+                                'Agent Pricing',
+                                'Expectations',
+                                'Quality Control',
+                                'Economic Viability'
+                            ],
+                            datasets: [
+                                {
+                                    label: 'Without Mitigations',
+                                    data: [4.8, 2.2, 2.5, 2.0, 2.3, 2.5],
+                                    fill: true,
+                                    backgroundColor: 'rgba(163, 163, 163, 0.2)',
+                                    borderColor: '#A3A3A3',
+                                    pointBackgroundColor: '#A3A3A3',
+                                    pointBorderColor: '#FFFFFF',
+                                    pointHoverBackgroundColor: '#FFFFFF',
+                                    pointHoverBorderColor: '#A3A3A3'
+                                },
+                                {
+                                    label: 'With Mitigations',
+                                    data: [4.2, 4.0, 4.2, 4.0, 4.3, 4.5],
+                                    fill: true,
+                                    backgroundColor: 'rgba(82, 82, 82, 0.2)',
+                                    borderColor: '#525252',
+                                    pointBackgroundColor: '#525252',
+                                    pointBorderColor: '#FFFFFF',
+                                    pointHoverBackgroundColor: '#FFFFFF',
+                                    pointHoverBorderColor: '#525252'
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            elements: {
+                                line: {
+                                    borderWidth: 2
+                                }
+                            },
+                            scales: {
+                                r: {
+                                    angleLines: {
+                                        display: true,
+                                        color: '#D4D4D4'
+                                    },
+                                    grid: {
+                                        color: '#E5E5E5'
+                                    },
+                                    pointLabels: {
+                                        font: {
+                                            family: "'Courier New', Courier, monospace"
+                                        }
+                                    },
+                                    ticks: {
+                                        backdropColor: 'rgba(255, 255, 255, 0)',
+                                        font: {
+                                            family: "'Courier New', Courier, monospace"
+                                        }
+                                    },
+                                    suggestedMin: 0,
+                                    suggestedMax: 5
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        font: {
+                                            family: "'Courier New', Courier, monospace"
+                                        }
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return context.dataset.label + ': ' + context.raw + '/5';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }, 100);
+            }
+        }
+        
+        function addTokenDistributionChart() {
+            const section = findSubsection(findSection('SVMAI Token Utility and Ecosystem Value'), 'Mechanisms for Value Accrual and Sustainability of the SVMAI Token');
+            if (!section) return;
+            
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">Conceptual SVMAI Token Distribution</div>
+                <div class="diagram-description">Initial allocation of tokens across ecosystem participants</div>
+                <div class="chart-container">
+                    <canvas id="tokenDistributionChart"></canvas>
+                </div>
+            `;
+            
+            const paras = section.querySelectorAll('p');
+            if (paras.length > 1) {
+                paras[1].parentNode.insertBefore(diagramContainer, paras[1].nextSibling);
+                
+                setTimeout(() => {
+                    const ctx = document.getElementById('tokenDistributionChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: [
+                                'Ecosystem Development & Grants',
+                                'Staking Rewards',
+                                'Community Treasury',
+                                'Team & Advisors',
+                                'Public Sale',
+                                'Reserve / Foundation'
+                            ],
+                            datasets: [{
+                                data: [30, 15, 20, 15, 10, 10],
+                                backgroundColor: [
+                                    '#393939', // Ecosystem
+                                    '#525252', // Staking
+                                    '#737373', // Community
+                                    '#A3A3A3', // Team
+                                    '#D4D4D4', // Public
+                                    '#E5E5E5'  // Reserve
+                                ],
+                                borderColor: '#FFFFFF',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        font: {
+                                            family: "'Courier New', Courier, monospace",
+                                            size: 11
+                                        },
+                                        padding: 10
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return context.label + ': ' + context.raw + '%';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }, 100);
+            }
+        }
+        
+        function addTokenUtilityDiagram() {
+            const section = findSubsection(findSection('SVMAI Token Utility and Ecosystem Value'), 'Enhancing Token Utility through the Escrow Model');
+            if (!section) return;
+            
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">SVMAI Token Utility Network</div>
+                <div class="diagram-description">Key utility functions within the ecosystem</div>
+                <div style="background-color: #F5F5F5; padding: 1rem; border: 1px solid #A3A3A3;">
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <div style="padding: 15px; background-color: #404040; color: white; width: 70%; text-align: center; margin-bottom: 20px; font-weight: bold;">
+                            SVMAI TOKEN
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; justify-content: space-around; width: 100%;">
+                            <div style="width: 45%; min-width: 150px; padding: 10px; background-color: #525252; color: white; text-align: center; margin: 10px;">
+                                A2A Payment Medium
+                            </div>
+                            <div style="width: 45%; min-width: 150px; padding: 10px; background-color: #525252; color: white; text-align: center; margin: 10px;">
+                                Juror/Arbiter Staking
+                            </div>
+                            <div style="width: 45%; min-width: 150px; padding: 10px; background-color: #525252; color: white; text-align: center; margin: 10px;">
+                                Governance Rights
+                            </div>
+                            <div style="width: 45%; min-width: 150px; padding: 10px; background-color: #525252; color: white; text-align: center; margin: 10px;">
+                                Quality Curation
+                            </div>
+                            <div style="width: 45%; min-width: 150px; padding: 10px; background-color: #525252; color: white; text-align: center; margin: 10px;">
+                                Premium Features
+                            </div>
+                            <div style="width: 45%; min-width: 150px; padding: 10px; background-color: #525252; color: white; text-align: center; margin: 10px;">
+                                Dispute Resolution Fees
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px; padding: 10px; background-color: #A3A3A3; width: 80%; text-align: center;">
+                            <strong>Value Accrual Mechanism</strong>: Token utility drives demand, supports ecosystem growth
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const paras = section.querySelectorAll('p');
+            if (paras.length > 0) {
+                paras[0].parentNode.insertBefore(diagramContainer, paras[0].nextSibling);
+            }
+        }
+        
+        function addValueAccrualDiagram() {
+            const section = findSubsection(findSection('SVMAI Token Utility and Ecosystem Value'), 'Mechanisms for Value Accrual and Sustainability of the SVMAI Token');
+            if (!section) return;
+            
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">SVMAI Value Accrual Cycle</div>
+                <div class="diagram-description">How utility and demand reinforce token value</div>
+                <div class="chart-container">
+                    <canvas id="valueAccrualChart"></canvas>
+                </div>
+            `;
+            
+            const thirdPara = section.querySelectorAll('p')[2];
+            if (thirdPara) {
+                thirdPara.parentNode.insertBefore(diagramContainer, thirdPara.nextSibling);
+                
+                setTimeout(() => {
+                    const ctx = document.getElementById('valueAccrualChart').getContext('2d');
+                    
+                    // Create custom curved gradient lines to connect nodes
+                    const drawCurvedLine = (ctx, startX, startY, endX, endY, curvature) => {
+                        const controlX = (startX + endX) / 2;
+                        const controlY = (startY + endY) / 2 - curvature;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(startX, startY);
+                        ctx.quadraticCurveTo(controlX, controlY, endX, endY);
+                        ctx.stroke();
+                        
+                        // Draw arrow at end
+                        const angle = Math.atan2(endY - controlY, endX - controlX);
+                        ctx.beginPath();
+                        ctx.moveTo(endX, endY);
+                        ctx.lineTo(endX - 10 * Math.cos(angle - Math.PI / 6), endY - 10 * Math.sin(angle - Math.PI / 6));
+                        ctx.lineTo(endX - 10 * Math.cos(angle + Math.PI / 6), endY - 10 * Math.sin(angle + Math.PI / 6));
+                        ctx.closePath();
+                        ctx.fill();
+                    };
+                    
+                    new Chart(ctx, {
+                        type: 'scatter',
+                        data: {
+                            datasets: [{
+                                label: 'Value Cycle Nodes',
+                                data: [
+                                    { x: 1, y: 5, label: 'A2A Service Payments' },
+                                    { x: 3, y: 7, label: 'Increased SVMAI Demand' },
+                                    { x: 6, y: 7, label: 'Token Value Appreciation' },
+                                    { x: 8, y: 5, label: 'More Staking & Participation' },
+                                    { x: 6, y: 3, label: 'Enhanced Ecosystem Quality' },
+                                    { x: 3, y: 3, label: 'More Agents & Users' }
+                                ],
+                                backgroundColor: '#525252',
+                                pointRadius: 10,
+                                pointHoverRadius: 12
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            elements: {
+                                point: {
+                                    radius: 10,
+                                    hoverRadius: 12
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return context.raw.label;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    min: 0,
+                                    max: 9,
+                                    display: false
+                                },
+                                y: {
+                                    min: 2,
+                                    max: 8,
+                                    display: false
+                                }
+                            }
+                        },
+                        plugins: [{
+                            id: 'value-cycle-arrows',
+                            afterDraw: function(chart) {
+                                const ctx = chart.ctx;
+                                ctx.save();
+                                
+                                // Set line style
+                                ctx.strokeStyle = '#737373';
+                                ctx.fillStyle = '#737373';
+                                ctx.lineWidth = 2;
+                                
+                                const points = chart.data.datasets[0].data;
+                                const scaleX = chart.scales.x;
+                                const scaleY = chart.scales.y;
+                                
+                                // Get pixel positions
+                                const positions = points.map(p => ({
+                                    x: scaleX.getPixelForValue(p.x),
+                                    y: scaleY.getPixelForValue(p.y),
+                                    label: p.label
+                                }));
+                                
+                                // Connect with curved lines in cycle
+                                for (let i = 0; i < positions.length; i++) {
+                                    const start = positions[i];
+                                    const end = positions[(i + 1) % positions.length];
+                                    drawCurvedLine(ctx, start.x, start.y, end.x, end.y, 30);
+                                }
+                                
+                                // Add labels
+                                ctx.font = "11px 'Courier New', monospace";
+                                ctx.fillStyle = '#171717';
+                                ctx.textAlign = 'center';
+                                for (let i = 0; i < positions.length; i++) {
+                                    const p = positions[i];
+                                    // Draw box with background
+                                    const textWidth = ctx.measureText(p.label).width + 10;
+                                    const textHeight = 16;
+                                    ctx.fillStyle = '#FFFFFF';
+                                    ctx.fillRect(p.x - textWidth/2, p.y - textHeight/2 - 20, textWidth, textHeight);
+                                    ctx.strokeStyle = '#A3A3A3';
+                                    ctx.strokeRect(p.x - textWidth/2, p.y - textHeight/2 - 20, textWidth, textHeight);
+                                    
+                                    // Draw text
+                                    ctx.fillStyle = '#171717';
+                                    ctx.fillText(p.label, p.x, p.y - 20);
+                                }
+                                
+                                ctx.restore();
+                            }
+                        }]
+                    });
+                }, 100);
+            }
+        }
+        
+        function addTokenSupplyDemandDiagram() {
+            const section = findSubsection(findSection('SVMAI Token Utility and Ecosystem Value'), 'Considerations for Token Supply, Demand Dynamics, and Economic Stability');
+            if (!section) return;
+            
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">SVMAI Supply & Demand Factors</div>
+                <div class="diagram-description">Key influences on token economics</div>
+                <div class="infographic-grid">
+                    <div class="infographic-block">
+                        <div class="infographic-block-title">Supply Factors</div>
+                        <ul style="list-style-type: none; padding-left: 0;">
+                            <li>• Initial token distribution</li>
+                            <li>• Vesting schedule periods</li>
+                            <li>• Ecosystem development releases</li>
+                            <li>• Potential token burning mechanisms</li>
+                            <li>• Staking lock-up periods</li>
+                            <li>• Treasury management policies</li>
+                        </ul>
+                    </div>
+                    <div class="infographic-block">
+                        <div class="infographic-block-title">Demand Drivers</div>
+                        <ul style="list-style-type: none; padding-left: 0;">
+                            <li>• A2A transaction volume</li>
+                            <li>• Agent registration rates</li>
+                            <li>• DDR participation requirements</li>
+                            <li>• Governance participation</li>
+                            <li>• Premium feature access</li>
+                            <li>• Curation staking incentives</li>
+                        </ul>
+                    </div>
+                    <div class="infographic-block">
+                        <div class="infographic-block-title">Price Stability Mechanisms</div>
+                        <ul style="list-style-type: none; padding-left: 0;">
+                            <li>• Algorithmic burns from fees</li>
+                            <li>• Staking reward adjustment</li>
+                            <li>• Governance-controlled reserve</li>
+                            <li>• Extended vesting schedules</li>
+                            <li>• Dynamic utility parameters</li>
+                        </ul>
+                    </div>
+                    <div class="infographic-block">
+                        <div class="infographic-block-title">Long-term Value Anchors</div>
+                        <ul style="list-style-type: none; padding-left: 0;">
+                            <li>• Protocol revenue distribution</li>
+                            <li>• Platform growth metrics</li>
+                            <li>• Real service economy backing</li>
+                            <li>• Governance power over ecosystem</li>
+                            <li>• Network effects of A2A economy</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            const firstPara = section.querySelector('p');
+            if (firstPara) {
+                firstPara.parentNode.insertBefore(diagramContainer, firstPara.nextSibling);
+            }
+        }
+        
+        function addImplementationChallengesDiagram() {
+            const section = findSection('Implementation Challenges and Mitigation');
+            if (!section) return;
+            
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">Implementation Risk Assessment</div>
+                <div class="diagram-description">Key challenges and their severity</div>
+                <div class="chart-container">
+                    <canvas id="implementationChallengesChart"></canvas>
+                </div>
+            `;
+            
+            const firstPara = section.querySelector('p');
+            if (firstPara) {
+                firstPara.parentNode.insertBefore(diagramContainer, firstPara.nextSibling);
+                
+                setTimeout(() => {
+                    const ctx = document.getElementById('implementationChallengesChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'polarArea',
+                        data: {
+                            labels: [
+                                'Smart Contract Security',
+                                'User Experience',
+                                'Legal/Regulatory',
+                                'Agency Problem',
+                                'Technical Scalability'
+                            ],
+                            datasets: [{
+                                data: [9.5, 8.5, 7.5, 8.0, 6.5],
+                                backgroundColor: [
+                                    '#171717',  // Dark
+                                    '#404040',
+                                    '#525252', 
+                                    '#737373',
+                                    '#A3A3A3'   // Light
+                                ],
+                                borderWidth: 1,
+                                borderColor: '#FFFFFF'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                r: {
+                                    ticks: {
+                                        display: false
+                                    },
+                                    grid: {
+                                        color: '#E5E5E5'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        font: {
+                                            family: "'Courier New', Courier, monospace"
+                                        }
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return context.label + ': ' + context.raw + '/10 risk severity';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }, 100);
+            }
+        }
+
+        function addUXConsiderationsDiagram() {
+            const section = findSubsection(findSection('Implementation Challenges and Mitigation'), 'User Experience (UX): Designing for Clarity and Ease of Use in Complex Interactions');
+            if (!section) return;
+            
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">UX Improvement Priority Matrix</div>
+                <div class="diagram-description">Essential areas for optimizing user experience</div>
+                <div class="chart-container">
+                    <canvas id="uxConsiderationsChart"></canvas>
+                </div>
+            `;
+            
+            const paras = section.querySelectorAll('p');
+            if (paras.length > 1) {
+                paras[1].parentNode.insertBefore(diagramContainer, paras[1].nextSibling);
+                
+                setTimeout(() => {
+                    const ctx = document.getElementById('uxConsiderationsChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'bubble',
+                        data: {
+                            datasets: [
+                                {
+                                    label: 'High Priority',
+                                    data: [
+                                        {x: 3.5, y: 9, r: 15},  // Escrow Status Tracking
+                                        {x: 8, y: 8.5, r: 15},  // Dispute Resolution Interface
+                                        {x: 2, y: 7.5, r: 12}   // Wallet Connection
+                                    ],
+                                    backgroundColor: 'rgba(82, 82, 82, 0.7)'
+                                },
+                                {
+                                    label: 'Medium Priority',
+                                    data: [
+                                        {x: 6, y: 6, r: 12},    // Evidence Submission
+                                        {x: 7.5, y: 3, r: 10},  // Transaction History
+                                        {x: 4, y: 5, r: 10}     // Error Handling
+                                    ],
+                                    backgroundColor: 'rgba(115, 115, 115, 0.7)'
+                                },
+                                {
+                                    label: 'Lower Priority',
+                                    data: [
+                                        {x: 9, y: 2, r: 8},     // Profile Management
+                                        {x: 1.5, y: 2.5, r: 8}, // Educational Resources
+                                        {x: 5, y: 1.5, r: 7}    // Notifications
+                                    ],
+                                    backgroundColor: 'rgba(163, 163, 163, 0.7)'
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    min: 0,
+                                    max: 10,
+                                    title: {
+                                        display: true,
+                                        text: 'Implementation Complexity',
+                                        font: {
+                                            family: "'Courier New', Courier, monospace"
+                                        }
+                                    },
+                                    ticks: {
+                                        callback: function(value) {
+                                            return value === 0 ? 'Simple' : 
+                                                  value === 5 ? 'Moderate' :
+                                                  value === 10 ? 'Complex' : '';
+                                        },
+                                        font: {
+                                            family: "'Courier New', Courier, monospace"
+                                        }
+                                    }
+                                },
+                                y: {
+                                    min: 0,
+                                    max: 10,
+                                    title: {
+                                        display: true,
+                                        text: 'User Impact',
+                                        font: {
+                                            family: "'Courier New', Courier, monospace"
+                                        }
+                                    },
+                                    ticks: {
+                                        callback: function(value) {
+                                            return value === 0 ? 'Low' : 
+                                                  value === 5 ? 'Medium' :
+                                                  value === 10 ? 'High' : '';
+                                        },
+                                        font: {
+                                            family: "'Courier New', Courier, monospace"
+                                        }
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        font: {
+                                            family: "'Courier New', Courier, monospace"
+                                        }
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const labels = [
+                                                'Escrow Status Tracking',
+                                                'Dispute Resolution Interface',
+                                                'Wallet Connection',
+                                                'Evidence Submission',
+                                                'Transaction History',
+                                                'Error Handling',
+                                                'Profile Management',
+                                                'Educational Resources',
+                                                'Notifications'
+                                            ];
+                                            
+                                            // Find the index across all datasets
+                                            let datasetIndex = context.datasetIndex;
+                                            let index = context.dataIndex;
+                                            let totalIndex;
+                                            
+                                            if (datasetIndex === 0) {
+                                                totalIndex = index;
+                                            } else if (datasetIndex === 1) {
+                                                totalIndex = 3 + index;
+                                            } else {
+                                                totalIndex = 6 + index;
+                                            }
+                                            
+                                            return labels[totalIndex] + ': Impact: ' + context.raw.y + '/10, Complexity: ' + context.raw.x + '/10';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }, 100);
+            }
+        }
+
+        function addRecommendationsDiagram() {
+            const section = findSection('Recommendations and Strategic Outlook');
+            if (!section) return;
+            
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">Implementation Roadmap & Timing</div>
+                <div class="diagram-description">Phased approach for deploying SVMAI ecosystem</div>
+                <div style="background-color: #F5F5F5; padding: 1rem; border: 1px solid #A3A3A3;">
+                    <div style="display: flex; flex-wrap: wrap; justify-content: space-around;">
+                        <div style="width: 18%; min-width: 150px; margin-bottom: 15px;">
+                            <div style="background-color: #404040; color: white; text-align: center; padding: 8px 0; margin-bottom: 5px;">Phase 1<br/>3-6 Months</div>
+                            <div style="border: 1px solid #737373; padding: 8px; background-color: #FFFFFF;">
+                                <p style="margin: 0 0 5px 0; font-weight: bold;">Core Escrow Smart Contract</p>
+                                <ul style="list-style-type: none; padding-left: 5px; margin: 0; font-size: 0.9em;">
+                                    <li>• Contract development</li>
+                                    <li>• Security audits</li>
+                                    <li>• Basic fund flow</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div style="font-size: 1.5em; display: flex; align-items: center; margin: 0 -10px;">→</div>
+                        <div style="width: 18%; min-width: 150px; margin-bottom: 15px;">
+                            <div style="background-color: #525252; color: white; text-align: center; padding: 8px 0; margin-bottom: 5px;">Phase 2<br/>4-8 Months</div>
+                            <div style="border: 1px solid #737373; padding: 8px; background-color: #FFFFFF;">
+                                <p style="margin: 0 0 5px 0; font-weight: bold;">DDR Integration</p>
+                                <ul style="list-style-type: none; padding-left: 5px; margin: 0; font-size: 0.9em;">
+                                    <li>• Juror selection</li>
+                                    <li>• Voting mechanisms</li>
+                                    <li>• Enhanced audits</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div style="font-size: 1.5em; display: flex; align-items: center; margin: 0 -10px;">→</div>
+                        <div style="width: 18%; min-width: 150px; margin-bottom: 15px;">
+                            <div style="background-color: #737373; color: white; text-align: center; padding: 8px 0; margin-bottom: 5px;">Phase 3<br/>3-4 Months</div>
+                            <div style="border: 1px solid #737373; padding: 8px; background-color: #FFFFFF;">
+                                <p style="margin: 0 0 5px 0; font-weight: bold;">Testnet & Feedback</p>
+                                <ul style="list-style-type: none; padding-left: 5px; margin: 0; font-size: 0.9em;">
+                                    <li>• User testing</li>
+                                    <li>• UI/UX iteration</li>
+                                    <li>• Parameter tuning</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div style="font-size: 1.5em; display: flex; align-items: center; margin: 0 -10px;">→</div>
+                        <div style="width: 18%; min-width: 150px; margin-bottom: 15px;">
+                            <div style="background-color: #A3A3A3; color: white; text-align: center; padding: 8px 0; margin-bottom: 5px;">Phase 4<br/>12-18 Months</div>
+                            <div style="border: 1px solid #737373; padding: 8px; background-color: #FFFFFF;">
+                                <p style="margin: 0 0 5px 0; font-weight: bold;">Limited Mainnet</p>
+                                <ul style="list-style-type: none; padding-left: 5px; margin: 0; font-size: 0.9em;">
+                                    <li>• Selected services</li>
+                                    <li>• Close monitoring</li>
+                                    <li>• Rapid response team</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div style="font-size: 1.5em; display: flex; align-items: center; margin: 0 -10px;">→</div>
+                        <div style="width: 18%; min-width: 150px; margin-bottom: 15px;">
+                            <div style="background-color: #D4D4D4; color: #171717; text-align: center; padding: 8px 0; margin-bottom: 5px;">Phase 5<br/>Ongoing</div>
+                            <div style="border: 1px solid #737373; padding: 8px; background-color: #FFFFFF;">
+                                <p style="margin: 0 0 5px 0; font-weight: bold;">Scaling & Features</p>
+                                <ul style="list-style-type: none; padding-left: 5px; margin: 0; font-size: 0.9em;">
+                                    <li>• Full ecosystem</li>
+                                    <li>• Advanced governance</li>
+                                    <li>• New integrations</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const firstPara = section.querySelector('p');
+            if (firstPara) {
+                firstPara.parentNode.insertBefore(diagramContainer, firstPara.nextSibling);
+            }
+        }
+
+        // Function to add mermaid diagrams showing process flows throughout the document
+        function addTokenomicsProcessFlows() {
+            // Add mermaid diagrams at various points in the document
+            addTransactionProcessFlow();
+            addDisputeProcessFlow();
+            addTokenomicInfluenceFlow();
+            addStakingProcessFlow();
+            addContractInteractionFlow();
+            addTokenUtilityFlow();
+            addGovernanceFlow();
+        }
+
+        // Transaction Process Flow using Mermaid
+        function addTransactionProcessFlow() {
+            const section = findSubsection(findSection('Core Tokenomic Design: The SVMAI Service Escrow'), 'Transaction Lifecycle: From Job Initiation to Completion or Dispute');
+            if (!section) return;
+            
+            // Create a diagram container
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">SVMAI Transaction Lifecycle Process</div>
+                <div class="diagram-description">Step-by-step flow from service initiation to completion</div>
+                <div class="mermaid-container">
+                    <div id="transactionProcessFlow" style="width: 100%; overflow-x: hidden;"></div>
+                </div>
+            `;
+            
+            // Find a good place to insert the diagram - after the 3rd paragraph
+            const paras = section.querySelectorAll('p');
+            if (paras.length >= 3) {
+                paras[2].parentNode.insertBefore(diagramContainer, paras[2].nextSibling);
+                
+                // Render mermaid diagram
+                setTimeout(() => {
+                    const mermaidDiagram = `
+                    flowchart TD
+                        A[Job Posted by Client] -->|Agreement Reached| B[Escrow Initiated]
+                        B --> C[Client Stakes SVMAI Tokens]
+                        C --> D[Agent Locks Service Fee]
+                        D --> E[Service in Progress]
+                        E --> F[Service Delivered]
+                        F --> G[Client Review Period]
+                        G -->|Satisfactory| H[Client Approves]
+                        G -->|Unsatisfactory| I[Client Disputes]
+                        H --> J[Agent Receives Fee]
+                        H --> K[Client Recovers Stake]
+                        I --> L[Dispute Resolution]
+                        L -->|Agent Wins| M[Agent Receives Fee]
+                        L -->|Client Wins| N[Client Refunded]
+
+                        classDef default fill:#f5f5f5,stroke:#A3A3A3,stroke-width:1px;
+                        classDef client fill:#D4D4D4,stroke:#737373,stroke-width:1px;
+                        classDef agent fill:#E5E5E5,stroke:#737373,stroke-width:1px;
+                        classDef success fill:#D4D4D4,stroke:#525252,stroke-width:1px;
+                        classDef dispute fill:#525252,stroke:#404040,stroke-width:1px,color:white;
+                        
+                        class A,C,G,H,K,N client;
+                        class D,J,M agent;
+                        class B,E,F success;
+                        class I,L dispute;
+                    `;
+                    
+                    const element = document.getElementById('transactionProcessFlow');
+                    if (element) {
+                        try {
+                            mermaid.render('mermaid-svg-transaction', mermaidDiagram)
+                            .then(result => {
+                                element.innerHTML = result.svg;
+                            });
+                        } catch (error) {
+                            console.error("Error rendering mermaid diagram:", error);
+                            element.innerHTML = "Failed to render diagram.";
+                        }
+                    }
+                }, 200);
+            }
+        }
+
+        // Dispute Resolution Process Flow using Mermaid
+        function addDisputeProcessFlow() {
+            const section = findSection('Dispute Resolution Framework for SVMAI');
+            if (!section) return;
+            
+            // Create a diagram container
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">Decentralized Dispute Resolution Process</div>
+                <div class="diagram-description">Complete workflow of the DDR mechanism</div>
+                <div class="mermaid-container">
+                    <div id="disputeProcessFlow" style="width: 100%; overflow-x: hidden;"></div>
+                </div>
+            `;
+            
+            // Find a good place to insert the diagram - after the first h3 section
+            const h3s = section.querySelectorAll('h3');
+            if (h3s.length >= 1) {
+                h3s[0].parentNode.insertBefore(diagramContainer, h3s[0].nextSibling);
+                
+                // Render mermaid diagram
+                setTimeout(() => {
+                    const mermaidDiagram = `
+                    flowchart TD
+                        A[Client Initiates Dispute] --> B[Client Stakes Additional SVMAI]
+                        B --> C[Jurors Selected from Staker Pool]
+                        C --> D[Evidence Submission Period]
+                        D --> E[Client Submits Evidence]
+                        D --> F[Agent Submits Defense]
+                        E --> G[Juror Review & Voting]
+                        F --> G
+                        G --> H{Voting Outcome}
+                        H -->|Agent Favor| I[Agent Receives Fee]
+                        H -->|Client Favor| J[Client Recovers Stake]
+                        H -->|Partial Resolution| K[Split Payment According to Ruling]
+                        I --> L[Client May Appeal]
+                        J --> L
+                        K --> L
+                        L -->|Appeal Filed| M[Larger Juror Panel Selected]
+                        L -->|No Appeal| N[Case Closed - Ruling Enforced]
+                        M --> O[Appeal Evidence & Voting]
+                        O --> P[Final Ruling Enforced by Smart Contract]
+
+                        classDef default fill:#f5f5f5,stroke:#A3A3A3,stroke-width:1px;
+                        classDef client fill:#D4D4D4,stroke:#737373,stroke-width:1px;
+                        classDef agent fill:#E5E5E5,stroke:#737373,stroke-width:1px;
+                        classDef process fill:#737373,stroke:#525252,stroke-width:1px,color:white;
+                        classDef decision fill:#404040,stroke:#262626,stroke-width:1px,color:white;
+                        
+                        class A,B,E,J client;
+                        class F,I agent;
+                        class C,D,G,K,L,M,O,N,P process;
+                        class H decision;
+                    `;
+                    
+                    const element = document.getElementById('disputeProcessFlow');
+                    if (element) {
+                        try {
+                            mermaid.render('mermaid-svg-dispute', mermaidDiagram)
+                            .then(result => {
+                                element.innerHTML = result.svg;
+                            });
+                        } catch (error) {
+                            console.error("Error rendering mermaid diagram:", error);
+                            element.innerHTML = "Failed to render diagram.";
+                        }
+                    }
+                }, 200);
+            }
+        }
+
+        // Tokenomic Influence Flow using Mermaid
+        function addTokenomicInfluenceFlow() {
+            const section = findSection('Economic and Behavioral Impact Analysis');
+            if (!section) return;
+            
+            // Create a diagram container
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">Tokenomic Influence on Stakeholder Behavior</div>
+                <div class="diagram-description">How incentives shape actions within the ecosystem</div>
+                <div class="mermaid-container">
+                    <div id="tokenomicInfluenceFlow" style="width: 100%; overflow-x: hidden;"></div>
+                </div>
+            `;
+            
+            // Find a good place to insert the diagram - in the "Incentive Alignment and Stakeholder Behavior" subsection
+            const subsection = findSubsection(section, 'Incentive Alignment and Stakeholder Behavior');
+            if (subsection) {
+                const paras = subsection.querySelectorAll('p');
+                if (paras.length >= 2) {
+                    paras[1].parentNode.insertBefore(diagramContainer, paras[1].nextSibling);
+                    
+                    // Render mermaid diagram
+                    setTimeout(() => {
+                        const mermaidDiagram = `
+                        flowchart TD
+                            A[SVMAI Token Model] --> B[Client Incentives]
+                            A --> C[Agent Incentives]
+                            A --> D[Platform Health]
+                            
+                            B --> E[Stake Return on Approval]
+                            B --> F[High Dispute Reward]
+                            B --> G[Clear Service Requirements]
+                            
+                            C --> H[Fee Protection]
+                            C --> I[Reputation Building]
+                            C --> J[Quality Service]
+                            
+                            E --> K[Higher Service Adoption]
+                            E --> L["Perceived Free Service" Effect]
+                            F --> M[Risk of Frivolous Disputes]
+                            G --> N[Reduced Misunderstandings]
+                            
+                            H --> O[Fair Market Pricing]
+                            H --> P[Higher Entry Barrier]
+                            I --> Q[Sustained Participation]
+                            J --> R[Positive Platform Reputation]
+                            
+                            K --> D
+                            L --> D
+                            M --> D
+                            N --> D
+                            O --> D
+                            P --> D
+                            Q --> D
+                            R --> D
+
+                            classDef default fill:#f5f5f5,stroke:#737373,stroke-width:1px;
+                            classDef positive fill:#D4D4D4,stroke:#737373,stroke-width:1px;
+                            classDef negative fill:#525252,stroke:#404040,stroke-width:1px,color:white;
+                            classDef neutral fill:#A3A3A3,stroke:#737373,stroke-width:1px;
+                            
+                            class A,D neutral;
+                            class K,N,Q,R positive;
+                            class L,M,P negative;
+                            class E,F,G,H,I,J,O neutral;
+                        `;
+                        
+                        const element = document.getElementById('tokenomicInfluenceFlow');
+                        if (element) {
+                            try {
+                                mermaid.render('mermaid-svg-influence', mermaidDiagram)
+                                .then(result => {
+                                    element.innerHTML = result.svg;
+                                });
+                            } catch (error) {
+                                console.error("Error rendering mermaid diagram:", error);
+                                element.innerHTML = "Failed to render diagram.";
+                            }
+                        }
+                    }, 200);
+                }
+            }
+        }
+
+        // Staking Process Flow using Mermaid
+        function addStakingProcessFlow() {
+            const section = findSubsection(findSection('SVMAI Token Utility and Ecosystem Value'), 'Enhancing Token Utility through the Escrow Model');
+            if (!section) return;
+            
+            // Create a diagram container
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">SVMAI Staking Mechanism</div>
+                <div class="diagram-description">Token staking flows for different ecosystem participants</div>
+                <div class="mermaid-container">
+                    <div id="stakingProcessFlow" style="width: 100%; overflow-x: hidden;"></div>
+                </div>
+            `;
+            
+            // Find a good place to insert the diagram - at the end of the section
+            const lastElement = section.lastElementChild;
+            if (lastElement) {
+                section.appendChild(diagramContainer);
+                
+                // Render mermaid diagram
+                setTimeout(() => {
+                    const mermaidDiagram = `
+                    flowchart LR
+                        A[SVMAI Token Holder] --> B{Staking Purpose}
+                        B --> C[Client Stake]
+                        B --> D[Agent Participation]
+                        B --> E[Juror Staking]
+                        B --> F[Governance]
+                        
+                        C --> G[Service Escrow]
+                        C --> H[Returned on Approval]
+                        C --> I[Dispute Risk]
+                        
+                        D --> J[Fee Lock-up]
+                        D --> K[Service Delivery]
+                        D --> L[Fee Release]
+                        
+                        E --> M[Selected for Cases]
+                        E --> N[Vote on Disputes]
+                        E --> O[Earn Rewards]
+                        
+                        F --> P[Platform Parameters]
+                        F --> Q[Fee Structure]
+                        F --> R[Vote on Upgrades]
+
+                        classDef default fill:#f5f5f5,stroke:#A3A3A3,stroke-width:1px;
+                        classDef primary fill:#525252,stroke:#404040,stroke-width:1px,color:white;
+                        classDef secondary fill:#A3A3A3,stroke:#737373,stroke-width:1px;
+                        classDef tertiary fill:#E5E5E5,stroke:#A3A3A3,stroke-width:1px;
+                        
+                        class A,B primary;
+                        class C,D,E,F secondary;
+                        class G,H,I,J,K,L,M,N,O,P,Q,R tertiary;
+                    `;
+                    
+                    const element = document.getElementById('stakingProcessFlow');
+                    if (element) {
+                        try {
+                            mermaid.render('mermaid-svg-staking', mermaidDiagram)
+                            .then(result => {
+                                element.innerHTML = result.svg;
+                            });
+                        } catch (error) {
+                            console.error("Error rendering mermaid diagram:", error);
+                            element.innerHTML = "Failed to render diagram.";
+                        }
+                    }
+                }, 200);
+            }
+        }
+
+        // Smart Contract Interaction Flow using Mermaid
+        function addContractInteractionFlow() {
+            const section = findSubsection(findSection('Core Tokenomic Design: The SVMAI Service Escrow'), 'Smart Contract Architecture: Key Functions and Design Patterns for Security and Efficiency');
+            if (!section) return;
+            
+            // Create a diagram container
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">Smart Contract Interaction Flow</div>
+                <div class="diagram-description">How different actors interact with SVMAI escrow contracts</div>
+                <div class="mermaid-container">
+                    <div id="contractInteractionFlow" style="width: 100%; overflow-x: hidden;"></div>
+                </div>
+            `;
+            
+            // Find a good place to insert the diagram - after 4th paragraph
+            const paras = section.querySelectorAll('p');
+            if (paras.length >= 4) {
+                paras[3].parentNode.insertBefore(diagramContainer, paras[3].nextSibling);
+                
+                // Render mermaid diagram
+                setTimeout(() => {
+                    const mermaidDiagram = `
+                    flowchart TB
+                        Client[Client]
+                        Agent[Agent]
+                        Arbiter[DDR System/Arbiters]
+                        Platform[Platform/Admin]
+                        
+                        subgraph SVMAI Escrow Contract
+                            Init[initiateEscrow()]
+                            Lock[lockStakeAndFee()]
+                            Approve[approveWork()]
+                            Dispute[disputeWork()]
+                            Resolve[resolveDispute()]
+                            WithdrawA[withdrawAgentFee()]
+                            WithdrawC[withdrawClientStake()]
+                            Emergency[emergencyStop()/Circuit Breaker]
+                        end
+                        
+                        Client --> Init
+                        Client --> Lock
+                        Client --> Approve
+                        Client --> Dispute
+                        Client --> WithdrawC
+                        
+                        Agent --> Lock
+                        Agent --> WithdrawA
+                        
+                        Arbiter --> Resolve
+                        
+                        Platform --> Emergency
+
+                        classDef default fill:#f5f5f5,stroke:#A3A3A3,stroke-width:1px;
+                        classDef actor fill:#404040,stroke:#171717,stroke-width:1px,color:white;
+                        classDef function fill:#D4D4D4,stroke:#737373,stroke-width:1px;
+                        classDef critical fill:#525252,stroke:#262626,stroke-width:1px,color:white;
+                        
+                        class Client,Agent,Arbiter,Platform actor;
+                        class Init,Lock,Approve,WithdrawA,WithdrawC function;
+                        class Dispute,Resolve,Emergency critical;
+                    `;
+                    
+                    const element = document.getElementById('contractInteractionFlow');
+                    if (element) {
+                        try {
+                            mermaid.render('mermaid-svg-contract', mermaidDiagram)
+                            .then(result => {
+                                element.innerHTML = result.svg;
+                            });
+                        } catch (error) {
+                            console.error("Error rendering mermaid diagram:", error);
+                            element.innerHTML = "Failed to render diagram.";
+                        }
+                    }
+                }, 200);
+            }
+        }
+
+        // Token Utility Flow using Mermaid
+        function addTokenUtilityFlow() {
+            const section = findSubsection(findSection('SVMAI Token Utility and Ecosystem Value'), 'Mechanisms for Value Accrual and Sustainability of the SVMAI Token');
+            if (!section) return;
+            
+            // Create a diagram container
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">SVMAI Token Flow & Value Accrual</div>
+                <div class="diagram-description">How tokens circulate and value accrues in the ecosystem</div>
+                <div class="mermaid-container">
+                    <div id="tokenUtilityFlow" style="width: 100%; overflow-x: hidden;"></div>
+                </div>
+            `;
+            
+            // Find a good place to insert the diagram
+            const firstH4 = section.querySelector('h4');
+            if (firstH4) {
+                firstH4.parentNode.insertBefore(diagramContainer, firstH4);
+                
+                // Render mermaid diagram
+                setTimeout(() => {
+                    const mermaidDiagram = `
+                    flowchart TD
+                        TSupply[Token Supply] --> Dist[Initial Distribution]
+                        Dist --> Comm[Community Treasury]
+                        Dist --> Dev[Developer Fund]
+                        Dist --> Market[Market/Exchanges]
+                        
+                        Market --> Clients[Clients]
+                        Market --> Agents[Agents]
+                        Market --> Stakers[SVMAI Stakers/Jurors]
+                        
+                        Clients --> Escrow[Escrow Contract]
+                        Agents --> Escrow
+                        
+                        Escrow --> |Approval| Agents
+                        Escrow --> |Stake Return| Clients
+                        Escrow --> |Dispute Fees| Stakers
+                        
+                        Stakers --> |Governance| Protocol[Protocol Decisions]
+                        Protocol --> TSupply
+                        
+                        Comm --> Market
+                        Dev --> Platform[Platform Development]
+                        Platform --> Protocol
+
+                        classDef default fill:#f5f5f5,stroke:#A3A3A3,stroke-width:1px;
+                        classDef tokens fill:#737373,stroke:#525252,stroke-width:1px,color:white;
+                        classDef actors fill:#D4D4D4,stroke:#737373,stroke-width:1px;
+                        classDef contracts fill:#404040,stroke:#262626,stroke-width:1px,color:white;
+                        
+                        class TSupply,Dist,Comm,Dev,Market tokens;
+                        class Clients,Agents,Stakers,Platform actors;
+                        class Escrow,Protocol contracts;
+                    `;
+                    
+                    const element = document.getElementById('tokenUtilityFlow');
+                    if (element) {
+                        try {
+                            mermaid.render('mermaid-svg-utility', mermaidDiagram)
+                            .then(result => {
+                                element.innerHTML = result.svg;
+                            });
+                        } catch (error) {
+                            console.error("Error rendering mermaid diagram:", error);
+                            element.innerHTML = "Failed to render diagram.";
+                        }
+                    }
+                }, 200);
+            }
+        }
+
+        // Governance Process Flow using Mermaid
+        function addGovernanceFlow() {
+            const section = findSection('Recommendations and Strategic Outlook');
+            if (!section) return;
+            
+            const subsec = findSubsection(section, 'Future Considerations for Model Evolution and Ecosystem Growth');
+            if (!subsec) return;
+            
+            // Create a diagram container
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">SVMAI Governance Process Flow</div>
+                <div class="diagram-description">Token-based governance for platform evolution</div>
+                <div class="mermaid-container">
+                    <div id="governanceFlow" style="width: 100%; overflow-x: hidden;"></div>
+                </div>
+            `;
+            
+            // Find a good place to insert the diagram
+            const bullets = subsec.querySelectorAll('li');
+            if (bullets.length >= 4) {
+                bullets[3].parentNode.insertBefore(diagramContainer, bullets[3].nextSibling);
+                
+                // Render mermaid diagram
+                setTimeout(() => {
+                    const mermaidDiagram = `
+                    flowchart LR
+                        A[Community Member] --> B[Create Proposal]
+                        B --> C[Discussion Period]
+                        C --> D{Screening}
+                        D -->|Passes| E[Formal Voting]
+                        D -->|Fails| F[Rejected]
+                        
+                        E --> G{Vote Results}
+                        G -->|Approved| H[Implementation Queue]
+                        G -->|Rejected| I[Rejected]
+                        
+                        H --> J[Contract/Protocol Change]
+                        
+                        subgraph Voting Power
+                            K[SVMAI Token Balance]
+                            L[Staking Duration]
+                            M[Participation History]
+                        end
+                        
+                        K --> E
+                        L --> E
+                        M --> E
+
+                        classDef default fill:#f5f5f5,stroke:#A3A3A3,stroke-width:1px;
+                        classDef process fill:#D4D4D4,stroke:#737373,stroke-width:1px;
+                        classDef decision fill:#404040,stroke:#262626,stroke-width:1px,color:white;
+                        classDef outcome fill:#525252,stroke:#171717,stroke-width:1px,color:white;
+                        classDef voting fill:#A3A3A3,stroke:#525252,stroke-width:1px;
+                        
+                        class A,B,C,E process;
+                        class D,G decision;
+                        class F,H,I,J outcome;
+                        class K,L,M voting;
+                    `;
+                    
+                    const element = document.getElementById('governanceFlow');
+                    if (element) {
+                        try {
+                            mermaid.render('mermaid-svg-governance', mermaidDiagram)
+                            .then(result => {
+                                element.innerHTML = result.svg;
+                            });
+                        } catch (error) {
+                            console.error("Error rendering mermaid diagram:", error);
+                            element.innerHTML = "Failed to render diagram.";
+                        }
+                    }
+                }, 200);
+            }
+        }
+
+        function addChapterNavigation() {
+            const chapters = document.querySelectorAll('.book-chapter');
+            if (chapters.length < 2) return;
+            
+            chapters.forEach((chapter, index) => {
+                const navigation = document.createElement('div');
+                navigation.className = 'book-nav';
+                
+                if (index > 0) {
+                    const prevLink = document.createElement('a');
+                    prevLink.href = '#';
+                    prevLink.textContent = '← Previous Chapter';
+                    prevLink.onclick = (e) => {
+                        e.preventDefault();
+                        chapters[index - 1].scrollIntoView({ behavior: 'smooth' });
+                    };
+                    navigation.appendChild(prevLink);
+                } else {
+                    // Add an empty element to maintain flex spacing
+                    const spacer = document.createElement('div');
+                    navigation.appendChild(spacer);
+                }
+                
+                if (index < chapters.length - 1) {
+                    const nextLink = document.createElement('a');
+                    nextLink.href = '#';
+                    nextLink.textContent = 'Next Chapter →';
+                    nextLink.onclick = (e) => {
+                        e.preventDefault();
+                        chapters[index + 1].scrollIntoView({ behavior: 'smooth' });
+                    };
+                    navigation.appendChild(nextLink);
+                }
+                
+                chapter.appendChild(navigation);
+            });
+        }
     </script>
 </body>
 </html>
