@@ -1,0 +1,980 @@
+{
+  "version": "0.1.0",
+  "name": "agent_registry",
+  "instructions": [
+    {
+      "name": "registerAgent",
+      "accounts": [
+        {
+          "name": "agentEntry",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "Agent entry PDA (to be created)"
+        },
+        {
+          "name": "ownerAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "desc": "Owner authority"
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "desc": "Payer"
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "desc": "System program"
+        }
+      ],
+      "args": [
+        {
+          "name": "agentId",
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "agentVersion",
+          "type": "string"
+        },
+        {
+          "name": "providerName",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "providerUrl",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "documentationUrl",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "serviceEndpoints",
+          "type": {
+            "vec": {
+              "defined": "ServiceEndpointInput"
+            }
+          }
+        },
+        {
+          "name": "capabilitiesFlags",
+          "type": "u64"
+        },
+        {
+          "name": "supportedInputModes",
+          "type": {
+            "vec": "string"
+          }
+        },
+        {
+          "name": "supportedOutputModes",
+          "type": {
+            "vec": "string"
+          }
+        },
+        {
+          "name": "skills",
+          "type": {
+            "vec": {
+              "defined": "AgentSkillInput"
+            }
+          }
+        },
+        {
+          "name": "securityInfoUri",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "aeaAddress",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "economicIntentSummary",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "supportedAeaProtocolsHash",
+          "type": {
+            "option": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        },
+        {
+          "name": "extendedMetadataUri",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "tags",
+          "type": {
+            "vec": "string"
+          }
+        }
+      ]
+    },
+    {
+      "name": "updateAgentDetails",
+      "accounts": [
+        {
+          "name": "agentEntry",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "Agent entry PDA"
+        },
+        {
+          "name": "ownerAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "desc": "Owner authority"
+        }
+      ],
+      "args": [
+        {
+          "name": "details",
+          "type": {
+            "defined": "AgentUpdateDetailsInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "updateAgentStatus",
+      "accounts": [
+        {
+          "name": "agentEntry",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "Agent entry PDA"
+        },
+        {
+          "name": "ownerAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "desc": "Owner authority"
+        }
+      ],
+      "args": [
+        {
+          "name": "newStatus",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "deregisterAgent",
+      "accounts": [
+        {
+          "name": "agentEntry",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "Agent entry PDA"
+        },
+        {
+          "name": "ownerAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "desc": "Owner authority"
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "AgentRegistryEntryV1",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "registryVersion",
+            "type": "u8"
+          },
+          {
+            "name": "ownerAuthority",
+            "type": "publicKey"
+          },
+          {
+            "name": "agentId",
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "agentVersion",
+            "type": "string"
+          },
+          {
+            "name": "providerName",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "providerUrl",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "documentationUrl",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "serviceEndpoints",
+            "type": {
+              "vec": {
+                "defined": "ServiceEndpoint"
+              }
+            }
+          },
+          {
+            "name": "capabilitiesFlags",
+            "type": "u64"
+          },
+          {
+            "name": "supportedInputModes",
+            "type": {
+              "vec": "string"
+            }
+          },
+          {
+            "name": "supportedOutputModes",
+            "type": {
+              "vec": "string"
+            }
+          },
+          {
+            "name": "skills",
+            "type": {
+              "vec": {
+                "defined": "AgentSkill"
+              }
+            }
+          },
+          {
+            "name": "securityInfoUri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "aeaAddress",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "economicIntentSummary",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "supportedAeaProtocolsHash",
+            "type": {
+              "option": {
+                "array": [
+                  "u8",
+                  32
+                ]
+              }
+            }
+          },
+          {
+            "name": "status",
+            "type": "u8"
+          },
+          {
+            "name": "registrationTimestamp",
+            "type": "i64"
+          },
+          {
+            "name": "lastUpdateTimestamp",
+            "type": "i64"
+          },
+          {
+            "name": "extendedMetadataUri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "tags",
+            "type": {
+              "vec": "string"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "ServiceEndpoint",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "protocol",
+            "type": "string"
+          },
+          {
+            "name": "url",
+            "type": "string"
+          },
+          {
+            "name": "isDefault",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ServiceEndpointInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "protocol",
+            "type": "string"
+          },
+          {
+            "name": "url",
+            "type": "string"
+          },
+          {
+            "name": "isDefault",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AgentSkill",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "descriptionHash",
+            "type": {
+              "option": {
+                "array": [
+                  "u8",
+                  32
+                ]
+              }
+            }
+          },
+          {
+            "name": "tags",
+            "type": {
+              "vec": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AgentSkillInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "descriptionHash",
+            "type": {
+              "option": {
+                "array": [
+                  "u8",
+                  32
+                ]
+              }
+            }
+          },
+          {
+            "name": "tags",
+            "type": {
+              "vec": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AgentUpdateDetailsInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "description",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "agentVersion",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "providerName",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "clearProviderName",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "providerUrl",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "clearProviderUrl",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "documentationUrl",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "clearDocumentationUrl",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "serviceEndpoints",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "ServiceEndpointInput"
+                }
+              }
+            }
+          },
+          {
+            "name": "capabilitiesFlags",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "supportedInputModes",
+            "type": {
+              "option": {
+                "vec": "string"
+              }
+            }
+          },
+          {
+            "name": "supportedOutputModes",
+            "type": {
+              "option": {
+                "vec": "string"
+              }
+            }
+          },
+          {
+            "name": "skills",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "AgentSkillInput"
+                }
+              }
+            }
+          },
+          {
+            "name": "securityInfoUri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "clearSecurityInfoUri",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "aeaAddress",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "clearAeaAddress",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "economicIntentSummary",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "clearEconomicIntentSummary",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "supportedAeaProtocolsHash",
+            "type": {
+              "option": {
+                "array": [
+                  "u8",
+                  32
+                ]
+              }
+            }
+          },
+          {
+            "name": "clearSupportedAeaProtocolsHash",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "extendedMetadataUri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "clearExtendedMetadataUri",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "tags",
+            "type": {
+              "option": {
+                "vec": "string"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "AgentRegisteredEvent",
+      "fields": [
+        {
+          "name": "registryVersion",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "ownerAuthority",
+          "type": "publicKey",
+          "index": true
+        },
+        {
+          "name": "agentId",
+          "type": "string",
+          "index": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "agentVersion",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "providerName",
+          "type": {
+            "option": "string"
+          },
+          "index": false
+        },
+        {
+          "name": "providerUrl",
+          "type": {
+            "option": "string"
+          },
+          "index": false
+        },
+        {
+          "name": "documentationUrl",
+          "type": {
+            "option": "string"
+          },
+          "index": false
+        },
+        {
+          "name": "serviceEndpoints",
+          "type": {
+            "vec": {
+              "defined": "ServiceEndpoint"
+            }
+          },
+          "index": false
+        },
+        {
+          "name": "capabilitiesFlags",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "supportedInputModes",
+          "type": {
+            "vec": "string"
+          },
+          "index": false
+        },
+        {
+          "name": "supportedOutputModes",
+          "type": {
+            "vec": "string"
+          },
+          "index": false
+        },
+        {
+          "name": "skills",
+          "type": {
+            "vec": {
+              "defined": "AgentSkill"
+            }
+          },
+          "index": false
+        },
+        {
+          "name": "securityInfoUri",
+          "type": {
+            "option": "string"
+          },
+          "index": false
+        },
+        {
+          "name": "aeaAddress",
+          "type": {
+            "option": "string"
+          },
+          "index": false
+        },
+        {
+          "name": "economicIntentSummary",
+          "type": {
+            "option": "string"
+          },
+          "index": false
+        },
+        {
+          "name": "supportedAeaProtocolsHash",
+          "type": {
+            "option": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          "index": false
+        },
+        {
+          "name": "status",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "registrationTimestamp",
+          "type": "i64",
+          "index": false
+        },
+        {
+          "name": "lastUpdateTimestamp",
+          "type": "i64",
+          "index": false
+        },
+        {
+          "name": "extendedMetadataUri",
+          "type": {
+            "option": "string"
+          },
+          "index": false
+        },
+        {
+          "name": "tags",
+          "type": {
+            "vec": "string"
+          },
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "AgentUpdatedEvent",
+      "fields": [
+        {
+          "name": "agentId",
+          "type": "string",
+          "index": true
+        },
+        {
+          "name": "changedFields",
+          "type": {
+            "vec": "string"
+          },
+          "index": false
+        },
+        {
+          "name": "lastUpdateTimestamp",
+          "type": "i64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "AgentStatusChangedEvent",
+      "fields": [
+        {
+          "name": "agentId",
+          "type": "string",
+          "index": true
+        },
+        {
+          "name": "oldStatus",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "newStatus",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "lastUpdateTimestamp",
+          "type": "i64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "AgentDeregisteredEvent",
+      "fields": [
+        {
+          "name": "agentId",
+          "type": "string",
+          "index": true
+        },
+        {
+          "name": "deregistrationTimestamp",
+          "type": "i64",
+          "index": false
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidAgentId",
+      "msg": "Invalid agent ID"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidAgentName",
+      "msg": "Invalid agent name"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidAgentDescription",
+      "msg": "Invalid agent description"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidAgentVersion",
+      "msg": "Invalid agent version"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidProviderName",
+      "msg": "Invalid provider name"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidProviderUrl",
+      "msg": "Invalid provider URL"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidDocumentationUrl",
+      "msg": "Invalid documentation URL"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidServiceEndpoint",
+      "msg": "Invalid service endpoint"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidSkill",
+      "msg": "Invalid skill"
+    },
+    {
+      "code": 6009,
+      "name": "InvalidSecurityInfoUri",
+      "msg": "Invalid security info URI"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidAeaAddress",
+      "msg": "Invalid AEA address"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidEconomicIntentSummary",
+      "msg": "Invalid economic intent summary"
+    },
+    {
+      "code": 6012,
+      "name": "InvalidExtendedMetadataUri",
+      "msg": "Invalid extended metadata URI"
+    },
+    {
+      "code": 6013,
+      "name": "InvalidTag",
+      "msg": "Invalid tag"
+    },
+    {
+      "code": 6014,
+      "name": "InvalidStatus",
+      "msg": "Invalid status"
+    },
+    {
+      "code": 6015,
+      "name": "UnauthorizedAccess",
+      "msg": "Unauthorized access"
+    },
+    {
+      "code": 6016,
+      "name": "AgentAlreadyExists",
+      "msg": "Agent already exists"
+    },
+    {
+      "code": 6017,
+      "name": "AgentNotFound",
+      "msg": "Agent not found"
+    },
+    {
+      "code": 6018,
+      "name": "AgentDeregistered",
+      "msg": "Agent is deregistered"
+    },
+    {
+      "code": 6019,
+      "name": "TooManyServiceEndpoints",
+      "msg": "Too many service endpoints"
+    },
+    {
+      "code": 6020,
+      "name": "TooManySkills",
+      "msg": "Too many skills"
+    },
+    {
+      "code": 6021,
+      "name": "TooManyTags",
+      "msg": "Too many tags"
+    },
+    {
+      "code": 6022,
+      "name": "NoDefaultEndpoint",
+      "msg": "No default service endpoint specified"
+    },
+    {
+      "code": 6023,
+      "name": "MultipleDefaultEndpoints",
+      "msg": "Multiple default service endpoints specified"
+    }
+  ],
+  "metadata": {
+    "address": "AgentRegistryProgram11111111111111111111111"
+  }
+}

@@ -7,6 +7,11 @@ A comprehensive on-chain registry system for autonomous AI agents and Model Cont
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Solana](https://img.shields.io/badge/solana-v1.18+-blue.svg)](https://solana.com)
 
+## 🚀 Live on Devnet
+
+**Agent Registry**: `BruRLHGfNaf6C5HKUqFu6md5ePJNELafm1vZdhctPkpr` | [Explorer](https://explorer.solana.com/address/BruRLHGfNaf6C5HKUqFu6md5ePJNELafm1vZdhctPkpr?cluster=devnet)
+**MCP Server Registry**: `BCBVehUHR3yhbDbvhV3QHS3s27k3LTbpX5CrXQ2sR2SR` | [Explorer](https://explorer.solana.com/address/BCBVehUHR3yhbDbvhV3QHS3s27k3LTbpX5CrXQ2sR2SR?cluster=devnet)
+
 ## 🌟 Overview
 
 The Solana AI Registries protocol provides essential infrastructure for discovering, verifying, and interacting with autonomous AI agents and Model Context Protocol (MCP) servers. This implementation consists of two interconnected on-chain registries:
@@ -306,6 +311,149 @@ solana config set --url devnet
 # Deploy with verification
 ./scripts/deploy-devnet.sh
 ./scripts/verify.sh
+```
+
+### 🌐 Live Devnet Deployment
+
+The Solana AI Registries are currently deployed and live on Solana Devnet:
+
+#### Program Addresses
+
+- **Agent Registry**: `BruRLHGfNaf6C5HKUqFu6md5ePJNELafm1vZdhctPkpr`
+- **MCP Server Registry**: `BCBVehUHR3yhbDbvhV3QHS3s27k3LTbpX5CrXQ2sR2SR`
+
+#### Explorer Links
+
+- [Agent Registry on Solana Explorer](https://explorer.solana.com/address/BruRLHGfNaf6C5HKUqFu6md5ePJNELafm1vZdhctPkpr?cluster=devnet)
+- [MCP Server Registry on Solana Explorer](https://explorer.solana.com/address/BCBVehUHR3yhbDbvhV3QHS3s27k3LTbpX5CrXQ2sR2SR?cluster=devnet)
+
+#### Query Examples
+
+##### Using Solana CLI
+
+```bash
+# Configure for devnet
+solana config set --url devnet
+
+# Query Agent Registry program info
+solana program show BruRLHGfNaf6C5HKUqFu6md5ePJNELafm1vZdhctPkpr
+
+# Query MCP Server Registry program info
+solana program show BCBVehUHR3yhbDbvhV3QHS3s27k3LTbpX5CrXQ2sR2SR
+
+# List all agent accounts (requires custom RPC call)
+solana account BruRLHGfNaf6C5HKUqFu6md5ePJNELafm1vZdhctPkpr --output json
+
+# List all MCP server accounts (requires custom RPC call)
+solana account BCBVehUHR3yhbDbvhV3QHS3s27k3LTbpX5CrXQ2sR2SR --output json
+```
+
+##### Using JavaScript/TypeScript
+
+```typescript
+import { Connection, PublicKey } from '@solana/web3.js';
+
+const connection = new Connection('https://api.devnet.solana.com');
+
+// Program addresses
+const AGENT_REGISTRY_PROGRAM_ID = new PublicKey('BruRLHGfNaf6C5HKUqFu6md5ePJNELafm1vZdhctPkpr');
+const MCP_REGISTRY_PROGRAM_ID = new PublicKey('BCBVehUHR3yhbDbvhV3QHS3s27k3LTbpX5CrXQ2sR2SR');
+
+// Query all agent accounts
+async function getAllAgents() {
+  const accounts = await connection.getProgramAccounts(AGENT_REGISTRY_PROGRAM_ID);
+  return accounts.map(account => ({
+    pubkey: account.pubkey.toString(),
+    data: account.account.data,
+    owner: account.account.owner.toString()
+  }));
+}
+
+// Query all MCP server accounts
+async function getAllMcpServers() {
+  const accounts = await connection.getProgramAccounts(MCP_REGISTRY_PROGRAM_ID);
+  return accounts.map(account => ({
+    pubkey: account.pubkey.toString(),
+    data: account.account.data,
+    owner: account.account.owner.toString()
+  }));
+}
+
+// Query specific agent by PDA
+async function getAgentByOwner(ownerPubkey: PublicKey) {
+  const [agentPda] = PublicKey.findProgramAddressSync(
+    [Buffer.from("agent"), ownerPubkey.toBuffer()],
+    AGENT_REGISTRY_PROGRAM_ID
+  );
+  
+  const accountInfo = await connection.getAccountInfo(agentPda);
+  return accountInfo;
+}
+
+// Query specific MCP server by PDA
+async function getMcpServerByOwner(ownerPubkey: PublicKey) {
+  const [serverPda] = PublicKey.findProgramAddressSync(
+    [Buffer.from("mcp_server"), ownerPubkey.toBuffer()],
+    MCP_REGISTRY_PROGRAM_ID
+  );
+  
+  const accountInfo = await connection.getAccountInfo(serverPda);
+  return accountInfo;
+}
+```
+
+##### Using Python
+
+```python
+from solana.rpc.api import Client
+from solana.publickey import PublicKey
+
+# Connect to devnet
+client = Client("https://api.devnet.solana.com")
+
+# Program addresses
+AGENT_REGISTRY_PROGRAM_ID = PublicKey("BruRLHGfNaf6C5HKUqFu6md5ePJNELafm1vZdhctPkpr")
+MCP_REGISTRY_PROGRAM_ID = PublicKey("BCBVehUHR3yhbDbvhV3QHS3s27k3LTbpX5CrXQ2sR2SR")
+
+# Query all agent accounts
+def get_all_agents():
+    response = client.get_program_accounts(AGENT_REGISTRY_PROGRAM_ID)
+    return response
+
+# Query all MCP server accounts
+def get_all_mcp_servers():
+    response = client.get_program_accounts(MCP_REGISTRY_PROGRAM_ID)
+    return response
+
+# Query specific account
+def get_account_info(pubkey_str):
+    pubkey = PublicKey(pubkey_str)
+    response = client.get_account_info(pubkey)
+    return response
+```
+
+##### Using Rust
+
+```rust
+use solana_client::rpc_client::RpcClient;
+use solana_sdk::pubkey::Pubkey;
+use std::str::FromStr;
+
+// Connect to devnet
+let rpc_client = RpcClient::new("https://api.devnet.solana.com");
+
+// Program addresses
+let agent_registry_program_id = Pubkey::from_str("BruRLHGfNaf6C5HKUqFu6md5ePJNELafm1vZdhctPkpr").unwrap();
+let mcp_registry_program_id = Pubkey::from_str("BCBVehUHR3yhbDbvhV3QHS3s27k3LTbpX5CrXQ2sR2SR").unwrap();
+
+// Query all agent accounts
+let agent_accounts = rpc_client.get_program_accounts(&agent_registry_program_id)?;
+
+// Query all MCP server accounts
+let mcp_accounts = rpc_client.get_program_accounts(&mcp_registry_program_id)?;
+
+// Query specific account
+let account_info = rpc_client.get_account(&some_pubkey)?;
 ```
 
 ### Mainnet Deployment

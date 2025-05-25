@@ -1,0 +1,27 @@
+# Core Solana dependencies
+@solana/web3.js
+@solana/wallet-adapter-react
+@solana/wallet-adapter-react-ui
+@solana/wallet-adapter-wallets
+@solana/wallet-adapter-base
+
+# PWA support
+next-pwa
+
+# Form handling
+react-hook-form
+zod
+@hookform/resolvers
+
+# State management and data fetching
+@tanstack/react-query
+zustand
+
+# UI components and utilities
+lucide-react
+react-hot-toast
+clsx
+tailwind-merge
+
+# Development dependencies
+@types/node
