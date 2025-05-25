@@ -30,6 +30,22 @@ export default function HomePage() {
                 Browse MCP Servers
               </Link>
             </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-4">
+              <Link
+                href="/index.html"
+                className="inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <Globe className="mr-2" size={20} />
+                View Project Website
+              </Link>
+              <Link
+                href="/docs.html"
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-[#0ea5e9] hover:bg-[#0284c7] transition-colors"
+              >
+                <Search className="mr-2" size={20} />
+                View Documentation
+              </Link>
+            </div>
             <div className="flex items-center justify-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
               <Coins className="text-[#14F195]" size={16} />
               <span>Powered by $SVMAI Token</span>
