@@ -12,6 +12,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
     <style>
         body {
             font-family: 'Courier New', Courier, monospace; /* Monospace font */
@@ -304,7 +305,10 @@
             padding: 1rem;
             border-radius: 0;
             border: 1px solid #D4D4D4;
+            overflow-x: hidden;
         }
+        
+        .code-example {
             background-color: #FFFFFF;
             padding: 0.5rem;
             border: 1px solid #A3A3A3;
@@ -332,6 +336,21 @@
             padding-bottom: 0.25rem;
         }
         
+        .mermaid-container {
+            background-color: #FFFFFF;
+            padding: 1rem;
+            border: 1px solid #D4D4D4;
+            margin: 1rem auto;
+            overflow-x: auto;
+        }
+        
+        .mermaid-container svg {
+            max-width: 100%;
+            height: auto;
+            margin: 0 auto;
+            display: block;
+        }
+        
         .footer-bg {
             background-color: #404040; /* Neutral-700 */
             border-top: 2px solid #171717; /* Neutral-900 */
@@ -345,30 +364,48 @@
         @media (max-width: 768px) {
             body {
                 font-size: 14px; /* Smaller base font size on mobile */
+                overflow-x: hidden; /* Prevent horizontal scrolling */
             }
             
             .main-container {
                 padding: 0 1rem;
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
             }
             
             .chart-container {
                 height: 250px;
                 width: 100%;
+                max-width: 100%;
+                overflow-x: hidden;
             }
             
             .infographic-grid {
                 grid-template-columns: 1fr;
                 margin: 1rem 0;
+                width: 100%;
+                overflow-x: hidden;
             }
             
             .book-nav {
                 flex-direction: column;
                 gap: 1rem;
                 align-items: center;
+                width: 100%;
             }
             
             #markdown-content {
                 padding: 1rem;
+                overflow-x: hidden;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            #content {
+                width: 100%;
+                box-sizing: border-box;
+                overflow-x: hidden;
             }
             
             #sidebar {
@@ -378,10 +415,12 @@
                 padding-bottom: 1rem;
                 border-bottom: 1px solid #A3A3A3;
                 margin-bottom: 1rem;
+                box-sizing: border-box;
             }
             
             .flex.flex-col.md\\:flex-row {
                 flex-direction: column !important;
+                width: 100%;
             }
             
             #markdown-content h1 {
@@ -399,6 +438,9 @@
             .diagram-container {
                 padding: 0.75rem;
                 margin: 1rem 0;
+                overflow-x: hidden;
+                max-width: 100%;
+                box-sizing: border-box;
             }
             
             .nav-link {
@@ -420,20 +462,40 @@
             .infographic-block {
                 padding: 0.75rem;
                 margin-bottom: 0.75rem;
+                max-width: 100%;
+                box-sizing: border-box;
+            }
+            
+            table {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            pre {
+                overflow-x: auto;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                max-width: 100%;
             }
         }
         
         @media (max-width: 480px) {
             body {
                 font-size: 13px;
+                overflow-x: hidden;
             }
             
             .chart-container {
                 height: 200px;
+                max-width: 100%;
+                overflow-x: hidden;
             }
             
             #markdown-content {
                 padding: 0.75rem;
+                overflow-x: hidden;
             }
             
             .book-chapter {
@@ -452,6 +514,28 @@
             
             .infographic-block-title {
                 font-size: 0.95rem;
+            }
+            
+            table {
+                font-size: 0.85rem;
+            }
+            
+            pre, code {
+                font-size: 0.85rem;
+            }
+            
+            .infographic-grid {
+                display: block;
+            }
+            
+            .infographic-block {
+                margin-bottom: 1rem;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .main-container {
+                padding: 0 0.5rem;
             }
         }
 
@@ -529,6 +613,9 @@
     </footer>
 
     <script>
+        // Initialize mermaid
+        mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
+
         // Available documentation files
         const docFiles = [
             { id: 'readme', name: 'Overview', path: 'docs/README.md' },
@@ -590,6 +677,56 @@
                     </div>
                 `;
             }
+        }
+        
+        // Helper function to find a section by heading text
+        function findSection(sectionTitle) {
+            const content = document.getElementById('markdown-content');
+            const h2s = content.querySelectorAll('h2');
+            
+            for (let i = 0; i < h2s.length; i++) {
+                if (h2s[i].textContent.includes(sectionTitle)) {
+                    // Find the next h2 to determine section end
+                    let section = document.createElement('div');
+                    let currentNode = h2s[i];
+                    section.appendChild(currentNode.cloneNode(true));
+                    
+                    currentNode = currentNode.nextElementSibling;
+                    while (currentNode && currentNode.tagName !== 'H2') {
+                        section.appendChild(currentNode.cloneNode(true));
+                        currentNode = currentNode.nextElementSibling;
+                    }
+                    
+                    return section;
+                }
+            }
+            
+            return null;
+        }
+        
+        // Helper function to find a subsection within a section
+        function findSubsection(section, subsectionTitle) {
+            if (!section) return null;
+            
+            const h3s = section.querySelectorAll('h3');
+            for (let i = 0; i < h3s.length; i++) {
+                if (h3s[i].textContent.includes(subsectionTitle)) {
+                    // Find the next h3 to determine subsection end
+                    let subsection = document.createElement('div');
+                    let currentNode = h3s[i];
+                    subsection.appendChild(currentNode.cloneNode(true));
+                    
+                    currentNode = currentNode.nextElementSibling;
+                    while (currentNode && currentNode.tagName !== 'H3' && currentNode.tagName !== 'H2') {
+                        subsection.appendChild(currentNode.cloneNode(true));
+                        currentNode = currentNode.nextElementSibling;
+                    }
+                    
+                    return subsection;
+                }
+            }
+            
+            return null;
         }
 
         // Load default document or from hash
@@ -672,6 +809,9 @@
             addImplementationChallengesDiagram();
             addUXConsiderationsDiagram();
             addRecommendationsDiagram();
+            
+            // Add process flow diagrams with mermaid
+            addTokenomicsProcessFlows();
             
             // Add navigation between chapters
             addChapterNavigation();
@@ -2299,6 +2439,548 @@
             const firstPara = section.querySelector('p');
             if (firstPara) {
                 firstPara.parentNode.insertBefore(diagramContainer, firstPara.nextSibling);
+            }
+        }
+
+        // Function to add mermaid diagrams showing process flows throughout the document
+        function addTokenomicsProcessFlows() {
+            // Add mermaid diagrams at various points in the document
+            addTransactionProcessFlow();
+            addDisputeProcessFlow();
+            addTokenomicInfluenceFlow();
+            addStakingProcessFlow();
+            addContractInteractionFlow();
+            addTokenUtilityFlow();
+            addGovernanceFlow();
+        }
+
+        // Transaction Process Flow using Mermaid
+        function addTransactionProcessFlow() {
+            const section = findSubsection(findSection('Core Tokenomic Design: The SVMAI Service Escrow'), 'Transaction Lifecycle: From Job Initiation to Completion or Dispute');
+            if (!section) return;
+            
+            // Create a diagram container
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">SVMAI Transaction Lifecycle Process</div>
+                <div class="diagram-description">Step-by-step flow from service initiation to completion</div>
+                <div class="mermaid-container">
+                    <div id="transactionProcessFlow" style="width: 100%; overflow-x: hidden;"></div>
+                </div>
+            `;
+            
+            // Find a good place to insert the diagram - after the 3rd paragraph
+            const paras = section.querySelectorAll('p');
+            if (paras.length >= 3) {
+                paras[2].parentNode.insertBefore(diagramContainer, paras[2].nextSibling);
+                
+                // Render mermaid diagram
+                setTimeout(() => {
+                    const mermaidDiagram = `
+                    flowchart TD
+                        A[Job Posted by Client] -->|Agreement Reached| B[Escrow Initiated]
+                        B --> C[Client Stakes SVMAI Tokens]
+                        C --> D[Agent Locks Service Fee]
+                        D --> E[Service in Progress]
+                        E --> F[Service Delivered]
+                        F --> G[Client Review Period]
+                        G -->|Satisfactory| H[Client Approves]
+                        G -->|Unsatisfactory| I[Client Disputes]
+                        H --> J[Agent Receives Fee]
+                        H --> K[Client Recovers Stake]
+                        I --> L[Dispute Resolution]
+                        L -->|Agent Wins| M[Agent Receives Fee]
+                        L -->|Client Wins| N[Client Refunded]
+
+                        classDef default fill:#f5f5f5,stroke:#A3A3A3,stroke-width:1px;
+                        classDef client fill:#D4D4D4,stroke:#737373,stroke-width:1px;
+                        classDef agent fill:#E5E5E5,stroke:#737373,stroke-width:1px;
+                        classDef success fill:#D4D4D4,stroke:#525252,stroke-width:1px;
+                        classDef dispute fill:#525252,stroke:#404040,stroke-width:1px,color:white;
+                        
+                        class A,C,G,H,K,N client;
+                        class D,J,M agent;
+                        class B,E,F success;
+                        class I,L dispute;
+                    `;
+                    
+                    const element = document.getElementById('transactionProcessFlow');
+                    if (element) {
+                        try {
+                            mermaid.render('mermaid-svg-transaction', mermaidDiagram)
+                            .then(result => {
+                                element.innerHTML = result.svg;
+                            });
+                        } catch (error) {
+                            console.error("Error rendering mermaid diagram:", error);
+                            element.innerHTML = "Failed to render diagram.";
+                        }
+                    }
+                }, 200);
+            }
+        }
+
+        // Dispute Resolution Process Flow using Mermaid
+        function addDisputeProcessFlow() {
+            const section = findSection('Dispute Resolution Framework for SVMAI');
+            if (!section) return;
+            
+            // Create a diagram container
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">Decentralized Dispute Resolution Process</div>
+                <div class="diagram-description">Complete workflow of the DDR mechanism</div>
+                <div class="mermaid-container">
+                    <div id="disputeProcessFlow" style="width: 100%; overflow-x: hidden;"></div>
+                </div>
+            `;
+            
+            // Find a good place to insert the diagram - after the first h3 section
+            const h3s = section.querySelectorAll('h3');
+            if (h3s.length >= 1) {
+                h3s[0].parentNode.insertBefore(diagramContainer, h3s[0].nextSibling);
+                
+                // Render mermaid diagram
+                setTimeout(() => {
+                    const mermaidDiagram = `
+                    flowchart TD
+                        A[Client Initiates Dispute] --> B[Client Stakes Additional SVMAI]
+                        B --> C[Jurors Selected from Staker Pool]
+                        C --> D[Evidence Submission Period]
+                        D --> E[Client Submits Evidence]
+                        D --> F[Agent Submits Defense]
+                        E --> G[Juror Review & Voting]
+                        F --> G
+                        G --> H{Voting Outcome}
+                        H -->|Agent Favor| I[Agent Receives Fee]
+                        H -->|Client Favor| J[Client Recovers Stake]
+                        H -->|Partial Resolution| K[Split Payment According to Ruling]
+                        I --> L[Client May Appeal]
+                        J --> L
+                        K --> L
+                        L -->|Appeal Filed| M[Larger Juror Panel Selected]
+                        L -->|No Appeal| N[Case Closed - Ruling Enforced]
+                        M --> O[Appeal Evidence & Voting]
+                        O --> P[Final Ruling Enforced by Smart Contract]
+
+                        classDef default fill:#f5f5f5,stroke:#A3A3A3,stroke-width:1px;
+                        classDef client fill:#D4D4D4,stroke:#737373,stroke-width:1px;
+                        classDef agent fill:#E5E5E5,stroke:#737373,stroke-width:1px;
+                        classDef process fill:#737373,stroke:#525252,stroke-width:1px,color:white;
+                        classDef decision fill:#404040,stroke:#262626,stroke-width:1px,color:white;
+                        
+                        class A,B,E,J client;
+                        class F,I agent;
+                        class C,D,G,K,L,M,O,N,P process;
+                        class H decision;
+                    `;
+                    
+                    const element = document.getElementById('disputeProcessFlow');
+                    if (element) {
+                        try {
+                            mermaid.render('mermaid-svg-dispute', mermaidDiagram)
+                            .then(result => {
+                                element.innerHTML = result.svg;
+                            });
+                        } catch (error) {
+                            console.error("Error rendering mermaid diagram:", error);
+                            element.innerHTML = "Failed to render diagram.";
+                        }
+                    }
+                }, 200);
+            }
+        }
+
+        // Tokenomic Influence Flow using Mermaid
+        function addTokenomicInfluenceFlow() {
+            const section = findSection('Economic and Behavioral Impact Analysis');
+            if (!section) return;
+            
+            // Create a diagram container
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">Tokenomic Influence on Stakeholder Behavior</div>
+                <div class="diagram-description">How incentives shape actions within the ecosystem</div>
+                <div class="mermaid-container">
+                    <div id="tokenomicInfluenceFlow" style="width: 100%; overflow-x: hidden;"></div>
+                </div>
+            `;
+            
+            // Find a good place to insert the diagram - in the "Incentive Alignment and Stakeholder Behavior" subsection
+            const subsection = findSubsection(section, 'Incentive Alignment and Stakeholder Behavior');
+            if (subsection) {
+                const paras = subsection.querySelectorAll('p');
+                if (paras.length >= 2) {
+                    paras[1].parentNode.insertBefore(diagramContainer, paras[1].nextSibling);
+                    
+                    // Render mermaid diagram
+                    setTimeout(() => {
+                        const mermaidDiagram = `
+                        flowchart TD
+                            A[SVMAI Token Model] --> B[Client Incentives]
+                            A --> C[Agent Incentives]
+                            A --> D[Platform Health]
+                            
+                            B --> E[Stake Return on Approval]
+                            B --> F[High Dispute Reward]
+                            B --> G[Clear Service Requirements]
+                            
+                            C --> H[Fee Protection]
+                            C --> I[Reputation Building]
+                            C --> J[Quality Service]
+                            
+                            E --> K[Higher Service Adoption]
+                            E --> L["Perceived Free Service" Effect]
+                            F --> M[Risk of Frivolous Disputes]
+                            G --> N[Reduced Misunderstandings]
+                            
+                            H --> O[Fair Market Pricing]
+                            H --> P[Higher Entry Barrier]
+                            I --> Q[Sustained Participation]
+                            J --> R[Positive Platform Reputation]
+                            
+                            K --> D
+                            L --> D
+                            M --> D
+                            N --> D
+                            O --> D
+                            P --> D
+                            Q --> D
+                            R --> D
+
+                            classDef default fill:#f5f5f5,stroke:#737373,stroke-width:1px;
+                            classDef positive fill:#D4D4D4,stroke:#737373,stroke-width:1px;
+                            classDef negative fill:#525252,stroke:#404040,stroke-width:1px,color:white;
+                            classDef neutral fill:#A3A3A3,stroke:#737373,stroke-width:1px;
+                            
+                            class A,D neutral;
+                            class K,N,Q,R positive;
+                            class L,M,P negative;
+                            class E,F,G,H,I,J,O neutral;
+                        `;
+                        
+                        const element = document.getElementById('tokenomicInfluenceFlow');
+                        if (element) {
+                            try {
+                                mermaid.render('mermaid-svg-influence', mermaidDiagram)
+                                .then(result => {
+                                    element.innerHTML = result.svg;
+                                });
+                            } catch (error) {
+                                console.error("Error rendering mermaid diagram:", error);
+                                element.innerHTML = "Failed to render diagram.";
+                            }
+                        }
+                    }, 200);
+                }
+            }
+        }
+
+        // Staking Process Flow using Mermaid
+        function addStakingProcessFlow() {
+            const section = findSubsection(findSection('SVMAI Token Utility and Ecosystem Value'), 'Enhancing Token Utility through the Escrow Model');
+            if (!section) return;
+            
+            // Create a diagram container
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">SVMAI Staking Mechanism</div>
+                <div class="diagram-description">Token staking flows for different ecosystem participants</div>
+                <div class="mermaid-container">
+                    <div id="stakingProcessFlow" style="width: 100%; overflow-x: hidden;"></div>
+                </div>
+            `;
+            
+            // Find a good place to insert the diagram - at the end of the section
+            const lastElement = section.lastElementChild;
+            if (lastElement) {
+                section.appendChild(diagramContainer);
+                
+                // Render mermaid diagram
+                setTimeout(() => {
+                    const mermaidDiagram = `
+                    flowchart LR
+                        A[SVMAI Token Holder] --> B{Staking Purpose}
+                        B --> C[Client Stake]
+                        B --> D[Agent Participation]
+                        B --> E[Juror Staking]
+                        B --> F[Governance]
+                        
+                        C --> G[Service Escrow]
+                        C --> H[Returned on Approval]
+                        C --> I[Dispute Risk]
+                        
+                        D --> J[Fee Lock-up]
+                        D --> K[Service Delivery]
+                        D --> L[Fee Release]
+                        
+                        E --> M[Selected for Cases]
+                        E --> N[Vote on Disputes]
+                        E --> O[Earn Rewards]
+                        
+                        F --> P[Platform Parameters]
+                        F --> Q[Fee Structure]
+                        F --> R[Vote on Upgrades]
+
+                        classDef default fill:#f5f5f5,stroke:#A3A3A3,stroke-width:1px;
+                        classDef primary fill:#525252,stroke:#404040,stroke-width:1px,color:white;
+                        classDef secondary fill:#A3A3A3,stroke:#737373,stroke-width:1px;
+                        classDef tertiary fill:#E5E5E5,stroke:#A3A3A3,stroke-width:1px;
+                        
+                        class A,B primary;
+                        class C,D,E,F secondary;
+                        class G,H,I,J,K,L,M,N,O,P,Q,R tertiary;
+                    `;
+                    
+                    const element = document.getElementById('stakingProcessFlow');
+                    if (element) {
+                        try {
+                            mermaid.render('mermaid-svg-staking', mermaidDiagram)
+                            .then(result => {
+                                element.innerHTML = result.svg;
+                            });
+                        } catch (error) {
+                            console.error("Error rendering mermaid diagram:", error);
+                            element.innerHTML = "Failed to render diagram.";
+                        }
+                    }
+                }, 200);
+            }
+        }
+
+        // Smart Contract Interaction Flow using Mermaid
+        function addContractInteractionFlow() {
+            const section = findSubsection(findSection('Core Tokenomic Design: The SVMAI Service Escrow'), 'Smart Contract Architecture: Key Functions and Design Patterns for Security and Efficiency');
+            if (!section) return;
+            
+            // Create a diagram container
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">Smart Contract Interaction Flow</div>
+                <div class="diagram-description">How different actors interact with SVMAI escrow contracts</div>
+                <div class="mermaid-container">
+                    <div id="contractInteractionFlow" style="width: 100%; overflow-x: hidden;"></div>
+                </div>
+            `;
+            
+            // Find a good place to insert the diagram - after 4th paragraph
+            const paras = section.querySelectorAll('p');
+            if (paras.length >= 4) {
+                paras[3].parentNode.insertBefore(diagramContainer, paras[3].nextSibling);
+                
+                // Render mermaid diagram
+                setTimeout(() => {
+                    const mermaidDiagram = `
+                    flowchart TB
+                        Client[Client]
+                        Agent[Agent]
+                        Arbiter[DDR System/Arbiters]
+                        Platform[Platform/Admin]
+                        
+                        subgraph SVMAI Escrow Contract
+                            Init[initiateEscrow()]
+                            Lock[lockStakeAndFee()]
+                            Approve[approveWork()]
+                            Dispute[disputeWork()]
+                            Resolve[resolveDispute()]
+                            WithdrawA[withdrawAgentFee()]
+                            WithdrawC[withdrawClientStake()]
+                            Emergency[emergencyStop()/Circuit Breaker]
+                        end
+                        
+                        Client --> Init
+                        Client --> Lock
+                        Client --> Approve
+                        Client --> Dispute
+                        Client --> WithdrawC
+                        
+                        Agent --> Lock
+                        Agent --> WithdrawA
+                        
+                        Arbiter --> Resolve
+                        
+                        Platform --> Emergency
+
+                        classDef default fill:#f5f5f5,stroke:#A3A3A3,stroke-width:1px;
+                        classDef actor fill:#404040,stroke:#171717,stroke-width:1px,color:white;
+                        classDef function fill:#D4D4D4,stroke:#737373,stroke-width:1px;
+                        classDef critical fill:#525252,stroke:#262626,stroke-width:1px,color:white;
+                        
+                        class Client,Agent,Arbiter,Platform actor;
+                        class Init,Lock,Approve,WithdrawA,WithdrawC function;
+                        class Dispute,Resolve,Emergency critical;
+                    `;
+                    
+                    const element = document.getElementById('contractInteractionFlow');
+                    if (element) {
+                        try {
+                            mermaid.render('mermaid-svg-contract', mermaidDiagram)
+                            .then(result => {
+                                element.innerHTML = result.svg;
+                            });
+                        } catch (error) {
+                            console.error("Error rendering mermaid diagram:", error);
+                            element.innerHTML = "Failed to render diagram.";
+                        }
+                    }
+                }, 200);
+            }
+        }
+
+        // Token Utility Flow using Mermaid
+        function addTokenUtilityFlow() {
+            const section = findSubsection(findSection('SVMAI Token Utility and Ecosystem Value'), 'Mechanisms for Value Accrual and Sustainability of the SVMAI Token');
+            if (!section) return;
+            
+            // Create a diagram container
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">SVMAI Token Flow & Value Accrual</div>
+                <div class="diagram-description">How tokens circulate and value accrues in the ecosystem</div>
+                <div class="mermaid-container">
+                    <div id="tokenUtilityFlow" style="width: 100%; overflow-x: hidden;"></div>
+                </div>
+            `;
+            
+            // Find a good place to insert the diagram
+            const firstH4 = section.querySelector('h4');
+            if (firstH4) {
+                firstH4.parentNode.insertBefore(diagramContainer, firstH4);
+                
+                // Render mermaid diagram
+                setTimeout(() => {
+                    const mermaidDiagram = `
+                    flowchart TD
+                        TSupply[Token Supply] --> Dist[Initial Distribution]
+                        Dist --> Comm[Community Treasury]
+                        Dist --> Dev[Developer Fund]
+                        Dist --> Market[Market/Exchanges]
+                        
+                        Market --> Clients[Clients]
+                        Market --> Agents[Agents]
+                        Market --> Stakers[SVMAI Stakers/Jurors]
+                        
+                        Clients --> Escrow[Escrow Contract]
+                        Agents --> Escrow
+                        
+                        Escrow --> |Approval| Agents
+                        Escrow --> |Stake Return| Clients
+                        Escrow --> |Dispute Fees| Stakers
+                        
+                        Stakers --> |Governance| Protocol[Protocol Decisions]
+                        Protocol --> TSupply
+                        
+                        Comm --> Market
+                        Dev --> Platform[Platform Development]
+                        Platform --> Protocol
+
+                        classDef default fill:#f5f5f5,stroke:#A3A3A3,stroke-width:1px;
+                        classDef tokens fill:#737373,stroke:#525252,stroke-width:1px,color:white;
+                        classDef actors fill:#D4D4D4,stroke:#737373,stroke-width:1px;
+                        classDef contracts fill:#404040,stroke:#262626,stroke-width:1px,color:white;
+                        
+                        class TSupply,Dist,Comm,Dev,Market tokens;
+                        class Clients,Agents,Stakers,Platform actors;
+                        class Escrow,Protocol contracts;
+                    `;
+                    
+                    const element = document.getElementById('tokenUtilityFlow');
+                    if (element) {
+                        try {
+                            mermaid.render('mermaid-svg-utility', mermaidDiagram)
+                            .then(result => {
+                                element.innerHTML = result.svg;
+                            });
+                        } catch (error) {
+                            console.error("Error rendering mermaid diagram:", error);
+                            element.innerHTML = "Failed to render diagram.";
+                        }
+                    }
+                }, 200);
+            }
+        }
+
+        // Governance Process Flow using Mermaid
+        function addGovernanceFlow() {
+            const section = findSection('Recommendations and Strategic Outlook');
+            if (!section) return;
+            
+            const subsec = findSubsection(section, 'Future Considerations for Model Evolution and Ecosystem Growth');
+            if (!subsec) return;
+            
+            // Create a diagram container
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'diagram-container';
+            diagramContainer.innerHTML = `
+                <div class="diagram-title">SVMAI Governance Process Flow</div>
+                <div class="diagram-description">Token-based governance for platform evolution</div>
+                <div class="mermaid-container">
+                    <div id="governanceFlow" style="width: 100%; overflow-x: hidden;"></div>
+                </div>
+            `;
+            
+            // Find a good place to insert the diagram
+            const bullets = subsec.querySelectorAll('li');
+            if (bullets.length >= 4) {
+                bullets[3].parentNode.insertBefore(diagramContainer, bullets[3].nextSibling);
+                
+                // Render mermaid diagram
+                setTimeout(() => {
+                    const mermaidDiagram = `
+                    flowchart LR
+                        A[Community Member] --> B[Create Proposal]
+                        B --> C[Discussion Period]
+                        C --> D{Screening}
+                        D -->|Passes| E[Formal Voting]
+                        D -->|Fails| F[Rejected]
+                        
+                        E --> G{Vote Results}
+                        G -->|Approved| H[Implementation Queue]
+                        G -->|Rejected| I[Rejected]
+                        
+                        H --> J[Contract/Protocol Change]
+                        
+                        subgraph Voting Power
+                            K[SVMAI Token Balance]
+                            L[Staking Duration]
+                            M[Participation History]
+                        end
+                        
+                        K --> E
+                        L --> E
+                        M --> E
+
+                        classDef default fill:#f5f5f5,stroke:#A3A3A3,stroke-width:1px;
+                        classDef process fill:#D4D4D4,stroke:#737373,stroke-width:1px;
+                        classDef decision fill:#404040,stroke:#262626,stroke-width:1px,color:white;
+                        classDef outcome fill:#525252,stroke:#171717,stroke-width:1px,color:white;
+                        classDef voting fill:#A3A3A3,stroke:#525252,stroke-width:1px;
+                        
+                        class A,B,C,E process;
+                        class D,G decision;
+                        class F,H,I,J outcome;
+                        class K,L,M voting;
+                    `;
+                    
+                    const element = document.getElementById('governanceFlow');
+                    if (element) {
+                        try {
+                            mermaid.render('mermaid-svg-governance', mermaidDiagram)
+                            .then(result => {
+                                element.innerHTML = result.svg;
+                            });
+                        } catch (error) {
+                            console.error("Error rendering mermaid diagram:", error);
+                            element.innerHTML = "Failed to render diagram.";
+                        }
+                    }
+                }, 200);
             }
         }
 
