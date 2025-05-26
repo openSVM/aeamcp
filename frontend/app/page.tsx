@@ -1,129 +1,126 @@
 import Link from 'next/link';
-import { Bot, Server, Search, Plus, Users, Globe, Coins, Shield, Zap, TrendingUp } from 'lucide-react';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-[#14F195]/10 to-[#9945FF]/10 py-20">
+      <section className="py-20" style={{ backgroundColor: '#F5F5F5', borderBottom: '2px solid #A3A3A3' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-              Solana AI Registries
+            <h1 className="ascii-section-title text-4xl md:text-6xl mb-6">
+              SOLANA AI REGISTRIES
             </h1>
-            <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
+            <p className="ascii-lead-text text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
               Discover and register autonomous AI agents and Model Context Protocol (MCP) servers on the Solana blockchain. Powered by $SVMAI token.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <Link
                 href="/agents"
-                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-[#14F195] to-[#9945FF] hover:opacity-90 transition-opacity"
+                className="ascii-button-primary"
               >
-                <Bot className="mr-2" size={20} />
-                Browse Agents
+                [BROWSE AGENTS]
               </Link>
               <Link
                 href="/servers"
-                className="inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="ascii-button-secondary"
               >
-                <Server className="mr-2" size={20} />
-                Browse MCP Servers
+                [BROWSE MCP SERVERS]
               </Link>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-4">
               <Link
                 href="/index.html"
-                className="inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="ascii-button-secondary"
               >
-                <Globe className="mr-2" size={20} />
-                View Project Website
+                [VIEW PROJECT WEBSITE]
               </Link>
               <Link
                 href="/docs.html"
-                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-[#0ea5e9] hover:bg-[#0284c7] transition-colors"
+                className="ascii-button-secondary"
+                style={{ backgroundColor: '#525252', color: '#FFFFFF', borderColor: '#525252' }}
               >
-                <Search className="mr-2" size={20} />
-                View Documentation
+                [VIEW DOCUMENTATION]
               </Link>
             </div>
-            <div className="flex items-center justify-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-              <Coins className="text-[#14F195]" size={16} />
-              <span>Powered by $SVMAI Token</span>
-              <Link href="/tokenomics" className="text-[#14F195] hover:underline">
-                Learn More
-              </Link>
+            <div className="ascii-info-box inline-block">
+              <span className="ascii-info-box-text">
+                <strong>POWERED BY $SVMAI TOKEN</strong> • 
+                <Link href="/tokenomics" className="ascii-link ml-2">
+                  LEARN MORE →
+                </Link>
+              </span>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-white dark:bg-gray-900">
+      <section className="py-20" style={{ backgroundColor: '#FFFFFF' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Decentralized AI Discovery
+            <h2 className="ascii-section-title text-3xl md:text-4xl mb-4">
+              DECENTRALIZED AI DISCOVERY
             </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            <p className="ascii-body-text text-lg max-w-2xl mx-auto">
               Built on Solana for fast, secure, and cost-effective AI service discovery and registration
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Agent Registry */}
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
-              <div className="w-12 h-12 bg-gradient-to-r from-[#14F195] to-[#9945FF] rounded-lg flex items-center justify-center mb-4">
-                <Bot className="text-white" size={24} />
+            <div className="ascii-card">
+              <div className="ascii-logo w-16 h-12 mb-4">
+                <span className="text-lg font-bold">[BOT]</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                Agent Registry
+              <h3 className="ascii-subsection-title text-xl mb-2">
+                AGENT REGISTRY
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">
+              <p className="ascii-body-text mb-4">
                 Discover autonomous AI agents with verified capabilities, endpoints, and economic intents
               </p>
               <Link
                 href="/agents"
-                className="text-[#14F195] hover:underline font-medium"
+                className="ascii-link"
               >
-                Explore Agents →
+                EXPLORE AGENTS →
               </Link>
             </div>
 
             {/* MCP Server Registry */}
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
-              <div className="w-12 h-12 bg-gradient-to-r from-[#14F195] to-[#9945FF] rounded-lg flex items-center justify-center mb-4">
-                <Server className="text-white" size={24} />
+            <div className="ascii-card">
+              <div className="ascii-logo w-16 h-12 mb-4">
+                <span className="text-lg font-bold">[SRV]</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                MCP Server Registry
+              <h3 className="ascii-subsection-title text-xl mb-2">
+                MCP SERVER REGISTRY
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">
+              <p className="ascii-body-text mb-4">
                 Find Model Context Protocol servers offering tools, resources, and prompts for AI applications
               </p>
               <Link
                 href="/servers"
-                className="text-[#14F195] hover:underline font-medium"
+                className="ascii-link"
               >
-                Explore Servers →
+                EXPLORE SERVERS →
               </Link>
             </div>
 
             {/* $SVMAI Token */}
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
-              <div className="w-12 h-12 bg-gradient-to-r from-[#14F195] to-[#9945FF] rounded-lg flex items-center justify-center mb-4">
-                <Coins className="text-white" size={24} />
+            <div className="ascii-card">
+              <div className="ascii-logo w-16 h-12 mb-4">
+                <span className="text-lg font-bold">[$$$]</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                $SVMAI Token
+              <h3 className="ascii-subsection-title text-xl mb-2">
+                $SVMAI TOKEN
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">
+              <p className="ascii-body-text mb-4">
                 Native utility token for governance, staking, and accessing premium AI services
               </p>
               <Link
                 href="/tokenomics"
-                className="text-[#14F195] hover:underline font-medium"
+                className="ascii-link"
               >
-                Learn About $SVMAI →
+                LEARN ABOUT $SVMAI →
               </Link>
             </div>
           </div>
@@ -131,62 +128,62 @@ export default function HomePage() {
       </section>
 
       {/* $SVMAI Token Benefits */}
-      <section className="py-20 bg-gray-50 dark:bg-gray-800">
+      <section className="py-20" style={{ backgroundColor: '#F5F5F5' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Why $SVMAI Token?
+            <h2 className="ascii-section-title text-3xl md:text-4xl mb-4">
+              WHY $SVMAI TOKEN?
             </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            <p className="ascii-body-text text-lg max-w-2xl mx-auto">
               The native utility token that powers the entire AEAMCP ecosystem
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-[#14F195] to-[#9945FF] rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="text-white" size={28} />
+              <div className="ascii-logo w-16 h-16 mx-auto mb-4">
+                <span className="text-xl font-bold">[⚡]</span>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                Governance
+              <h3 className="ascii-subsection-title text-lg mb-2">
+                GOVERNANCE
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">
+              <p className="ascii-body-text text-sm">
                 Vote on protocol upgrades and ecosystem decisions
               </p>
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-[#14F195] to-[#9945FF] rounded-full flex items-center justify-center mx-auto mb-4">
-                <Zap className="text-white" size={28} />
+              <div className="ascii-logo w-16 h-16 mx-auto mb-4">
+                <span className="text-xl font-bold">[⚡]</span>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                Staking Rewards
+              <h3 className="ascii-subsection-title text-lg mb-2">
+                STAKING REWARDS
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">
+              <p className="ascii-body-text text-sm">
                 Earn rewards by staking tokens and securing the network
               </p>
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-[#14F195] to-[#9945FF] rounded-full flex items-center justify-center mx-auto mb-4">
-                <TrendingUp className="text-white" size={28} />
+              <div className="ascii-logo w-16 h-16 mx-auto mb-4">
+                <span className="text-xl font-bold">[↗]</span>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                Premium Access
+              <h3 className="ascii-subsection-title text-lg mb-2">
+                PREMIUM ACCESS
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">
+              <p className="ascii-body-text text-sm">
                 Access premium AI agents and advanced features
               </p>
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-[#14F195] to-[#9945FF] rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="text-white" size={28} />
+              <div className="ascii-logo w-16 h-16 mx-auto mb-4">
+                <span className="text-xl font-bold">[👥]</span>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                Community
+              <h3 className="ascii-subsection-title text-lg mb-2">
+                COMMUNITY
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">
+              <p className="ascii-body-text text-sm">
                 Join a thriving community of AI developers and users
               </p>
             </div>
@@ -195,30 +192,30 @@ export default function HomePage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 bg-white dark:bg-gray-900">
+      <section className="py-20" style={{ backgroundColor: '#FFFFFF' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                Live on Devnet
+            <div className="ascii-card">
+              <div className="ascii-subsection-title text-3xl md:text-4xl mb-2">
+                LIVE ON DEVNET
               </div>
-              <div className="text-gray-600 dark:text-gray-300">
+              <div className="ascii-body-text">
                 Deployed and ready for testing
               </div>
             </div>
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                100% Open Source
+            <div className="ascii-card">
+              <div className="ascii-subsection-title text-3xl md:text-4xl mb-2">
+                100% OPEN SOURCE
               </div>
-              <div className="text-gray-600 dark:text-gray-300">
+              <div className="ascii-body-text">
                 Transparent and community-driven
               </div>
             </div>
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                Protocol Compliant
+            <div className="ascii-card">
+              <div className="ascii-subsection-title text-3xl md:text-4xl mb-2">
+                PROTOCOL COMPLIANT
               </div>
-              <div className="text-gray-600 dark:text-gray-300">
+              <div className="ascii-body-text">
                 A2A, AEA, and MCP standards
               </div>
             </div>
@@ -227,28 +224,26 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-[#14F195]/10 to-[#9945FF]/10">
+      <section className="py-20" style={{ backgroundColor: '#E5E5E5', borderTop: '2px solid #A3A3A3' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Ready to Get Started?
+          <h2 className="ascii-section-title text-3xl md:text-4xl mb-4">
+            READY TO GET STARTED?
           </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+          <p className="ascii-body-text text-lg mb-8 max-w-2xl mx-auto">
             Register your AI agents and MCP servers on the Solana blockchain today
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/agents/register"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-[#14F195] to-[#9945FF] hover:opacity-90 transition-opacity"
+              className="ascii-button-primary"
             >
-              <Plus className="mr-2" size={20} />
-              Register Agent
+              [+ REGISTER AGENT]
             </Link>
             <Link
               href="/servers/register"
-              className="inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="ascii-button-secondary"
             >
-              <Plus className="mr-2" size={20} />
-              Register MCP Server
+              [+ REGISTER MCP SERVER]
             </Link>
           </div>
         </div>

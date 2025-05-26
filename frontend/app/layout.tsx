@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import './onboarding.css';
 import WalletProvider from '@/components/common/WalletProvider';
 import Navigation from '@/components/common/Navigation';
 import PWAInstaller from '@/components/common/PWAInstaller';
+import { OnboardingProvider, OnboardingManager } from '@/components/onboarding';
 import { Toaster } from 'react-hot-toast';
 
 export const metadata: Metadata = {
@@ -39,12 +41,13 @@ export default function RootLayout({
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
       </head>
       <body className="min-h-screen" style={{ fontFamily: "'Courier New', Courier, monospace", backgroundColor: '#FFFFFF', color: '#262626' }}>
-        <WalletProvider>
-          <div className="flex flex-col min-h-screen">
-            <Navigation />
-            <main className="flex-1">
-              {children}
-            </main>
+        <OnboardingProvider>
+          <WalletProvider>
+            <div className="flex flex-col min-h-screen">
+              <Navigation />
+              <main className="flex-1">
+                {children}
+              </main>
             <footer className="ascii-footer py-8">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center ascii-footer-text">
@@ -80,22 +83,24 @@ export default function RootLayout({
                 </div>
               </div>
             </footer>
-          </div>
-          <PWAInstaller />
-          <Toaster
-            position="bottom-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: '#404040',
-                color: '#FFFFFF',
-                fontFamily: "'Courier New', Courier, monospace",
-                border: '1px solid #A3A3A3',
-                borderRadius: '0',
-              },
-            }}
-          />
-        </WalletProvider>
+            </div>
+            <PWAInstaller />
+            <Toaster
+              position="bottom-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: '#404040',
+                  color: '#FFFFFF',
+                  fontFamily: "'Courier New', Courier, monospace",
+                  border: '1px solid #A3A3A3',
+                  borderRadius: '0',
+                },
+              }}
+            />
+          </WalletProvider>
+          <OnboardingManager autoStart={true} showOnFirstVisit={true} />
+        </OnboardingProvider>
         
         <script
           dangerouslySetInnerHTML={{
