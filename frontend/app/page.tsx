@@ -29,7 +29,7 @@ export default function HomePage() {
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-4">
               <Link
-                href="/index.html"
+                href="/aeamcp.html"
                 className="ascii-button-secondary"
               >
                 [VIEW PROJECT WEBSITE]

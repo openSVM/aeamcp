@@ -62,7 +62,7 @@ export default function RootLayout({
                       GitHub
                     </a>
                     <a
-                      href="/index.html"
+                      href="/aeamcp.html"
                       className="ascii-footer-link"
                     >
                       Project Website

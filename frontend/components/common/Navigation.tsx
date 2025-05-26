@@ -16,6 +16,7 @@ export default function Navigation() {
     { name: 'AI Agents', href: '/agents' },
     { name: 'MCP Servers', href: '/servers' },
     { name: '$SVMAI Token', href: '/tokenomics' },
+    { name: 'Project Doc', href: '/aeamcp.html' },
   ];
 
   const isActive = (href: string) => {
