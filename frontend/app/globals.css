@@ -1,27 +1,501 @@
 @import "tailwindcss";
 
+/* ASCII Grayscale Color Palette */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Grayscale palette from reference design */
+  --ascii-white: #FFFFFF;
+  --ascii-neutral-50: #FAFAFA;
+  --ascii-neutral-100: #F5F5F5;
+  --ascii-neutral-200: #E5E5E5;
+  --ascii-neutral-300: #D4D4D4;
+  --ascii-neutral-400: #A3A3A3;
+  --ascii-neutral-500: #737373;
+  --ascii-neutral-600: #525252;
+  --ascii-neutral-700: #404040;
+  --ascii-neutral-800: #262626;
+  --ascii-neutral-900: #171717;
+  
+  /* CSS Variables for consistent theming */
+  --background: var(--ascii-white);
+  --foreground: var(--ascii-neutral-800);
+  --card-background: var(--ascii-neutral-100);
+  --border-color: var(--ascii-neutral-400);
+  --header-background: var(--ascii-neutral-700);
+  --text-muted: var(--ascii-neutral-600);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: 'Courier New', Courier, monospace;
+  --font-mono: 'Courier New', Courier, monospace;
 }
 
+/* Remove dark mode - ASCII aesthetic is always grayscale */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: var(--ascii-white);
+    --foreground: var(--ascii-neutral-800);
   }
 }
 
-/* Apply styles only to the React app, not to static HTML pages */
+/* Global ASCII styling - applies to React app only */
 :not(.static-html) body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 16px;
+  line-height: 1.6;
+  scroll-behavior: smooth;
+}
+
+/* ASCII Typography System */
+.ascii-title {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--ascii-neutral-900);
+}
+
+.ascii-section-title {
+  font-size: 1.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--ascii-neutral-900);
+  border-bottom: 2px solid var(--ascii-neutral-600);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.ascii-subsection-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: var(--ascii-neutral-800);
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px dotted var(--ascii-neutral-500);
+  padding-bottom: 0.25rem;
+}
+
+.ascii-body-text {
+  color: var(--ascii-neutral-800);
+  line-height: 1.6;
+  text-align: justify;
+  margin-bottom: 1rem;
+}
+
+.ascii-lead-text {
+  font-size: 1.05rem;
+  color: var(--ascii-neutral-600);
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+/* ASCII Navigation Styles */
+.ascii-header {
+  background-color: var(--ascii-neutral-700);
+  border-bottom: 2px solid var(--ascii-neutral-900);
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.ascii-nav-link {
+  color: var(--ascii-neutral-200);
+  transition: color 0.3s ease, background-color 0.3s ease;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--ascii-neutral-700);
+  font-weight: normal;
+  text-transform: uppercase;
+  display: inline-block;
+  margin: 0.25rem 0;
+  text-decoration: none;
+}
+
+.ascii-nav-link:hover {
+  background-color: var(--ascii-neutral-500);
+  color: var(--ascii-white);
+  border-color: var(--ascii-neutral-500);
+}
+
+.ascii-nav-link.active {
+  background-color: var(--ascii-neutral-700);
+  color: var(--ascii-white);
+  font-weight: bold;
+  border-color: var(--ascii-neutral-700);
+}
+
+/* ASCII Logo/Brand */
+.ascii-logo {
+  background-color: var(--ascii-neutral-700);
+  border: 1px solid var(--ascii-neutral-400);
+  color: var(--ascii-white);
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ascii-brand-text {
+  color: var(--ascii-white);
+  font-weight: bold;
+  text-transform: uppercase;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+/* ASCII Card System */
+.ascii-card {
+  background-color: var(--ascii-neutral-100);
+  border: 1px solid var(--ascii-neutral-400);
+  box-shadow: 2px 2px 0px var(--ascii-neutral-400);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.ascii-card:hover {
+  box-shadow: 1px 1px 0px var(--ascii-neutral-400);
+}
+
+/* ASCII Button System */
+.ascii-button-primary {
+  font-family: 'Courier New', Courier, monospace;
+  background-color: var(--ascii-neutral-700);
+  color: var(--ascii-white);
+  border: 2px solid var(--ascii-neutral-900);
+  padding: 0.75rem 1.5rem;
+  text-transform: uppercase;
+  font-weight: bold;
+  box-shadow: 2px 2px 0px var(--ascii-neutral-400);
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.ascii-button-primary:hover {
+  background-color: var(--ascii-neutral-500);
+  border-color: var(--ascii-neutral-500);
+  box-shadow: 1px 1px 0px var(--ascii-neutral-400);
+  color: var(--ascii-white);
+}
+
+.ascii-button-secondary {
+  font-family: 'Courier New', Courier, monospace;
+  background-color: var(--ascii-white);
+  color: var(--ascii-neutral-800);
+  border: 1px solid var(--ascii-neutral-400);
+  padding: 0.75rem 1.5rem;
+  text-transform: uppercase;
+  font-weight: normal;
+  box-shadow: 2px 2px 0px var(--ascii-neutral-400);
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.ascii-button-secondary:hover {
+  background-color: var(--ascii-neutral-200);
+  border-color: var(--ascii-neutral-500);
+  box-shadow: 1px 1px 0px var(--ascii-neutral-400);
+  color: var(--ascii-neutral-900);
+}
+
+/* ASCII Form Elements */
+.ascii-input {
+  font-family: 'Courier New', Courier, monospace;
+  border: 1px solid var(--ascii-neutral-400);
+  background-color: var(--ascii-white);
+  color: var(--ascii-neutral-800);
+  padding: 0.75rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.ascii-input:focus {
+  outline: none;
+  border-color: var(--ascii-neutral-600);
+  background-color: var(--ascii-neutral-50);
+}
+
+.ascii-input::placeholder {
+  color: var(--ascii-neutral-500);
+  text-transform: uppercase;
+}
+
+.ascii-select {
+  font-family: 'Courier New', Courier, monospace;
+  border: 1px solid var(--ascii-neutral-400);
+  background-color: var(--ascii-white);
+  color: var(--ascii-neutral-800);
+  padding: 0.75rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.ascii-select:focus {
+  outline: none;
+  border-color: var(--ascii-neutral-600);
+  background-color: var(--ascii-neutral-50);
+}
+
+/* ASCII Status Badges */
+.ascii-status {
+  border: 1px solid var(--ascii-neutral-400);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.ascii-status-active {
+  background-color: var(--ascii-neutral-200);
+  color: var(--ascii-neutral-900);
+}
+
+.ascii-status-inactive {
+  background-color: var(--ascii-neutral-300);
+  color: var(--ascii-neutral-700);
+}
+
+/* ASCII Info Boxes */
+.ascii-info-box {
+  background-color: var(--ascii-neutral-200);
+  border: 1px dashed var(--ascii-neutral-400);
+  padding: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.ascii-info-box-title {
+  color: var(--ascii-neutral-900);
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.ascii-info-box-text {
+  color: var(--ascii-neutral-800);
+}
+
+/* ASCII Table System */
+.ascii-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9rem;
+  border: 1px solid var(--ascii-neutral-500);
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.ascii-table th {
+  background-color: var(--ascii-neutral-400);
+  color: var(--ascii-neutral-900);
+  font-weight: bold;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--ascii-neutral-400);
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.ascii-table td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--ascii-neutral-400);
+  text-align: left;
+  vertical-align: top;
+  color: var(--ascii-neutral-800);
+}
+
+.ascii-table tbody tr:nth-child(even) {
+  background-color: var(--ascii-neutral-200);
+}
+
+.ascii-table tbody tr:hover {
+  background-color: var(--ascii-neutral-300);
+}
+
+/* ASCII Footer */
+.ascii-footer {
+  background-color: var(--ascii-neutral-700);
+  border-top: 2px solid var(--ascii-neutral-900);
+  color: var(--ascii-neutral-300);
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.ascii-footer-text {
+  color: var(--ascii-neutral-300);
+}
+
+.ascii-footer-link {
+  color: var(--ascii-neutral-600);
+  text-decoration: underline;
+}
+
+.ascii-footer-link:hover {
+  color: var(--ascii-neutral-400);
+}
+
+/* ASCII Link Styles */
+.ascii-link {
+  color: var(--ascii-neutral-600);
+  font-weight: bold;
+  text-decoration: underline;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.ascii-link:hover {
+  color: var(--ascii-neutral-900);
+}
+
+/* ASCII Code/Monospace Elements */
+.ascii-code {
+  font-family: 'Courier New', Courier, monospace;
+  background-color: var(--ascii-neutral-300);
+  padding: 0.1rem 0.25rem;
+  border: 1px solid var(--ascii-neutral-400);
+  font-size: 0.9em;
+  color: var(--ascii-neutral-900);
+  word-break: break-all;
+}
+
+/* Utility Classes for ASCII Styling */
+.ascii-border {
+  border: 1px solid var(--ascii-neutral-400);
+}
+
+.ascii-border-dashed {
+  border: 1px dashed var(--ascii-neutral-400);
+}
+
+.ascii-border-dotted {
+  border-bottom: 1px dotted var(--ascii-neutral-500);
+}
+
+.ascii-shadow {
+  box-shadow: 2px 2px 0px var(--ascii-neutral-400);
+}
+
+.ascii-shadow-sm {
+  box-shadow: 1px 1px 0px var(--ascii-neutral-400);
+}
+
+/* Remove all border-radius globally for sharp corners */
+* {
+  border-radius: 0 !important;
+}
+
+/* Override Tailwind rounded classes */
+.rounded,
+.rounded-sm,
+.rounded-md,
+.rounded-lg,
+.rounded-xl,
+.rounded-2xl,
+.rounded-3xl,
+.rounded-full {
+  border-radius: 0 !important;
+}
+
+/* ASCII Loading/Animation States */
+.ascii-loading {
+  background-color: var(--ascii-neutral-200);
+  animation: ascii-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes ascii-pulse {
+  0%, 100% {
+    background-color: var(--ascii-neutral-200);
+  }
+  50% {
+    background-color: var(--ascii-neutral-300);
+  }
+}
+
+/* ASCII Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+  .ascii-nav-link {
+    display: block;
+    margin: 0.125rem 0;
+    text-align: center;
+  }
+  
+  .ascii-section-title {
+    font-size: 1.5rem;
+  }
+  
+  .ascii-card {
+    padding: 1rem;
+  }
+}
+
+/* Tab styles */
+.ascii-tab {
+  background-color: #E5E5E5;
+  color: #525252;
+  border: 1px solid #A3A3A3;
+  border-radius: 0;
+  padding: 8px 16px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.875rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ascii-tab:hover {
+  background-color: #D4D4D4;
+  color: #404040;
+}
+
+.ascii-tab-active {
+  background-color: #404040;
+  color: #FFFFFF;
+  border-color: #404040;
+}
+
+/* Compact card improvements */
+.ascii-card:hover {
+  box-shadow: 4px 4px 0px #A3A3A3;
+  transform: translateY(-1px);
+}
+
+/* Line clamp utility */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Truncate utility */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Real-time indicator */
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+/* Transition utilities */
+.transition-shadow {
+  transition-property: box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }

@@ -1,82 +1,60 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Filter, Plus, Server, ExternalLink, Coins, Wrench, Database, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 
 // Mock data for demonstration
 const mockServers = [
   {
-    id: 'financial-data-server',
-    name: 'Financial Data MCP Server',
-    description: 'Comprehensive financial data server providing real-time market data, historical prices, and financial analysis tools for trading applications.',
+    id: 'file-manager-mcp',
+    name: 'File Manager MCP Server',
+    description: 'Comprehensive file management server providing tools for reading, writing, and organizing files across various storage systems.',
     version: '2.1.0',
-    provider: 'FinanceAPI',
-    providerUrl: 'https://financeapi.com',
-    endpoint: 'https://api.financeapi.com/mcp',
-    capabilities: {
-      tools: true,
-      resources: true,
-      prompts: false,
-    },
-    toolsCount: 15,
-    resourcesCount: 8,
-    promptsCount: 0,
-    tags: ['finance', 'data', 'real-time', 'trading'],
+    provider: 'FileSystemCorp',
+    providerUrl: 'https://filesystemcorp.com',
+    endpoint: 'https://api.filesystemcorp.com/mcp',
+    tools: ['read_file', 'write_file', 'list_directory', 'create_folder'],
+    resources: ['file_content', 'directory_structure', 'file_metadata'],
+    prompts: ['file_summary', 'directory_analysis'],
     status: 'Active',
-    stakeRequired: 750,
     registrationDate: '2024-01-12',
-    lastUpdate: '2024-01-21',
+    lastUpdate: '2024-01-22',
     rating: 4.7,
-    users: 980,
+    users: 850,
   },
   {
-    id: 'ai-model-hub',
-    name: 'AI Model Hub Server',
-    description: 'Access to various AI models including LLMs, image generation, and specialized AI tools through a unified MCP interface.',
+    id: 'database-connector-mcp',
+    name: 'Database Connector MCP',
+    description: 'Universal database connector supporting PostgreSQL, MySQL, MongoDB, and Redis with advanced querying capabilities.',
     version: '1.8.2',
-    provider: 'AIHub',
-    providerUrl: 'https://aihub.io',
-    endpoint: 'https://api.aihub.io/mcp',
-    capabilities: {
-      tools: true,
-      resources: true,
-      prompts: true,
-    },
-    toolsCount: 25,
-    resourcesCount: 12,
-    promptsCount: 18,
-    tags: ['ai', 'models', 'llm', 'generation'],
+    provider: 'DataBridge',
+    providerUrl: 'https://databridge.io',
+    endpoint: 'https://api.databridge.io/mcp',
+    tools: ['execute_query', 'create_table', 'insert_data', 'backup_database'],
+    resources: ['schema_info', 'query_results', 'connection_status'],
+    prompts: ['query_optimization', 'schema_design'],
     status: 'Active',
-    stakeRequired: 1500,
     registrationDate: '2024-01-08',
-    lastUpdate: '2024-01-20',
+    lastUpdate: '2024-01-21',
     rating: 4.9,
-    users: 1850,
+    users: 1420,
   },
   {
-    id: 'blockchain-analytics',
-    name: 'Blockchain Analytics Server',
-    description: 'On-chain analytics and blockchain data server providing transaction analysis, wallet tracking, and DeFi protocol insights.',
+    id: 'api-gateway-mcp',
+    name: 'API Gateway MCP Server',
+    description: 'Powerful API gateway and proxy server with rate limiting, authentication, and request transformation capabilities.',
     version: '3.0.1',
-    provider: 'ChainAnalytics',
-    providerUrl: 'https://chainanalytics.com',
-    endpoint: 'https://api.chainanalytics.com/mcp',
-    capabilities: {
-      tools: true,
-      resources: true,
-      prompts: false,
-    },
-    toolsCount: 20,
-    resourcesCount: 15,
-    promptsCount: 0,
-    tags: ['blockchain', 'analytics', 'defi', 'solana'],
+    provider: 'GatewayTech',
+    providerUrl: 'https://gatewaytech.com',
+    endpoint: 'https://api.gatewaytech.com/mcp',
+    tools: ['proxy_request', 'rate_limit', 'authenticate', 'transform_data'],
+    resources: ['api_specs', 'rate_limits', 'auth_tokens'],
+    prompts: ['api_documentation', 'security_analysis'],
     status: 'Active',
-    stakeRequired: 1000,
-    registrationDate: '2024-01-06',
-    lastUpdate: '2024-01-19',
-    rating: 4.8,
-    users: 1420,
+    registrationDate: '2024-01-03',
+    lastUpdate: '2024-01-20',
+    rating: 4.5,
+    users: 670,
   },
 ];
 
@@ -85,7 +63,6 @@ export default function ServersPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [capabilityFilter, setCapabilityFilter] = useState('');
   const [sortBy, setSortBy] = useState('rating');
 
   useEffect(() => {
@@ -99,23 +76,11 @@ export default function ServersPage() {
     .filter(server => {
       if (searchTerm && !server.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
           !server.description.toLowerCase().includes(searchTerm.toLowerCase()) &&
-          !server.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))) {
+          !server.tools.some(tool => tool.toLowerCase().includes(searchTerm.toLowerCase()))) {
         return false;
       }
       if (statusFilter && server.status !== statusFilter) {
         return false;
-      }
-      if (capabilityFilter) {
-        switch (capabilityFilter) {
-          case 'tools':
-            return server.capabilities.tools;
-          case 'resources':
-            return server.capabilities.resources;
-          case 'prompts':
-            return server.capabilities.prompts;
-          default:
-            return true;
-        }
       }
       return true;
     })
@@ -132,52 +97,51 @@ export default function ServersPage() {
       }
     });
 
-  const getStatusColor = (status: string) => {
+  const getStatusDisplay = (status: string) => {
     switch (status) {
       case 'Active':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+        return '[ACTIVE]';
       case 'Inactive':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        return '[INACTIVE]';
       case 'Pending':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+        return '[PENDING]';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        return '[UNKNOWN]';
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            MCP Servers Registry
+          <h1 className="ascii-section-title text-3xl mb-2">
+            MCP SERVERS REGISTRY
           </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-300">
-            Discover Model Context Protocol servers offering AI tools and resources
+          <p className="ascii-body-text">
+            Discover Model Context Protocol servers on the Solana blockchain
           </p>
         </div>
         <Link
           href="/servers/register"
-          className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-[#14F195] to-[#9945FF] hover:opacity-90 transition-opacity"
+          className="ascii-button-primary mt-4 sm:mt-0"
         >
-          <Plus className="mr-2" size={16} />
-          Register Server
+          [+ REGISTER MCP SERVER]
         </Link>
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+      <div className="ascii-card mb-8">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-bold">[?]</span>
               <input
                 type="text"
-                placeholder="Search servers by name, description, or tags..."
+                placeholder="SEARCH SERVERS BY NAME, DESCRIPTION, OR TOOLS..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-[#14F195] focus:border-transparent dark:bg-gray-700 dark:text-white"
+                className="ascii-input w-full pl-10 pr-4"
               />
             </div>
           </div>
@@ -185,31 +149,21 @@ export default function ServersPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-[#14F195] focus:border-transparent dark:bg-gray-700 dark:text-white"
+              className="ascii-select"
             >
-              <option value="">All Status</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-              <option value="Pending">Pending</option>
-            </select>
-            <select
-              value={capabilityFilter}
-              onChange={(e) => setCapabilityFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-[#14F195] focus:border-transparent dark:bg-gray-700 dark:text-white"
-            >
-              <option value="">All Capabilities</option>
-              <option value="tools">Tools</option>
-              <option value="resources">Resources</option>
-              <option value="prompts">Prompts</option>
+              <option value="">ALL STATUS</option>
+              <option value="Active">ACTIVE</option>
+              <option value="Inactive">INACTIVE</option>
+              <option value="Pending">PENDING</option>
             </select>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-[#14F195] focus:border-transparent dark:bg-gray-700 dark:text-white"
+              className="ascii-select"
             >
-              <option value="rating">Sort by Rating</option>
-              <option value="users">Sort by Users</option>
-              <option value="recent">Sort by Recent</option>
+              <option value="rating">SORT BY RATING</option>
+              <option value="users">SORT BY USERS</option>
+              <option value="recent">SORT BY RECENT</option>
             </select>
           </div>
         </div>
@@ -217,126 +171,151 @@ export default function ServersPage() {
 
       {/* Servers Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 animate-pulse">
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-4"></div>
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+            <div key={i} className="ascii-card ascii-loading">
+              <div className="h-4 w-3/4 mb-2" style={{ backgroundColor: '#D4D4D4' }}></div>
+              <div className="h-3 w-1/2 mb-4" style={{ backgroundColor: '#D4D4D4' }}></div>
+              <div className="h-3 w-full mb-2" style={{ backgroundColor: '#D4D4D4' }}></div>
+              <div className="h-3 w-2/3" style={{ backgroundColor: '#D4D4D4' }}></div>
             </div>
           ))}
         </div>
       ) : filteredServers.length === 0 ? (
         <div className="text-center py-12">
-          <Server className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No servers found</h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {searchTerm || statusFilter || capabilityFilter
-              ? 'Try adjusting your search or filters'
-              : 'Be the first to register a server'}
-          </p>
+          <div className="ascii-card inline-block">
+            <div className="ascii-logo w-16 h-12 mx-auto mb-4">
+              <span className="text-2xl">[!]</span>
+            </div>
+            <h3 className="ascii-subsection-title">NO SERVERS FOUND</h3>
+            <p className="ascii-body-text">
+              {searchTerm || statusFilter
+                ? 'Try adjusting your search or filters'
+                : 'Be the first to register an MCP server'}
+            </p>
+          </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {filteredServers.map((server) => (
-            <div key={server.id} className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow p-6">
+            <div key={server.id} className="ascii-card">
+              {/* Server Header */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-                    {server.name}
+                  <h3 className="ascii-subsection-title text-lg mb-1">
+                    {server.name.toUpperCase()}
                   </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="ascii-body-text text-sm" style={{ color: '#525252' }}>
                     v{server.version} • {server.provider}
                   </p>
                 </div>
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(server.status)}`}>
-                  {server.status}
+                <span className="ascii-status ascii-status-active">
+                  {getStatusDisplay(server.status)}
                 </span>
               </div>
               
-              <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
+              {/* Description */}
+              <p className="ascii-body-text text-sm mb-4" style={{ fontSize: '0.875rem', lineHeight: '1.5' }}>
                 {server.description}
               </p>
               
               {/* Rating and Users */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-1">
-                  <span className="text-yellow-400">★</span>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">
-                    {server.rating}
-                  </span>
+              <div className="ascii-info-box mb-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-1">
+                    <span className="font-bold">[*]</span>
+                    <span className="ascii-body-text font-bold">
+                      {server.rating}
+                    </span>
+                  </div>
+                  <div className="ascii-body-text text-sm">
+                    {server.users.toLocaleString()} USERS
+                  </div>
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  {server.users.toLocaleString()} users
+              </div>
+              
+              {/* Tools */}
+              <div className="mb-4">
+                <div className="ascii-body-text text-sm font-bold mb-2">TOOLS:</div>
+                <div className="flex flex-wrap gap-1">
+                  {server.tools.slice(0, 3).map((tool) => (
+                    <span
+                      key={tool}
+                      className="ascii-status"
+                      style={{ backgroundColor: '#D4D4D4', color: '#171717' }}
+                    >
+                      {tool.toUpperCase()}
+                    </span>
+                  ))}
+                  {server.tools.length > 3 && (
+                    <span className="ascii-status" style={{ backgroundColor: '#E5E5E5', color: '#525252' }}>
+                      +{server.tools.length - 3}
+                    </span>
+                  )}
                 </div>
               </div>
 
-              {/* Stake Required */}
-              <div className="flex items-center space-x-1 mb-4">
-                <Coins className="text-[#14F195]" size={16} />
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  {server.stakeRequired} $SVMAI required
-                </span>
-              </div>
-              
-              {/* Capabilities */}
-              <div className="flex gap-2 mb-4">
-                {server.capabilities.tools && (
-                  <div className="flex items-center space-x-1 px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
-                    <Wrench size={12} />
-                    <span>{server.toolsCount} Tools</span>
-                  </div>
-                )}
-                {server.capabilities.resources && (
-                  <div className="flex items-center space-x-1 px-2 py-1 text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
-                    <Database size={12} />
-                    <span>{server.resourcesCount} Resources</span>
-                  </div>
-                )}
-                {server.capabilities.prompts && (
-                  <div className="flex items-center space-x-1 px-2 py-1 text-xs bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded">
-                    <MessageSquare size={12} />
-                    <span>{server.promptsCount} Prompts</span>
-                  </div>
-                )}
+              {/* Resources */}
+              <div className="mb-4">
+                <div className="ascii-body-text text-sm font-bold mb-2">RESOURCES:</div>
+                <div className="flex flex-wrap gap-1">
+                  {server.resources.slice(0, 3).map((resource) => (
+                    <span
+                      key={resource}
+                      className="ascii-status"
+                      style={{ backgroundColor: '#E5E5E5', color: '#525252' }}
+                    >
+                      {resource.toUpperCase()}
+                    </span>
+                  ))}
+                  {server.resources.length > 3 && (
+                    <span className="ascii-status" style={{ backgroundColor: '#E5E5E5', color: '#525252' }}>
+                      +{server.resources.length - 3}
+                    </span>
+                  )}
+                </div>
               </div>
 
-              {/* Tags */}
-              <div className="flex flex-wrap gap-1 mb-4">
-                {server.tags.slice(0, 3).map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-                {server.tags.length > 3 && (
-                  <span className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
-                    +{server.tags.length - 3}
-                  </span>
-                )}
+              {/* Prompts */}
+              <div className="mb-4">
+                <div className="ascii-body-text text-sm font-bold mb-2">PROMPTS:</div>
+                <div className="flex flex-wrap gap-1">
+                  {server.prompts.slice(0, 2).map((prompt) => (
+                    <span
+                      key={prompt}
+                      className="ascii-status"
+                      style={{ backgroundColor: '#F5F5F5', color: '#404040' }}
+                    >
+                      {prompt.toUpperCase()}
+                    </span>
+                  ))}
+                  {server.prompts.length > 2 && (
+                    <span className="ascii-status" style={{ backgroundColor: '#E5E5E5', color: '#525252' }}>
+                      +{server.prompts.length - 2}
+                    </span>
+                  )}
+                </div>
               </div>
               
-              <div className="flex items-center justify-between">
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  Updated {new Date(server.lastUpdate).toLocaleDateString()}
+              {/* Footer */}
+              <div className="flex items-center justify-between pt-4" style={{ borderTop: '1px dotted #A3A3A3' }}>
+                <div className="ascii-body-text text-xs" style={{ color: '#525252' }}>
+                  UPDATED {new Date(server.lastUpdate).toLocaleDateString().toUpperCase()}
                 </div>
                 <div className="flex space-x-2">
                   <a
                     href={server.providerUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-[#14F195] transition-colors"
+                    className="ascii-link text-sm"
                   >
-                    <ExternalLink size={16} />
+                    [EXT]
                   </a>
                   <Link
                     href={`/servers/${server.id}`}
-                    className="text-[#14F195] hover:underline text-sm font-medium"
+                    className="ascii-link text-sm"
                   >
-                    View Details →
+                    VIEW DETAILS →
                   </Link>
                 </div>
               </div>

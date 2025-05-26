@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Filter, Plus, Bot, ExternalLink, Coins } from 'lucide-react';
 import Link from 'next/link';
 
 // Mock data for demonstration
@@ -98,52 +97,51 @@ export default function AgentsPage() {
       }
     });
 
-  const getStatusColor = (status: string) => {
+  const getStatusDisplay = (status: string) => {
     switch (status) {
       case 'Active':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+        return '[ACTIVE]';
       case 'Inactive':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        return '[INACTIVE]';
       case 'Pending':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+        return '[PENDING]';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        return '[UNKNOWN]';
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            AI Agents Registry
+          <h1 className="ascii-section-title text-3xl mb-2">
+            AI AGENTS REGISTRY
           </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-300">
+          <p className="ascii-body-text">
             Discover autonomous AI agents on the Solana blockchain
           </p>
         </div>
         <Link
           href="/agents/register"
-          className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-[#14F195] to-[#9945FF] hover:opacity-90 transition-opacity"
+          className="ascii-button-primary mt-4 sm:mt-0"
         >
-          <Plus className="mr-2" size={16} />
-          Register Agent
+          [+ REGISTER AGENT]
         </Link>
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+      <div className="ascii-card mb-8">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-bold">[?]</span>
               <input
                 type="text"
-                placeholder="Search agents by name, description, or tags..."
+                placeholder="SEARCH AGENTS BY NAME, DESCRIPTION, OR TAGS..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-[#14F195] focus:border-transparent dark:bg-gray-700 dark:text-white"
+                className="ascii-input w-full pl-10 pr-4"
               />
             </div>
           </div>
@@ -151,21 +149,21 @@ export default function AgentsPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-[#14F195] focus:border-transparent dark:bg-gray-700 dark:text-white"
+              className="ascii-select"
             >
-              <option value="">All Status</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-              <option value="Pending">Pending</option>
+              <option value="">ALL STATUS</option>
+              <option value="Active">ACTIVE</option>
+              <option value="Inactive">INACTIVE</option>
+              <option value="Pending">PENDING</option>
             </select>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-[#14F195] focus:border-transparent dark:bg-gray-700 dark:text-white"
+              className="ascii-select"
             >
-              <option value="rating">Sort by Rating</option>
-              <option value="users">Sort by Users</option>
-              <option value="recent">Sort by Recent</option>
+              <option value="rating">SORT BY RATING</option>
+              <option value="users">SORT BY USERS</option>
+              <option value="recent">SORT BY RECENT</option>
             </select>
           </div>
         </div>
@@ -175,123 +173,110 @@ export default function AgentsPage() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 animate-pulse">
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-4"></div>
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+            <div key={i} className="ascii-card ascii-loading">
+              <div className="h-4 w-3/4 mb-2" style={{ backgroundColor: '#D4D4D4' }}></div>
+              <div className="h-3 w-1/2 mb-4" style={{ backgroundColor: '#D4D4D4' }}></div>
+              <div className="h-3 w-full mb-2" style={{ backgroundColor: '#D4D4D4' }}></div>
+              <div className="h-3 w-2/3" style={{ backgroundColor: '#D4D4D4' }}></div>
             </div>
           ))}
         </div>
       ) : filteredAgents.length === 0 ? (
         <div className="text-center py-12">
-          <Bot className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No agents found</h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {searchTerm || statusFilter
-              ? 'Try adjusting your search or filters'
-              : 'Be the first to register an agent'}
-          </p>
+          <div className="ascii-card inline-block">
+            <div className="ascii-logo w-16 h-12 mx-auto mb-4">
+              <span className="text-2xl">[!]</span>
+            </div>
+            <h3 className="ascii-subsection-title">NO AGENTS FOUND</h3>
+            <p className="ascii-body-text">
+              {searchTerm || statusFilter
+                ? 'Try adjusting your search or filters'
+                : 'Be the first to register an agent'}
+            </p>
+          </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {filteredAgents.map((agent) => (
-            <div key={agent.id} className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-                    {agent.name}
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    v{agent.version} • {agent.provider}
-                  </p>
-                </div>
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(agent.status)}`}>
-                  {agent.status}
-                </span>
-              </div>
-              
-              <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
-                {agent.description}
-              </p>
-              
-              {/* Rating and Users */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-1">
-                  <span className="text-yellow-400">★</span>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">
-                    {agent.rating}
+            <Link key={agent.id} href={`/agents/${agent.id}`}>
+              <div className="ascii-card hover:shadow-lg transition-shadow cursor-pointer">
+                {/* Compact Header */}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="ascii-logo w-6 h-6">
+                    <span className="text-sm font-bold">[BOT]</span>
+                  </div>
+                  <span className="ascii-status text-xs">
+                    {getStatusDisplay(agent.status)}
                   </span>
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  {agent.users.toLocaleString()} users
+                
+                {/* Title */}
+                <h3 className="ascii-subsection-title text-sm mb-1 truncate">
+                  {agent.name.toUpperCase()}
+                </h3>
+                
+                {/* Version & Provider */}
+                <p className="ascii-body-text text-xs mb-2" style={{ color: '#525252' }}>
+                  v{agent.version} • {agent.provider}
+                </p>
+                
+                {/* Compact Description */}
+                <p className="ascii-body-text text-xs mb-3 line-clamp-2" style={{ fontSize: '0.75rem', lineHeight: '1.3' }}>
+                  {agent.description.length > 80 ? `${agent.description.substring(0, 80)}...` : agent.description}
+                </p>
+                
+                {/* Rating & Users Row */}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-1">
+                    <span className="font-bold text-xs">[*]</span>
+                    <span className="ascii-body-text text-xs font-bold">
+                      {agent.rating}
+                    </span>
+                  </div>
+                  <div className="ascii-body-text text-xs">
+                    {agent.users > 1000 ? `${Math.floor(agent.users/1000)}K` : agent.users} USERS
+                  </div>
                 </div>
-              </div>
 
-              {/* Stake Required */}
-              <div className="flex items-center space-x-1 mb-4">
-                <Coins className="text-[#14F195]" size={16} />
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  {agent.stakeRequired} $SVMAI required
-                </span>
-              </div>
-              
-              {/* Capabilities */}
-              <div className="flex flex-wrap gap-1 mb-4">
-                {agent.capabilities.slice(0, 3).map((capability) => (
-                  <span
-                    key={capability}
-                    className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded"
-                  >
-                    {capability}
+                {/* Stake Required */}
+                <div className="flex items-center space-x-1 mb-2">
+                  <span className="font-bold text-xs">[$]</span>
+                  <span className="ascii-body-text text-xs">
+                    {agent.stakeRequired} $SVMAI
                   </span>
-                ))}
-                {agent.capabilities.length > 3 && (
-                  <span className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
-                    +{agent.capabilities.length - 3}
-                  </span>
-                )}
-              </div>
-
-              {/* Tags */}
-              <div className="flex flex-wrap gap-1 mb-4">
-                {agent.tags.slice(0, 3).map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-                {agent.tags.length > 3 && (
-                  <span className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
-                    +{agent.tags.length - 3}
-                  </span>
-                )}
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  Updated {new Date(agent.lastUpdate).toLocaleDateString()}
                 </div>
-                <div className="flex space-x-2">
-                  <a
-                    href={agent.providerUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-[#14F195] transition-colors"
-                  >
-                    <ExternalLink size={16} />
-                  </a>
-                  <Link
-                    href={`/agents/${agent.id}`}
-                    className="text-[#14F195] hover:underline text-sm font-medium"
-                  >
-                    View Details →
-                  </Link>
+                
+                {/* Top Capabilities (max 2) */}
+                <div className="mb-2">
+                  <div className="flex flex-wrap gap-1">
+                    {agent.capabilities.slice(0, 2).map((capability) => (
+                      <span
+                        key={capability}
+                        className="ascii-status text-xs px-1 py-0"
+                        style={{ backgroundColor: '#D4D4D4', color: '#171717', fontSize: '0.65rem' }}
+                      >
+                        {capability.toUpperCase()}
+                      </span>
+                    ))}
+                    {agent.capabilities.length > 2 && (
+                      <span className="ascii-status text-xs px-1 py-0" style={{ backgroundColor: '#E5E5E5', color: '#525252', fontSize: '0.65rem' }}>
+                        +{agent.capabilities.length - 2}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Footer */}
+                <div className="flex items-center justify-between pt-2" style={{ borderTop: '1px dotted #A3A3A3' }}>
+                  <div className="ascii-body-text text-xs" style={{ color: '#525252' }}>
+                    {new Date(agent.lastUpdate).toLocaleDateString()}
+                  </div>
+                  <div className="ascii-link text-xs">
+                    VIEW →
+                  </div>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}
