@@ -1,0 +1,18 @@
+<svg width="152" height="152" viewBox="0 0 152 152" xmlns="http://www.w3.org/2000/svg">
+  <rect width="152" height="152" fill="#404040"/>
+  <rect x="9" y="9" width="133" height="133" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+  <rect x="19" y="19" width="114" height="114" fill="none" stroke="#A3A3A3" stroke-width="1"/>
+  
+  <!-- ASCII-style "A" for AEAMCP -->
+  <g fill="#FFFFFF" font-family="Courier New, monospace" font-size="60" font-weight="bold">
+    <text x="76" y="95" text-anchor="middle" dominant-baseline="middle">A</text>
+  </g>
+  
+  <!-- Corner brackets for ASCII aesthetic -->
+  <g stroke="#FFFFFF" stroke-width="2" fill="none">
+    <path d="M 28 28 L 28 38 M 28 28 L 38 28"/>
+    <path d="M 123 28 L 114 28 M 123 28 L 123 38"/>
+    <path d="M 28 123 L 28 114 M 28 123 L 38 123"/>
+    <path d="M 123 123 L 123 114 M 123 123 L 114 123"/>
+  </g>
+</svg>
