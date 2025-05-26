@@ -13,6 +13,11 @@ export const MCP_SERVER_REGISTRY_PROGRAM_ID = new PublicKey(
   process.env.NEXT_PUBLIC_MCP_PROGRAM_ID || '11111111111111111111111111111111'
 );
 
+
+// PDA Seeds (must match Rust program constants)
+export const AGENT_REGISTRY_PDA_SEED = 'agent_reg_v1';
+export const MCP_SERVER_REGISTRY_PDA_SEED = 'mcp_srv_reg_v1';
+
 // $SVMAI Token Configuration
 export const SVMAI_TOKEN_MINT = new PublicKey('Cpzvdx6pppc9TNArsGsqgShCsKC9NCCjA2gtzHvUpump');
 export const SVMAI_TOKEN_DECIMALS = 6; // Standard SPL token decimals
