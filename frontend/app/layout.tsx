@@ -1,19 +1,21 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
+import './onboarding.css';
 import WalletProvider from '@/components/common/WalletProvider';
 import Navigation from '@/components/common/Navigation';
+import PWAInstaller from '@/components/common/PWAInstaller';
+import DOSStatusBar from '@/components/common/DOSStatusBar';
+import { I18nProvider } from '@/components/common/I18nProvider';
+import { OnboardingProvider, OnboardingManager } from '@/components/onboarding';
 import { Toaster } from 'react-hot-toast';
-
-const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'AEAMCP - Solana AI Registries',
   description: 'Discover and register AI agents and MCP servers on Solana blockchain. Powered by $SVMAI token.',
   manifest: '/manifest.json',
   icons: {
-    icon: '/favicon.ico',
-    apple: '/icons/icon-192x192.png',
+    icon: '/favicon.svg',
+    apple: '/icons/icon-192x192.svg',
   },
 };
 
@@ -21,7 +23,7 @@ export const viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-  themeColor: '#14F195',
+  themeColor: '#404040',
 };
 
 export default function RootLayout({
@@ -33,42 +35,54 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#14F195" />
+        <meta name="theme-color" content="#404040" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="AEAMCP" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
       </head>
-      <body className={`${inter.className} min-h-screen bg-gray-50 dark:bg-gray-900`}>
-        <WalletProvider>
-          <div className="flex flex-col min-h-screen">
-            <Navigation />
-            <main className="flex-1">
-              {children}
-            </main>
-            <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 py-8">
+      <body className="min-h-screen" style={{ fontFamily: "'Courier New', Courier, monospace", backgroundColor: '#FFFFFF', color: '#262626' }}>
+        <I18nProvider>
+          <OnboardingProvider>
+            <WalletProvider>
+              <DOSStatusBar />
+              <div className="flex flex-col min-h-screen">
+                <Navigation />
+                <main className="flex-1">
+                  {children}
+                </main>
+            <footer className="ascii-footer py-8">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center text-gray-600 dark:text-gray-400">
-                  <p>&copy; 2024 AEAMCP. Built on Solana blockchain. Powered by $SVMAI token.</p>
+                <div className="text-center ascii-footer-text">
+                  <p>&copy; 2024 AEAMCP. Built on Solana blockchain. Powered by $SVMAI token. • PWA Enabled</p>
                   <div className="mt-2 space-x-4">
-                    <a 
-                      href="https://github.com/openSVM/aeamcp" 
-                      target="_blank" 
+                    <a
+                      href="https://github.com/openSVM/aeamcp"
+                      target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[#14F195] hover:underline"
+                      className="ascii-footer-link"
                     >
                       GitHub
                     </a>
-                    <a 
-                      href="https://docs.solana.com" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-[#14F195] hover:underline"
+                    <a
+                      href="/aeamcp.html"
+                      className="ascii-footer-link"
                     >
-                      Solana Docs
+                      Project Website
                     </a>
-                    <a 
-                      href="/tokenomics" 
-                      className="text-[#14F195] hover:underline"
+                    <a
+                      href="/docs.html"
+                      className="ascii-footer-link"
+                    >
+                      Documentation
+                    </a>
+                    <a
+                      href="/tokenomics"
+                      className="ascii-footer-link"
                     >
                       $SVMAI Tokenomics
                     </a>
@@ -76,18 +90,43 @@ export default function RootLayout({
                 </div>
               </div>
             </footer>
-          </div>
-          <Toaster 
-            position="bottom-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: '#363636',
-                color: '#fff',
-              },
-            }}
-          />
-        </WalletProvider>
+            </div>
+            <PWAInstaller />
+            <Toaster
+              position="bottom-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: '#404040',
+                  color: '#FFFFFF',
+                  fontFamily: "'Courier New', Courier, monospace",
+                  border: '1px solid #A3A3A3',
+                  borderRadius: '0',
+                },
+              }}
+            />
+          </WalletProvider>
+          <OnboardingManager autoStart={true} showOnFirstVisit={true} />
+        </OnboardingProvider>
+        </I18nProvider>
+        
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                      console.log('SW registered: ', registration);
+                    })
+                    .catch(function(registrationError) {
+                      console.log('SW registration failed: ', registrationError);
+                    });
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );

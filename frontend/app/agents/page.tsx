@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Filter, Plus, Bot, ExternalLink, Coins } from 'lucide-react';
 import Link from 'next/link';
+import UltraCompactCard from '../../components/common/UltraCompactCard';
+import UltraCompactGrid from '../../components/common/UltraCompactGrid';
+import { useI18nContext } from '../../components/common/I18nProvider';
 
 // Mock data for demonstration
 const mockAgents = [
@@ -60,6 +62,7 @@ const mockAgents = [
 ];
 
 export default function AgentsPage() {
+  const { t } = useI18nContext();
   const [agents, setAgents] = useState(mockAgents);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -98,52 +101,51 @@ export default function AgentsPage() {
       }
     });
 
-  const getStatusColor = (status: string) => {
+  const getStatusDisplay = (status: string) => {
     switch (status) {
       case 'Active':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+        return t('agents.status.active');
       case 'Inactive':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        return t('agents.status.inactive');
       case 'Pending':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+        return t('agents.status.pending');
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        return t('agents.status.unknown');
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            AI Agents Registry
+          <h1 className="ascii-section-title text-3xl mb-2">
+            {t('agents.title')}
           </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-300">
-            Discover autonomous AI agents on the Solana blockchain
+          <p className="ascii-body-text">
+            {t('agents.subtitle')}
           </p>
         </div>
         <Link
           href="/agents/register"
-          className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-[#14F195] to-[#9945FF] hover:opacity-90 transition-opacity"
+          className="ascii-button-primary mt-4 sm:mt-0"
         >
-          <Plus className="mr-2" size={16} />
-          Register Agent
+          [+ {t('agents.register.button')}]
         </Link>
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+      <div className="ascii-card mb-8">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-bold">[?]</span>
               <input
                 type="text"
-                placeholder="Search agents by name, description, or tags..."
+                placeholder="SEARCH AGENTS BY NAME, DESCRIPTION, OR TAGS..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-[#14F195] focus:border-transparent dark:bg-gray-700 dark:text-white"
+                className="ascii-input w-full pl-10 pr-4"
               />
             </div>
           </div>
@@ -151,149 +153,61 @@ export default function AgentsPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-[#14F195] focus:border-transparent dark:bg-gray-700 dark:text-white"
+              className="ascii-select"
             >
-              <option value="">All Status</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-              <option value="Pending">Pending</option>
+              <option value="">ALL STATUS</option>
+              <option value="Active">ACTIVE</option>
+              <option value="Inactive">INACTIVE</option>
+              <option value="Pending">PENDING</option>
             </select>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-[#14F195] focus:border-transparent dark:bg-gray-700 dark:text-white"
+              className="ascii-select"
             >
-              <option value="rating">Sort by Rating</option>
-              <option value="users">Sort by Users</option>
-              <option value="recent">Sort by Recent</option>
+              <option value="rating">SORT BY RATING</option>
+              <option value="users">SORT BY USERS</option>
+              <option value="recent">SORT BY RECENT</option>
             </select>
           </div>
         </div>
       </div>
 
-      {/* Agents Grid */}
+      {/* Ultra-Compact Agents Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 animate-pulse">
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-4"></div>
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
-            </div>
-          ))}
-        </div>
+        <UltraCompactGrid loading={true} loadingItems={12} />
       ) : filteredAgents.length === 0 ? (
-        <div className="text-center py-12">
-          <Bot className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No agents found</h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {searchTerm || statusFilter
-              ? 'Try adjusting your search or filters'
-              : 'Be the first to register an agent'}
-          </p>
+        <div className="text-center py-8">
+          <div className="ascii-card inline-block">
+            <div className="ascii-logo w-12 h-8 mx-auto mb-2">
+              <span className="text-lg">[!]</span>
+            </div>
+            <h3 className="ascii-subsection-title text-sm">NO AGENTS FOUND</h3>
+            <p className="ascii-body-text text-xs">
+              {searchTerm || statusFilter
+                ? 'Try adjusting your search or filters'
+                : 'Be the first to register an agent'}
+            </p>
+          </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <UltraCompactGrid>
           {filteredAgents.map((agent) => (
-            <div key={agent.id} className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-                    {agent.name}
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    v{agent.version} • {agent.provider}
-                  </p>
-                </div>
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(agent.status)}`}>
-                  {agent.status}
-                </span>
-              </div>
-              
-              <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
-                {agent.description}
-              </p>
-              
-              {/* Rating and Users */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-1">
-                  <span className="text-yellow-400">★</span>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">
-                    {agent.rating}
-                  </span>
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  {agent.users.toLocaleString()} users
-                </div>
-              </div>
-
-              {/* Stake Required */}
-              <div className="flex items-center space-x-1 mb-4">
-                <Coins className="text-[#14F195]" size={16} />
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  {agent.stakeRequired} $SVMAI required
-                </span>
-              </div>
-              
-              {/* Capabilities */}
-              <div className="flex flex-wrap gap-1 mb-4">
-                {agent.capabilities.slice(0, 3).map((capability) => (
-                  <span
-                    key={capability}
-                    className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded"
-                  >
-                    {capability}
-                  </span>
-                ))}
-                {agent.capabilities.length > 3 && (
-                  <span className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
-                    +{agent.capabilities.length - 3}
-                  </span>
-                )}
-              </div>
-
-              {/* Tags */}
-              <div className="flex flex-wrap gap-1 mb-4">
-                {agent.tags.slice(0, 3).map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-                {agent.tags.length > 3 && (
-                  <span className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
-                    +{agent.tags.length - 3}
-                  </span>
-                )}
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  Updated {new Date(agent.lastUpdate).toLocaleDateString()}
-                </div>
-                <div className="flex space-x-2">
-                  <a
-                    href={agent.providerUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-[#14F195] transition-colors"
-                  >
-                    <ExternalLink size={16} />
-                  </a>
-                  <Link
-                    href={`/agents/${agent.id}`}
-                    className="text-[#14F195] hover:underline text-sm font-medium"
-                  >
-                    View Details →
-                  </Link>
-                </div>
-              </div>
-            </div>
+            <UltraCompactCard
+              key={agent.id}
+              data={{
+                ...agent,
+                performance: {
+                  uptime: 0.95 + Math.random() * 0.05,
+                  responseTime: 50 + Math.random() * 100,
+                  successRate: 0.9 + Math.random() * 0.1,
+                }
+              }}
+              type="agent"
+              href={`/agents/${agent.id}`}
+            />
           ))}
-        </div>
+        </UltraCompactGrid>
       )}
     </div>
   );

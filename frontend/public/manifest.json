@@ -1,60 +1,104 @@
 {
   "name": "AEAMCP - Solana AI Registries",
   "short_name": "AEAMCP",
-  "description": "Discover and register AI agents and MCP servers on Solana blockchain",
+  "description": "Discover and register AI agents and MCP servers on Solana blockchain with ASCII-style interface",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0A0B0D",
-  "theme_color": "#14F195",
+  "background_color": "#FFFFFF",
+  "theme_color": "#404040",
   "orientation": "portrait-primary",
+  "categories": ["productivity", "business", "finance"],
+  "lang": "en",
+  "scope": "/",
   "icons": [
     {
-      "src": "/icons/icon-72x72.png",
+      "src": "/icons/icon-72x72.svg",
       "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "maskable"
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-96x96.png",
+      "src": "/icons/icon-96x96.svg",
       "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "maskable"
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-128x128.png",
+      "src": "/icons/icon-128x128.svg",
       "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "maskable"
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-144x144.png",
+      "src": "/icons/icon-144x144.svg",
       "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "maskable"
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-152x152.png",
+      "src": "/icons/icon-152x152.svg",
       "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "maskable"
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-192x192.png",
+      "src": "/icons/icon-192x192.svg",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-384x384.png",
+      "src": "/icons/icon-384x384.svg",
       "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "maskable"
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-512x512.png",
+      "src": "/icons/icon-512x512.svg",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    }
+  ],
+"shortcuts": [
+{
+  "name": "Browse Agents",
+  "short_name": "Agents",
+  "description": "Browse AI agents registry",
+  "url": "/agents",
+  "icons": [
+    {
+      "src": "/icons/icon-96x96.svg",
+      "sizes": "96x96",
+      "type": "image/svg+xml"
     }
   ]
+},
+{
+  "name": "Browse MCP Servers",
+  "short_name": "Servers",
+  "description": "Browse MCP servers registry",
+  "url": "/servers",
+  "icons": [
+    {
+      "src": "/icons/icon-96x96.svg",
+      "sizes": "96x96",
+      "type": "image/svg+xml"
+    }
+  ]
+},
+{
+  "name": "Tokenomics",
+  "short_name": "Tokenomics",
+  "description": "View SVMAI tokenomics analysis",
+  "url": "/tokenomics",
+  "icons": [
+    {
+      "src": "/icons/icon-96x96.svg",
+      "sizes": "96x96",
+      "type": "image/svg+xml"
+    }
+  ]
+}
+]
 }

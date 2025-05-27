@@ -1,0 +1,7 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <rect width="32" height="32" fill="#404040"/>
+  <rect x="2" y="2" width="28" height="28" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+  <g fill="#FFFFFF" font-family="Courier New, monospace" font-size="16" font-weight="bold">
+    <text x="16" y="20" text-anchor="middle" dominant-baseline="middle">A</text>
+  </g>
+</svg>

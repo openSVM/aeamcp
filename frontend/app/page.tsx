@@ -1,113 +1,130 @@
+'use client';
+
 import Link from 'next/link';
-import { Bot, Server, Search, Plus, Users, Globe, Coins, Shield, Zap, TrendingUp } from 'lucide-react';
+import { useI18nContext } from '@/components/common/I18nProvider';
 
 export default function HomePage() {
+  const { t } = useI18nContext();
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-[#14F195]/10 to-[#9945FF]/10 py-20">
+      <section className="py-20" style={{ backgroundColor: '#F5F5F5', borderBottom: '2px solid #A3A3A3' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-              Solana AI Registries
+            <h1 className="ascii-section-title text-4xl md:text-6xl mb-6">
+              {t('home.hero.title').toUpperCase()}
             </h1>
-            <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-              Discover and register autonomous AI agents and Model Context Protocol (MCP) servers on the Solana blockchain. Powered by $SVMAI token.
+            <p className="ascii-lead-text text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
+              {t('home.hero.subtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <Link
                 href="/agents"
-                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-[#14F195] to-[#9945FF] hover:opacity-90 transition-opacity"
+                className="ascii-button-primary"
               >
-                <Bot className="mr-2" size={20} />
-                Browse Agents
+                [{t('home.hero.browse.agents').toUpperCase()}]
               </Link>
               <Link
                 href="/servers"
-                className="inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="ascii-button-secondary"
               >
-                <Server className="mr-2" size={20} />
-                Browse MCP Servers
+                [{t('home.hero.browse.servers').toUpperCase()}]
               </Link>
             </div>
-            <div className="flex items-center justify-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-              <Coins className="text-[#14F195]" size={16} />
-              <span>Powered by $SVMAI Token</span>
-              <Link href="/tokenomics" className="text-[#14F195] hover:underline">
-                Learn More
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-4">
+              <Link
+                href="/aeamcp.html"
+                className="ascii-button-secondary"
+              >
+                [{t('home.hero.view.website').toUpperCase()}]
               </Link>
+              <Link
+                href="/docs.html"
+                className="ascii-button-secondary"
+                style={{ backgroundColor: '#525252', color: '#FFFFFF', borderColor: '#525252' }}
+              >
+                [{t('home.hero.view.docs').toUpperCase()}]
+              </Link>
+            </div>
+            <div className="ascii-info-box inline-block">
+              <span className="ascii-info-box-text">
+                <strong>{t('home.hero.powered').toUpperCase()}</strong> •
+                <Link href="/tokenomics" className="ascii-link ml-2">
+                  {t('home.hero.learn').toUpperCase()} →
+                </Link>
+              </span>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-white dark:bg-gray-900">
+      <section className="py-20" style={{ backgroundColor: '#FFFFFF' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Decentralized AI Discovery
+            <h2 className="ascii-section-title text-3xl md:text-4xl mb-4">
+              {t('home.features.title').toUpperCase()}
             </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Built on Solana for fast, secure, and cost-effective AI service discovery and registration
+            <p className="ascii-body-text text-lg max-w-2xl mx-auto">
+              {t('home.features.subtitle')}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Agent Registry */}
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
-              <div className="w-12 h-12 bg-gradient-to-r from-[#14F195] to-[#9945FF] rounded-lg flex items-center justify-center mb-4">
-                <Bot className="text-white" size={24} />
+            <div className="ascii-card">
+              <div className="ascii-logo w-16 h-12 mb-4">
+                <span className="text-lg font-bold">[BOT]</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                Agent Registry
+              <h3 className="ascii-subsection-title text-xl mb-2">
+                {t('home.features.agents.title').toUpperCase()}
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">
-                Discover autonomous AI agents with verified capabilities, endpoints, and economic intents
+              <p className="ascii-body-text mb-4">
+                {t('home.features.agents.desc')}
               </p>
               <Link
                 href="/agents"
-                className="text-[#14F195] hover:underline font-medium"
+                className="ascii-link"
               >
-                Explore Agents →
+                {t('home.features.agents.cta').toUpperCase()} →
               </Link>
             </div>
 
             {/* MCP Server Registry */}
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
-              <div className="w-12 h-12 bg-gradient-to-r from-[#14F195] to-[#9945FF] rounded-lg flex items-center justify-center mb-4">
-                <Server className="text-white" size={24} />
+            <div className="ascii-card">
+              <div className="ascii-logo w-16 h-12 mb-4">
+                <span className="text-lg font-bold">[SRV]</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                MCP Server Registry
+              <h3 className="ascii-subsection-title text-xl mb-2">
+                {t('home.features.mcp.title').toUpperCase()}
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">
-                Find Model Context Protocol servers offering tools, resources, and prompts for AI applications
+              <p className="ascii-body-text mb-4">
+                {t('home.features.mcp.desc')}
               </p>
               <Link
                 href="/servers"
-                className="text-[#14F195] hover:underline font-medium"
+                className="ascii-link"
               >
-                Explore Servers →
+                {t('home.features.mcp.cta').toUpperCase()} →
               </Link>
             </div>
 
             {/* $SVMAI Token */}
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
-              <div className="w-12 h-12 bg-gradient-to-r from-[#14F195] to-[#9945FF] rounded-lg flex items-center justify-center mb-4">
-                <Coins className="text-white" size={24} />
+            <div className="ascii-card">
+              <div className="ascii-logo w-16 h-12 mb-4">
+                <span className="text-lg font-bold">[$$$]</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                $SVMAI Token
+              <h3 className="ascii-subsection-title text-xl mb-2">
+                {t('home.features.token.title').toUpperCase()}
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">
-                Native utility token for governance, staking, and accessing premium AI services
+              <p className="ascii-body-text mb-4">
+                {t('home.features.token.desc')}
               </p>
               <Link
                 href="/tokenomics"
-                className="text-[#14F195] hover:underline font-medium"
+                className="ascii-link"
               >
-                Learn About $SVMAI →
+                {t('home.features.token.cta').toUpperCase()} →
               </Link>
             </div>
           </div>
@@ -115,63 +132,63 @@ export default function HomePage() {
       </section>
 
       {/* $SVMAI Token Benefits */}
-      <section className="py-20 bg-gray-50 dark:bg-gray-800">
+      <section className="py-20" style={{ backgroundColor: '#F5F5F5' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Why $SVMAI Token?
+            <h2 className="ascii-section-title text-3xl md:text-4xl mb-4">
+              {t('home.benefits.title').toUpperCase()}
             </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              The native utility token that powers the entire AEAMCP ecosystem
+            <p className="ascii-body-text text-lg max-w-2xl mx-auto">
+              {t('home.benefits.subtitle')}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-[#14F195] to-[#9945FF] rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="text-white" size={28} />
+              <div className="ascii-logo w-16 h-16 mx-auto mb-4">
+                <span className="text-xl font-bold">[⚡]</span>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                Governance
+              <h3 className="ascii-subsection-title text-lg mb-2">
+                {t('home.benefits.governance.title').toUpperCase()}
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">
-                Vote on protocol upgrades and ecosystem decisions
+              <p className="ascii-body-text text-sm">
+                {t('home.benefits.governance.desc')}
               </p>
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-[#14F195] to-[#9945FF] rounded-full flex items-center justify-center mx-auto mb-4">
-                <Zap className="text-white" size={28} />
+              <div className="ascii-logo w-16 h-16 mx-auto mb-4">
+                <span className="text-xl font-bold">[⚡]</span>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                Staking Rewards
+              <h3 className="ascii-subsection-title text-lg mb-2">
+                {t('home.benefits.staking.title').toUpperCase()}
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">
-                Earn rewards by staking tokens and securing the network
+              <p className="ascii-body-text text-sm">
+                {t('home.benefits.staking.desc')}
               </p>
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-[#14F195] to-[#9945FF] rounded-full flex items-center justify-center mx-auto mb-4">
-                <TrendingUp className="text-white" size={28} />
+              <div className="ascii-logo w-16 h-16 mx-auto mb-4">
+                <span className="text-xl font-bold">[↗]</span>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                Premium Access
+              <h3 className="ascii-subsection-title text-lg mb-2">
+                {t('home.benefits.premium.title').toUpperCase()}
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">
-                Access premium AI agents and advanced features
+              <p className="ascii-body-text text-sm">
+                {t('home.benefits.premium.desc')}
               </p>
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-[#14F195] to-[#9945FF] rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="text-white" size={28} />
+              <div className="ascii-logo w-16 h-16 mx-auto mb-4">
+                <span className="text-xl font-bold">[👥]</span>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                Community
+              <h3 className="ascii-subsection-title text-lg mb-2">
+                {t('home.benefits.community.title').toUpperCase()}
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">
-                Join a thriving community of AI developers and users
+              <p className="ascii-body-text text-sm">
+                {t('home.benefits.community.desc')}
               </p>
             </div>
           </div>
@@ -179,31 +196,31 @@ export default function HomePage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 bg-white dark:bg-gray-900">
+      <section className="py-20" style={{ backgroundColor: '#FFFFFF' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                Live on Devnet
+            <div className="ascii-card">
+              <div className="ascii-subsection-title text-3xl md:text-4xl mb-2">
+                {t('home.stats.devnet.title').toUpperCase()}
               </div>
-              <div className="text-gray-600 dark:text-gray-300">
-                Deployed and ready for testing
-              </div>
-            </div>
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                100% Open Source
-              </div>
-              <div className="text-gray-600 dark:text-gray-300">
-                Transparent and community-driven
+              <div className="ascii-body-text">
+                {t('home.stats.devnet.desc')}
               </div>
             </div>
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                Protocol Compliant
+            <div className="ascii-card">
+              <div className="ascii-subsection-title text-3xl md:text-4xl mb-2">
+                {t('home.stats.opensource.title').toUpperCase()}
               </div>
-              <div className="text-gray-600 dark:text-gray-300">
-                A2A, AEA, and MCP standards
+              <div className="ascii-body-text">
+                {t('home.stats.opensource.desc')}
+              </div>
+            </div>
+            <div className="ascii-card">
+              <div className="ascii-subsection-title text-3xl md:text-4xl mb-2">
+                {t('home.stats.compliant.title').toUpperCase()}
+              </div>
+              <div className="ascii-body-text">
+                {t('home.stats.compliant.desc')}
               </div>
             </div>
           </div>
@@ -211,28 +228,26 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-[#14F195]/10 to-[#9945FF]/10">
+      <section className="py-20" style={{ backgroundColor: '#E5E5E5', borderTop: '2px solid #A3A3A3' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Ready to Get Started?
+          <h2 className="ascii-section-title text-3xl md:text-4xl mb-4">
+            {t('home.cta.title').toUpperCase()}
           </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-            Register your AI agents and MCP servers on the Solana blockchain today
+          <p className="ascii-body-text text-lg mb-8 max-w-2xl mx-auto">
+            {t('home.cta.subtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/agents/register"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-[#14F195] to-[#9945FF] hover:opacity-90 transition-opacity"
+              className="ascii-button-primary"
             >
-              <Plus className="mr-2" size={20} />
-              Register Agent
+              [+ {t('home.cta.register.agent').toUpperCase()}]
             </Link>
             <Link
               href="/servers/register"
-              className="inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="ascii-button-secondary"
             >
-              <Plus className="mr-2" size={20} />
-              Register MCP Server
+              [+ {t('home.cta.register.server').toUpperCase()}]
             </Link>
           </div>
         </div>
