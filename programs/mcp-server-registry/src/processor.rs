@@ -15,7 +15,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use aeamcp_common::{
     constants::*,
     error::RegistryError,
-    utils::get_current_timestamp,
+    utils::{get_current_timestamp, get_mcp_server_pda_secure, verify_account_owner},
     McpServerStatus,
     serialization::{
         McpToolDefinitionOnChainInput,
@@ -136,11 +136,8 @@ fn process_register_mcp_server(
         return Err(ProgramError::MissingRequiredSignature);
     }
 
-    // Derive PDA
-    let (expected_pda, bump) = Pubkey::find_program_address(
-        &[MCP_SERVER_REGISTRY_PDA_SEED, server_id.as_bytes()],
-        program_id,
-    );
+    // SECURITY FIX: Derive PDA with enhanced security
+    let (expected_pda, bump) = get_mcp_server_pda_secure(&server_id, owner_authority_info.key, program_id);
 
     if *mcp_server_entry_info.key != expected_pda {
         return Err(ProgramError::InvalidSeeds);
@@ -200,7 +197,7 @@ fn process_register_mcp_server(
 
 /// Process update MCP server details instruction
 fn process_update_mcp_server_details(
-    _program_id: &Pubkey,
+    program_id: &Pubkey,
     accounts: &[AccountInfo],
     details: McpServerUpdateDetailsInput,
 ) -> ProgramResult {
@@ -213,7 +210,12 @@ fn process_update_mcp_server_details(
         return Err(RegistryError::Unauthorized.into());
     }
 
-    // Load and deserialize account data
+    // SECURITY FIX: Verify account ownership BEFORE data access
+    verify_account_owner(mcp_server_entry_info, program_id)?;
+
+    // SECURITY FIX: Verify account ownership BEFORE data access
+    verify_account_owner(mcp_server_entry_info, program_id)?;
+    
     let mut data = mcp_server_entry_info.try_borrow_mut_data()?;
     let mut mcp_server_entry = McpServerRegistryEntryV1::try_from_slice(&data)?;
 
@@ -221,6 +223,10 @@ fn process_update_mcp_server_details(
     if mcp_server_entry.owner_authority != *owner_authority_info.key {
         return Err(RegistryError::Unauthorized.into());
     }
+
+    // SECURITY FIX: Begin operation to prevent reentrancy
+    mcp_server_entry.begin_operation()?;
+    let current_version = mcp_server_entry.state_version;
 
     let mut changed_fields = Vec::new();
 
@@ -314,14 +320,20 @@ fn process_update_mcp_server_details(
 
     // Return early if no changes
     if changed_fields.is_empty() {
+        mcp_server_entry.end_operation();
         return Ok(());
     }
 
-    // Update timestamp
+    // SECURITY FIX: Atomic update with timestamp
     let timestamp = get_current_timestamp()?;
-    mcp_server_entry.touch(timestamp);
+    let update_result = mcp_server_entry.touch(timestamp, current_version);
 
-    // Serialize and store
+    if let Err(e) = update_result {
+        mcp_server_entry.end_operation();
+        return Err(e.into());
+    }
+
+    // SECURITY FIX: Serialize safely after atomic update
     mcp_server_entry.serialize(&mut &mut data[..])?;
 
     // Log event
@@ -332,7 +344,7 @@ fn process_update_mcp_server_details(
 
 /// Process update MCP server status instruction
 fn process_update_mcp_server_status(
-    _program_id: &Pubkey,
+    program_id: &Pubkey,
     accounts: &[AccountInfo],
     new_status: u8,
 ) -> ProgramResult {
@@ -348,7 +360,12 @@ fn process_update_mcp_server_status(
     // Validate status
     validate_mcp_server_status(new_status).map_err(|e| ProgramError::from(e))?;
 
-    // Load and deserialize account data
+    // SECURITY FIX: Verify account ownership BEFORE data access
+    verify_account_owner(mcp_server_entry_info, program_id)?;
+
+    // SECURITY FIX: Verify account ownership BEFORE data access
+    verify_account_owner(mcp_server_entry_info, program_id)?;
+    
     let mut data = mcp_server_entry_info.try_borrow_mut_data()?;
     let mut mcp_server_entry = McpServerRegistryEntryV1::try_from_slice(&data)?;
 
@@ -362,10 +379,15 @@ fn process_update_mcp_server_status(
         return Ok(());
     }
 
-    // Update status and timestamp
-    mcp_server_entry.status = new_status;
+    // SECURITY FIX: Atomic status update with version checking
     let timestamp = get_current_timestamp()?;
-    mcp_server_entry.touch(timestamp);
+    let current_version = mcp_server_entry.state_version;
+    
+    let update_result = mcp_server_entry.update_status(new_status, timestamp, current_version);
+    
+    if let Err(e) = update_result {
+        return Err(e.into());
+    }
 
     // Serialize and store
     mcp_server_entry.serialize(&mut &mut data[..])?;
@@ -378,7 +400,7 @@ fn process_update_mcp_server_status(
 
 /// Process deregister MCP server instruction
 fn process_deregister_mcp_server(
-    _program_id: &Pubkey,
+    program_id: &Pubkey,
     accounts: &[AccountInfo],
 ) -> ProgramResult {
     let accounts_iter = &mut accounts.iter();
@@ -390,7 +412,12 @@ fn process_deregister_mcp_server(
         return Err(RegistryError::Unauthorized.into());
     }
 
-    // Load and deserialize account data
+    // SECURITY FIX: Verify account ownership BEFORE data access
+    verify_account_owner(mcp_server_entry_info, program_id)?;
+
+    // SECURITY FIX: Verify account ownership BEFORE data access
+    verify_account_owner(mcp_server_entry_info, program_id)?;
+    
     let mut data = mcp_server_entry_info.try_borrow_mut_data()?;
     let mut mcp_server_entry = McpServerRegistryEntryV1::try_from_slice(&data)?;
 
@@ -404,10 +431,19 @@ fn process_deregister_mcp_server(
         return Ok(());
     }
 
-    // Update status and timestamp
-    mcp_server_entry.set_status(McpServerStatus::Deregistered);
+    // SECURITY FIX: Atomic deregistration with version checking
     let timestamp = get_current_timestamp()?;
-    mcp_server_entry.touch(timestamp);
+    let current_version = mcp_server_entry.state_version;
+    
+    let update_result = mcp_server_entry.update_status(
+        McpServerStatus::Deregistered as u8,
+        timestamp,
+        current_version
+    );
+    
+    if let Err(e) = update_result {
+        return Err(e.into());
+    }
 
     // Serialize and store
     mcp_server_entry.serialize(&mut &mut data[..])?;

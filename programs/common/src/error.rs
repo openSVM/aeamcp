@@ -115,6 +115,14 @@ pub enum RegistryError {
     InvalidPda,
     #[error("Missing required signature")]
     MissingRequiredSignature,
+    #[error("State version mismatch - concurrent modification detected")]
+    StateVersionMismatch,
+    #[error("Operation already in progress - reentrancy prevented")]
+    OperationInProgress,
+    #[error("Account not owned by expected program")]
+    IncorrectAccountOwner,
+    #[error("PDA collision detected - insufficient entropy")]
+    PdaCollision,
 }
 
 impl From<RegistryError> for ProgramError {

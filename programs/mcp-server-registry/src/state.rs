@@ -21,6 +21,10 @@ pub struct McpServerRegistryEntryV1 {
     pub bump: u8,
     /// Schema version of this entry (e.g., 1)
     pub registry_version: u8,
+    /// State version for optimistic locking (prevents race conditions)
+    pub state_version: u64,
+    /// Operation guard to prevent reentrancy
+    pub operation_in_progress: bool,
     /// Solana public key of the entry's owner/manager
     pub owner_authority: Pubkey,
     /// Unique identifier for the MCP server
@@ -64,6 +68,8 @@ impl McpServerRegistryEntryV1 {
     pub const SPACE: usize = 8 // Anchor discriminator
         + 1  // bump
         + 1  // registry_version
+        + 8  // state_version
+        + 1  // operation_in_progress
         + 32 // owner_authority
         + 4 + MAX_SERVER_ID_LEN // server_id
         + 4 + MAX_SERVER_NAME_LEN // name
@@ -106,6 +112,8 @@ impl McpServerRegistryEntryV1 {
         Self {
             bump,
             registry_version: 1,
+            state_version: 0,
+            operation_in_progress: false,
             owner_authority,
             server_id,
             name,
@@ -147,9 +155,58 @@ impl McpServerRegistryEntryV1 {
         self.status == McpServerStatus::Deregistered as u8
     }
 
-    /// Update the last update timestamp
-    pub fn touch(&mut self, timestamp: i64) {
+    /// Update the last update timestamp with version check
+    pub fn touch(&mut self, timestamp: i64, expected_version: u64) -> Result<(), aeamcp_common::error::RegistryError> {
+        if self.state_version != expected_version {
+            return Err(aeamcp_common::error::RegistryError::StateVersionMismatch);
+        }
         self.last_update_timestamp = timestamp;
+        self.state_version += 1;
+        Ok(())
+    }
+
+    /// Begin an operation (reentrancy guard)
+    pub fn begin_operation(&mut self) -> Result<(), aeamcp_common::error::RegistryError> {
+        if self.operation_in_progress {
+            return Err(aeamcp_common::error::RegistryError::OperationInProgress);
+        }
+        self.operation_in_progress = true;
+        Ok(())
+    }
+
+    /// End an operation (reentrancy guard)
+    pub fn end_operation(&mut self) {
+        self.operation_in_progress = false;
+    }
+
+    /// Atomic update with version checking
+    pub fn atomic_update<F>(&mut self, expected_version: u64, update_fn: F) -> Result<(), aeamcp_common::error::RegistryError>
+    where
+        F: FnOnce(&mut Self) -> Result<(), aeamcp_common::error::RegistryError>
+    {
+        if self.state_version != expected_version {
+            return Err(aeamcp_common::error::RegistryError::StateVersionMismatch);
+        }
+        self.begin_operation()?;
+        
+        let result = update_fn(self);
+        
+        if result.is_ok() {
+            self.state_version += 1;
+        }
+        self.end_operation();
+        result
+    }
+
+    /// Update status with version checking
+    pub fn update_status(&mut self, status: u8, timestamp: i64, expected_version: u64) -> Result<(), aeamcp_common::error::RegistryError> {
+        if self.state_version != expected_version {
+            return Err(aeamcp_common::error::RegistryError::StateVersionMismatch);
+        }
+        self.status = status;
+        self.last_update_timestamp = timestamp;
+        self.state_version += 1;
+        Ok(())
     }
 
     /// Get the number of tools defined on-chain
@@ -193,6 +250,8 @@ impl Default for McpServerRegistryEntryV1 {
         Self {
             bump: 0,
             registry_version: 1,
+            state_version: 0,
+            operation_in_progress: false,
             owner_authority: Pubkey::default(),
             server_id: String::new(),
             name: String::new(),

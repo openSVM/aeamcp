@@ -16,7 +16,7 @@ use aeamcp_common::{
     error::RegistryError,
     serialization::{ServiceEndpoint, AgentSkill, ServiceEndpointInput, AgentSkillInput},
     utils::{
-        get_agent_pda, verify_account_owner, verify_signer_authority,
+        get_agent_pda_secure, verify_account_owner, verify_signer_authority,
         get_current_timestamp,
     },
     AgentStatus,
@@ -144,8 +144,8 @@ impl Processor {
             &tags,
         )?;
 
-        // Verify PDA derivation
-        let (expected_pda, bump) = get_agent_pda(&agent_id, program_id);
+        // Verify PDA derivation with enhanced security
+        let (expected_pda, bump) = get_agent_pda_secure(&agent_id, owner_authority_info.key, program_id);
         if agent_entry_info.key != &expected_pda {
             return Err(RegistryError::InvalidPda.into());
         }
@@ -277,14 +277,21 @@ impl Processor {
         let agent_entry_info = next_account_info(account_info_iter)?;
         let owner_authority_info = next_account_info(account_info_iter)?;
 
-        // Verify account ownership
+        // SECURITY FIX: Verify account ownership BEFORE data access
         verify_account_owner(agent_entry_info, program_id)?;
 
-        // Deserialize existing agent entry
-        let mut agent_entry = AgentRegistryEntryV1::try_from_slice(&agent_entry_info.data.borrow())?;
+        // SECURITY FIX: Verify account ownership BEFORE data access
+        verify_account_owner(agent_entry_info, program_id)?;
+        
+        let mut data = agent_entry_info.try_borrow_mut_data()?;
+        let mut agent_entry = AgentRegistryEntryV1::try_from_slice(&data)?;
 
         // Verify owner authority
         verify_signer_authority(owner_authority_info, &agent_entry.owner_authority)?;
+
+        // SECURITY FIX: Begin operation to prevent reentrancy
+        agent_entry.begin_operation()?;
+        let current_version = agent_entry.state_version;
 
         // Validate update details
         validate_update_details(
@@ -427,15 +434,20 @@ impl Processor {
 
         // Return early if no changes
         if changed_fields.is_empty() {
+            agent_entry.end_operation();
             return Ok(());
         }
 
-        // Update timestamp
+        // SECURITY FIX: Atomic update with timestamp
         let timestamp = get_current_timestamp()?;
-        agent_entry.update_timestamp(timestamp);
+        let update_result = agent_entry.update_timestamp(timestamp, current_version);
 
-        // Serialize and store the updated data
-        let mut data = agent_entry_info.try_borrow_mut_data()?;
+        if let Err(e) = update_result {
+            agent_entry.end_operation();
+            return Err(e.into());
+        }
+
+        // SECURITY FIX: Serialize safely after atomic update
         agent_entry.serialize(&mut &mut data[..])?;
 
         // Emit event
@@ -462,11 +474,14 @@ impl Processor {
         // Validate status
         validate_agent_status(new_status)?;
 
-        // Verify account ownership
+        // SECURITY FIX: Verify account ownership BEFORE data access
         verify_account_owner(agent_entry_info, program_id)?;
 
-        // Deserialize existing agent entry
-        let mut agent_entry = AgentRegistryEntryV1::try_from_slice(&agent_entry_info.data.borrow())?;
+        // SECURITY FIX: Verify account ownership BEFORE data access
+        verify_account_owner(agent_entry_info, program_id)?;
+        
+        let mut data = agent_entry_info.try_borrow_mut_data()?;
+        let mut agent_entry = AgentRegistryEntryV1::try_from_slice(&data)?;
 
         // Verify owner authority
         verify_signer_authority(owner_authority_info, &agent_entry.owner_authority)?;
@@ -478,12 +493,16 @@ impl Processor {
 
         let old_status = agent_entry.status;
         let timestamp = get_current_timestamp()?;
+        let current_version = agent_entry.state_version;
 
-        // Update status
-        agent_entry.update_status(new_status, timestamp);
+        // SECURITY FIX: Atomic status update with version checking
+        let update_result = agent_entry.update_status(new_status, timestamp, current_version);
+        
+        if let Err(e) = update_result {
+            return Err(e.into());
+        }
 
         // Serialize and store the updated data
-        let mut data = agent_entry_info.try_borrow_mut_data()?;
         agent_entry.serialize(&mut &mut data[..])?;
 
         // Emit event
@@ -504,11 +523,14 @@ impl Processor {
         let agent_entry_info = next_account_info(account_info_iter)?;
         let owner_authority_info = next_account_info(account_info_iter)?;
 
-        // Verify account ownership
+        // SECURITY FIX: Verify account ownership BEFORE data access
         verify_account_owner(agent_entry_info, program_id)?;
 
-        // Deserialize existing agent entry
-        let mut agent_entry = AgentRegistryEntryV1::try_from_slice(&agent_entry_info.data.borrow())?;
+        // SECURITY FIX: Verify account ownership BEFORE data access
+        verify_account_owner(agent_entry_info, program_id)?;
+        
+        let mut data = agent_entry_info.try_borrow_mut_data()?;
+        let mut agent_entry = AgentRegistryEntryV1::try_from_slice(&data)?;
 
         // Verify owner authority
         verify_signer_authority(owner_authority_info, &agent_entry.owner_authority)?;
@@ -519,12 +541,20 @@ impl Processor {
         }
 
         let timestamp = get_current_timestamp()?;
+        let current_version = agent_entry.state_version;
 
-        // Update status to deregistered
-        agent_entry.update_status(AgentStatus::Deregistered as u8, timestamp);
+        // SECURITY FIX: Atomic deregistration with version checking
+        let update_result = agent_entry.update_status(
+            AgentStatus::Deregistered as u8,
+            timestamp,
+            current_version
+        );
+        
+        if let Err(e) = update_result {
+            return Err(e.into());
+        }
 
         // Serialize and store the updated data
-        let mut data = agent_entry_info.try_borrow_mut_data()?;
         agent_entry.serialize(&mut &mut data[..])?;
 
         // Emit event

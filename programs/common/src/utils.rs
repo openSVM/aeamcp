@@ -53,7 +53,7 @@ pub fn validate_vec_length<T>(
     Ok(())
 }
 
-/// Get agent PDA
+/// Get agent PDA (legacy - deprecated, use get_agent_pda_secure)
 pub fn get_agent_pda(agent_id: &str, program_id: &Pubkey) -> (Pubkey, u8) {
     Pubkey::find_program_address(
         &[AGENT_REGISTRY_PDA_SEED, agent_id.as_bytes()],
@@ -61,10 +61,42 @@ pub fn get_agent_pda(agent_id: &str, program_id: &Pubkey) -> (Pubkey, u8) {
     )
 }
 
-/// Get MCP server PDA
+/// Get agent PDA with enhanced security (includes owner for uniqueness)
+pub fn get_agent_pda_secure(
+    agent_id: &str,
+    owner: &Pubkey,
+    program_id: &Pubkey
+) -> (Pubkey, u8) {
+    Pubkey::find_program_address(
+        &[
+            AGENT_REGISTRY_PDA_SEED,
+            agent_id.as_bytes(),
+            owner.as_ref(),
+        ],
+        program_id,
+    )
+}
+
+/// Get MCP server PDA (legacy - deprecated, use get_mcp_server_pda_secure)
 pub fn get_mcp_server_pda(server_id: &str, program_id: &Pubkey) -> (Pubkey, u8) {
     Pubkey::find_program_address(
         &[MCP_SERVER_REGISTRY_PDA_SEED, server_id.as_bytes()],
+        program_id,
+    )
+}
+
+/// Get MCP server PDA with enhanced security (includes owner for uniqueness)
+pub fn get_mcp_server_pda_secure(
+    server_id: &str,
+    owner: &Pubkey,
+    program_id: &Pubkey
+) -> (Pubkey, u8) {
+    Pubkey::find_program_address(
+        &[
+            MCP_SERVER_REGISTRY_PDA_SEED,
+            server_id.as_bytes(),
+            owner.as_ref(),
+        ],
         program_id,
     )
 }
@@ -88,10 +120,21 @@ pub fn verify_account_owner(
     expected_owner: &Pubkey,
 ) -> Result<(), ProgramError> {
     if account_info.owner != expected_owner {
-        return Err(ProgramError::IncorrectProgramId);
+        return Err(RegistryError::IncorrectAccountOwner.into());
     }
     Ok(())
 }
+
+/// Verify account ownership and deserialize data safely
+pub fn verify_and_deserialize<T: borsh::BorshDeserialize>(
+    account_info: &AccountInfo,
+    program_id: &Pubkey,
+) -> Result<T, ProgramError> {
+    verify_account_owner(account_info, program_id)?;
+    T::try_from_slice(&account_info.data.borrow())
+        .map_err(|_| ProgramError::InvalidAccountData)
+}
+
 
 /// Verify signer authority
 pub fn verify_signer_authority(
@@ -118,10 +161,21 @@ pub fn verify_rent_exemption(
     Ok(())
 }
 
-/// Get current timestamp
+/// Get current timestamp with validation
 pub fn get_current_timestamp() -> Result<i64, ProgramError> {
     let clock = Clock::get()?;
-    Ok(clock.unix_timestamp)
+    let timestamp = clock.unix_timestamp;
+    
+    // Validate timestamp is reasonable (not in far past or future)
+    let current_year_approx = 1640995200; // 2022-01-01 as baseline
+    let future_limit = current_year_approx + (10 * 365 * 24 * 60 * 60); // ~10 years from baseline
+    
+    if timestamp < current_year_approx || timestamp > future_limit {
+        msg!("Invalid timestamp: {}", timestamp);
+        return Err(ProgramError::InvalidArgument);
+    }
+    
+    Ok(timestamp)
 }
 
 /// Emit an event (simplified version for native programs)
