@@ -1,6 +1,10 @@
+'use client';
+
 import Link from 'next/link';
+import { useI18nContext } from '@/components/common/I18nProvider';
 
 export default function HomePage() {
+  const { t } = useI18nContext();
   return (
     <div className="min-h-screen" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
       {/* Hero Section */}
@@ -8,23 +12,23 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="ascii-section-title text-4xl md:text-6xl mb-6">
-              SOLANA AI REGISTRIES
+              {t('home.hero.title').toUpperCase()}
             </h1>
             <p className="ascii-lead-text text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
-              Discover and register autonomous AI agents and Model Context Protocol (MCP) servers on the Solana blockchain. Powered by $SVMAI token.
+              {t('home.hero.subtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <Link
                 href="/agents"
                 className="ascii-button-primary"
               >
-                [BROWSE AGENTS]
+                [{t('home.hero.browse.agents').toUpperCase()}]
               </Link>
               <Link
                 href="/servers"
                 className="ascii-button-secondary"
               >
-                [BROWSE MCP SERVERS]
+                [{t('home.hero.browse.servers').toUpperCase()}]
               </Link>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-4">
@@ -32,21 +36,21 @@ export default function HomePage() {
                 href="/aeamcp.html"
                 className="ascii-button-secondary"
               >
-                [VIEW PROJECT WEBSITE]
+                [{t('home.hero.view.website').toUpperCase()}]
               </Link>
               <Link
                 href="/docs.html"
                 className="ascii-button-secondary"
                 style={{ backgroundColor: '#525252', color: '#FFFFFF', borderColor: '#525252' }}
               >
-                [VIEW DOCUMENTATION]
+                [{t('home.hero.view.docs').toUpperCase()}]
               </Link>
             </div>
             <div className="ascii-info-box inline-block">
               <span className="ascii-info-box-text">
-                <strong>POWERED BY $SVMAI TOKEN</strong> • 
+                <strong>{t('home.hero.powered').toUpperCase()}</strong> •
                 <Link href="/tokenomics" className="ascii-link ml-2">
-                  LEARN MORE →
+                  {t('home.hero.learn').toUpperCase()} →
                 </Link>
               </span>
             </div>
@@ -59,10 +63,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="ascii-section-title text-3xl md:text-4xl mb-4">
-              DECENTRALIZED AI DISCOVERY
+              {t('home.features.title').toUpperCase()}
             </h2>
             <p className="ascii-body-text text-lg max-w-2xl mx-auto">
-              Built on Solana for fast, secure, and cost-effective AI service discovery and registration
+              {t('home.features.subtitle')}
             </p>
           </div>
 
@@ -73,16 +77,16 @@ export default function HomePage() {
                 <span className="text-lg font-bold">[BOT]</span>
               </div>
               <h3 className="ascii-subsection-title text-xl mb-2">
-                AGENT REGISTRY
+                {t('home.features.agents.title').toUpperCase()}
               </h3>
               <p className="ascii-body-text mb-4">
-                Discover autonomous AI agents with verified capabilities, endpoints, and economic intents
+                {t('home.features.agents.desc')}
               </p>
               <Link
                 href="/agents"
                 className="ascii-link"
               >
-                EXPLORE AGENTS →
+                {t('home.features.agents.cta').toUpperCase()} →
               </Link>
             </div>
 
@@ -92,16 +96,16 @@ export default function HomePage() {
                 <span className="text-lg font-bold">[SRV]</span>
               </div>
               <h3 className="ascii-subsection-title text-xl mb-2">
-                MCP SERVER REGISTRY
+                {t('home.features.mcp.title').toUpperCase()}
               </h3>
               <p className="ascii-body-text mb-4">
-                Find Model Context Protocol servers offering tools, resources, and prompts for AI applications
+                {t('home.features.mcp.desc')}
               </p>
               <Link
                 href="/servers"
                 className="ascii-link"
               >
-                EXPLORE SERVERS →
+                {t('home.features.mcp.cta').toUpperCase()} →
               </Link>
             </div>
 
@@ -111,16 +115,16 @@ export default function HomePage() {
                 <span className="text-lg font-bold">[$$$]</span>
               </div>
               <h3 className="ascii-subsection-title text-xl mb-2">
-                $SVMAI TOKEN
+                {t('home.features.token.title').toUpperCase()}
               </h3>
               <p className="ascii-body-text mb-4">
-                Native utility token for governance, staking, and accessing premium AI services
+                {t('home.features.token.desc')}
               </p>
               <Link
                 href="/tokenomics"
                 className="ascii-link"
               >
-                LEARN ABOUT $SVMAI →
+                {t('home.features.token.cta').toUpperCase()} →
               </Link>
             </div>
           </div>
@@ -132,10 +136,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="ascii-section-title text-3xl md:text-4xl mb-4">
-              WHY $SVMAI TOKEN?
+              {t('home.benefits.title').toUpperCase()}
             </h2>
             <p className="ascii-body-text text-lg max-w-2xl mx-auto">
-              The native utility token that powers the entire AEAMCP ecosystem
+              {t('home.benefits.subtitle')}
             </p>
           </div>
 
@@ -145,10 +149,10 @@ export default function HomePage() {
                 <span className="text-xl font-bold">[⚡]</span>
               </div>
               <h3 className="ascii-subsection-title text-lg mb-2">
-                GOVERNANCE
+                {t('home.benefits.governance.title').toUpperCase()}
               </h3>
               <p className="ascii-body-text text-sm">
-                Vote on protocol upgrades and ecosystem decisions
+                {t('home.benefits.governance.desc')}
               </p>
             </div>
 
@@ -157,10 +161,10 @@ export default function HomePage() {
                 <span className="text-xl font-bold">[⚡]</span>
               </div>
               <h3 className="ascii-subsection-title text-lg mb-2">
-                STAKING REWARDS
+                {t('home.benefits.staking.title').toUpperCase()}
               </h3>
               <p className="ascii-body-text text-sm">
-                Earn rewards by staking tokens and securing the network
+                {t('home.benefits.staking.desc')}
               </p>
             </div>
 
@@ -169,10 +173,10 @@ export default function HomePage() {
                 <span className="text-xl font-bold">[↗]</span>
               </div>
               <h3 className="ascii-subsection-title text-lg mb-2">
-                PREMIUM ACCESS
+                {t('home.benefits.premium.title').toUpperCase()}
               </h3>
               <p className="ascii-body-text text-sm">
-                Access premium AI agents and advanced features
+                {t('home.benefits.premium.desc')}
               </p>
             </div>
 
@@ -181,10 +185,10 @@ export default function HomePage() {
                 <span className="text-xl font-bold">[👥]</span>
               </div>
               <h3 className="ascii-subsection-title text-lg mb-2">
-                COMMUNITY
+                {t('home.benefits.community.title').toUpperCase()}
               </h3>
               <p className="ascii-body-text text-sm">
-                Join a thriving community of AI developers and users
+                {t('home.benefits.community.desc')}
               </p>
             </div>
           </div>
@@ -197,26 +201,26 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div className="ascii-card">
               <div className="ascii-subsection-title text-3xl md:text-4xl mb-2">
-                LIVE ON DEVNET
+                {t('home.stats.devnet.title').toUpperCase()}
               </div>
               <div className="ascii-body-text">
-                Deployed and ready for testing
+                {t('home.stats.devnet.desc')}
               </div>
             </div>
             <div className="ascii-card">
               <div className="ascii-subsection-title text-3xl md:text-4xl mb-2">
-                100% OPEN SOURCE
+                {t('home.stats.opensource.title').toUpperCase()}
               </div>
               <div className="ascii-body-text">
-                Transparent and community-driven
+                {t('home.stats.opensource.desc')}
               </div>
             </div>
             <div className="ascii-card">
               <div className="ascii-subsection-title text-3xl md:text-4xl mb-2">
-                PROTOCOL COMPLIANT
+                {t('home.stats.compliant.title').toUpperCase()}
               </div>
               <div className="ascii-body-text">
-                A2A, AEA, and MCP standards
+                {t('home.stats.compliant.desc')}
               </div>
             </div>
           </div>
@@ -227,23 +231,23 @@ export default function HomePage() {
       <section className="py-20" style={{ backgroundColor: '#E5E5E5', borderTop: '2px solid #A3A3A3' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="ascii-section-title text-3xl md:text-4xl mb-4">
-            READY TO GET STARTED?
+            {t('home.cta.title').toUpperCase()}
           </h2>
           <p className="ascii-body-text text-lg mb-8 max-w-2xl mx-auto">
-            Register your AI agents and MCP servers on the Solana blockchain today
+            {t('home.cta.subtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/agents/register"
               className="ascii-button-primary"
             >
-              [+ REGISTER AGENT]
+              [+ {t('home.cta.register.agent').toUpperCase()}]
             </Link>
             <Link
               href="/servers/register"
               className="ascii-button-secondary"
             >
-              [+ REGISTER MCP SERVER]
+              [+ {t('home.cta.register.server').toUpperCase()}]
             </Link>
           </div>
         </div>

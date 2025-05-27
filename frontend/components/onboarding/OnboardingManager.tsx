@@ -18,9 +18,17 @@ export const OnboardingManager: React.FC<OnboardingManagerProps> = ({
   const { state, startTour, setUserType, trackInteraction } = useOnboarding();
   const [showUserTypeSelector, setShowUserTypeSelector] = useState(false);
   const [hasShownOnboarding, setHasShownOnboarding] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
-  // Check if user has seen onboarding before
+  // Ensure we're on the client side
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Check if user has seen onboarding before - only run on client
+  useEffect(() => {
+    if (!isClient) return;
+    
     const hasSeenOnboarding = localStorage.getItem('onboarding-seen');
     const shouldShow = showOnFirstVisit && !hasSeenOnboarding && autoStart;
     
@@ -32,7 +40,7 @@ export const OnboardingManager: React.FC<OnboardingManagerProps> = ({
         localStorage.setItem('onboarding-seen', 'true');
       }, 1000);
     }
-  }, [autoStart, showOnFirstVisit]);
+  }, [autoStart, showOnFirstVisit, isClient]);
 
   const handleUserTypeSelection = (userType: UserType) => {
     setUserType(userType);

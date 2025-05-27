@@ -32,7 +32,7 @@ export const developerTourConfig: TourConfig = {
           <p class="font-bold">Ready to build the future of AI applications?</p>
         </div>
       `,
-      target: '.hero-section',
+      target: 'section:first-of-type',
       position: 'center',
       action: 'click',
       nextCondition: 'manual',
@@ -79,7 +79,7 @@ export const developerTourConfig: TourConfig = {
           </div>
         </div>
       `,
-      target: '.ascii-card:has([BOT])',
+      target: '.ascii-card:first-of-type',
       position: 'right',
       action: 'click',
       nextCondition: 'manual',
@@ -141,7 +141,7 @@ export const developerTourConfig: TourConfig = {
           </div>
         </div>
       `,
-      target: '.ascii-card:has([SRV])',
+      target: '.ascii-card:nth-of-type(2)',
       position: 'left',
       action: 'hover',
       nextCondition: 'manual',
@@ -183,7 +183,7 @@ export const developerTourConfig: TourConfig = {
           </div>
         </div>
       `,
-      target: '.ascii-card:has([$$$])',
+      target: '.ascii-card:nth-of-type(3)',
       position: 'top',
       action: 'click',
       nextCondition: 'manual',
@@ -220,7 +220,7 @@ const server = await registry.mcpServers.connect('financial-data');
           <p class="text-sm">Next: See this in action with live examples!</p>
         </div>
       `,
-      target: 'nav a[href*="docs"]',
+      target: 'a[href="/docs.html"]',
       position: 'bottom',
       action: 'click',
       nextCondition: 'manual',
@@ -257,7 +257,7 @@ export const endUserTourConfig: TourConfig = {
           <p class="font-bold text-green-600">No technical knowledge required - just connect your wallet and explore!</p>
         </div>
       `,
-      target: '.hero-section',
+      target: 'section:first-of-type',
       position: 'center',
       action: 'click',
       nextCondition: 'manual',
@@ -300,7 +300,7 @@ export const endUserTourConfig: TourConfig = {
           <p class="text-sm bg-gray-100 p-2 border">Each agent has verified capabilities and transparent pricing.</p>
         </div>
       `,
-      target: '.ascii-card:has([BOT])',
+      target: '.ascii-card:first-of-type',
       position: 'right',
       action: 'hover',
       nextCondition: 'manual',
@@ -343,7 +343,7 @@ export const providerTourConfig: TourConfig = {
           <p class="font-bold">Ready to showcase your AI innovations to the world?</p>
         </div>
       `,
-      target: '.hero-section',
+      target: 'section:first-of-type',
       position: 'center',
       action: 'click',
       nextCondition: 'manual',

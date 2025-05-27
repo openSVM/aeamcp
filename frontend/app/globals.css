@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "../styles/dos-status-bar.css";
+@import "../styles/ultra-compact-cards.css";
 
 /* ASCII Grayscale Color Palette */
 :root {

@@ -5,17 +5,19 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useOnboardingTrigger } from '@/components/onboarding';
+import { useI18nContext } from './I18nProvider';
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-  const { startOnboarding } = useOnboardingTrigger();
+  const { startOnboarding: triggerOnboarding } = useOnboardingTrigger();
+  const { t } = useI18nContext();
 
   const navigation = [
-    { name: 'Home', href: '/' },
-    { name: 'AI Agents', href: '/agents' },
-    { name: 'MCP Servers', href: '/servers' },
-    { name: '$SVMAI Token', href: '/tokenomics' },
+    { name: t('nav.home'), href: '/' },
+    { name: t('nav.agents'), href: '/agents' },
+    { name: t('nav.servers'), href: '/servers' },
+    { name: t('nav.tokenomics'), href: '/tokenomics' },
     { name: 'Project Doc', href: '/aeamcp.html' },
   ];
 
@@ -57,11 +59,11 @@ export default function Navigation() {
           {/* Wallet Button and Help - Desktop */}
           <div className="hidden md:flex items-center space-x-3">
             <button
-              onClick={startOnboarding}
+              onClick={triggerOnboarding}
               className="ascii-help-button"
               title="Start Interactive Tutorial"
             >
-              [? HELP]
+              [? {t('nav.help').toUpperCase()}]
             </button>
             <div className="ascii-wallet-button-container">
               <WalletMultiButton className="ascii-wallet-button" />
@@ -71,7 +73,7 @@ export default function Navigation() {
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center space-x-2">
             <button
-              onClick={startOnboarding}
+              onClick={triggerOnboarding}
               className="ascii-help-button-mobile"
               title="Start Interactive Tutorial"
             >
@@ -106,12 +108,12 @@ export default function Navigation() {
             ))}
             <button
               onClick={() => {
-                startOnboarding();
+                triggerOnboarding();
                 setIsOpen(false);
               }}
               className="ascii-nav-link-mobile"
             >
-              HELP & TUTORIAL
+              {t('nav.help').toUpperCase()} & TUTORIAL
             </button>
           </div>
         </div>

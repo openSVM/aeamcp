@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import UltraCompactCard from '../../components/common/UltraCompactCard';
+import UltraCompactGrid from '../../components/common/UltraCompactGrid';
+import { useI18nContext } from '../../components/common/I18nProvider';
 
 // Mock data for demonstration
 const mockAgents = [
@@ -59,6 +62,7 @@ const mockAgents = [
 ];
 
 export default function AgentsPage() {
+  const { t } = useI18nContext();
   const [agents, setAgents] = useState(mockAgents);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -100,13 +104,13 @@ export default function AgentsPage() {
   const getStatusDisplay = (status: string) => {
     switch (status) {
       case 'Active':
-        return '[ACTIVE]';
+        return t('agents.status.active');
       case 'Inactive':
-        return '[INACTIVE]';
+        return t('agents.status.inactive');
       case 'Pending':
-        return '[PENDING]';
+        return t('agents.status.pending');
       default:
-        return '[UNKNOWN]';
+        return t('agents.status.unknown');
     }
   };
 
@@ -116,17 +120,17 @@ export default function AgentsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
           <h1 className="ascii-section-title text-3xl mb-2">
-            AI AGENTS REGISTRY
+            {t('agents.title')}
           </h1>
           <p className="ascii-body-text">
-            Discover autonomous AI agents on the Solana blockchain
+            {t('agents.subtitle')}
           </p>
         </div>
         <Link
           href="/agents/register"
           className="ascii-button-primary mt-4 sm:mt-0"
         >
-          [+ REGISTER AGENT]
+          [+ {t('agents.register.button')}]
         </Link>
       </div>
 
@@ -169,26 +173,17 @@ export default function AgentsPage() {
         </div>
       </div>
 
-      {/* Agents Grid */}
+      {/* Ultra-Compact Agents Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="ascii-card ascii-loading">
-              <div className="h-4 w-3/4 mb-2" style={{ backgroundColor: '#D4D4D4' }}></div>
-              <div className="h-3 w-1/2 mb-4" style={{ backgroundColor: '#D4D4D4' }}></div>
-              <div className="h-3 w-full mb-2" style={{ backgroundColor: '#D4D4D4' }}></div>
-              <div className="h-3 w-2/3" style={{ backgroundColor: '#D4D4D4' }}></div>
-            </div>
-          ))}
-        </div>
+        <UltraCompactGrid loading={true} loadingItems={12} />
       ) : filteredAgents.length === 0 ? (
-        <div className="text-center py-12">
+        <div className="text-center py-8">
           <div className="ascii-card inline-block">
-            <div className="ascii-logo w-16 h-12 mx-auto mb-4">
-              <span className="text-2xl">[!]</span>
+            <div className="ascii-logo w-12 h-8 mx-auto mb-2">
+              <span className="text-lg">[!]</span>
             </div>
-            <h3 className="ascii-subsection-title">NO AGENTS FOUND</h3>
-            <p className="ascii-body-text">
+            <h3 className="ascii-subsection-title text-sm">NO AGENTS FOUND</h3>
+            <p className="ascii-body-text text-xs">
               {searchTerm || statusFilter
                 ? 'Try adjusting your search or filters'
                 : 'Be the first to register an agent'}
@@ -196,89 +191,23 @@ export default function AgentsPage() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <UltraCompactGrid>
           {filteredAgents.map((agent) => (
-            <Link key={agent.id} href={`/agents/${agent.id}`}>
-              <div className="ascii-card hover:shadow-lg transition-shadow cursor-pointer">
-                {/* Compact Header */}
-                <div className="flex items-center justify-between mb-2">
-                  <div className="ascii-logo w-6 h-6">
-                    <span className="text-sm font-bold">[BOT]</span>
-                  </div>
-                  <span className="ascii-status text-xs">
-                    {getStatusDisplay(agent.status)}
-                  </span>
-                </div>
-                
-                {/* Title */}
-                <h3 className="ascii-subsection-title text-sm mb-1 truncate">
-                  {agent.name.toUpperCase()}
-                </h3>
-                
-                {/* Version & Provider */}
-                <p className="ascii-body-text text-xs mb-2" style={{ color: '#525252' }}>
-                  v{agent.version} • {agent.provider}
-                </p>
-                
-                {/* Compact Description */}
-                <p className="ascii-body-text text-xs mb-3 line-clamp-2" style={{ fontSize: '0.75rem', lineHeight: '1.3' }}>
-                  {agent.description.length > 80 ? `${agent.description.substring(0, 80)}...` : agent.description}
-                </p>
-                
-                {/* Rating & Users Row */}
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-1">
-                    <span className="font-bold text-xs">[*]</span>
-                    <span className="ascii-body-text text-xs font-bold">
-                      {agent.rating}
-                    </span>
-                  </div>
-                  <div className="ascii-body-text text-xs">
-                    {agent.users > 1000 ? `${Math.floor(agent.users/1000)}K` : agent.users} USERS
-                  </div>
-                </div>
-
-                {/* Stake Required */}
-                <div className="flex items-center space-x-1 mb-2">
-                  <span className="font-bold text-xs">[$]</span>
-                  <span className="ascii-body-text text-xs">
-                    {agent.stakeRequired} $SVMAI
-                  </span>
-                </div>
-                
-                {/* Top Capabilities (max 2) */}
-                <div className="mb-2">
-                  <div className="flex flex-wrap gap-1">
-                    {agent.capabilities.slice(0, 2).map((capability) => (
-                      <span
-                        key={capability}
-                        className="ascii-status text-xs px-1 py-0"
-                        style={{ backgroundColor: '#D4D4D4', color: '#171717', fontSize: '0.65rem' }}
-                      >
-                        {capability.toUpperCase()}
-                      </span>
-                    ))}
-                    {agent.capabilities.length > 2 && (
-                      <span className="ascii-status text-xs px-1 py-0" style={{ backgroundColor: '#E5E5E5', color: '#525252', fontSize: '0.65rem' }}>
-                        +{agent.capabilities.length - 2}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Footer */}
-                <div className="flex items-center justify-between pt-2" style={{ borderTop: '1px dotted #A3A3A3' }}>
-                  <div className="ascii-body-text text-xs" style={{ color: '#525252' }}>
-                    {new Date(agent.lastUpdate).toLocaleDateString()}
-                  </div>
-                  <div className="ascii-link text-xs">
-                    VIEW →
-                  </div>
-                </div>
-              </div>
-            </Link>
+            <UltraCompactCard
+              key={agent.id}
+              data={{
+                ...agent,
+                performance: {
+                  uptime: 0.95 + Math.random() * 0.05,
+                  responseTime: 50 + Math.random() * 100,
+                  successRate: 0.9 + Math.random() * 0.1,
+                }
+              }}
+              type="agent"
+              href={`/agents/${agent.id}`}
+            />
           ))}
-        </div>
+        </UltraCompactGrid>
       )}
     </div>
   );

@@ -1,0 +1,592 @@
+/* DOS Command Line Status Bar Styles */
+
+/* DOS Status Bar Container */
+.dos-status-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background-color: var(--ascii-neutral-700);
+  border-bottom: 2px solid var(--ascii-neutral-900);
+  display: flex;
+  align-items: center;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  color: var(--ascii-white);
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Left Section - Command Input */
+.dos-command-section {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  padding: 0 12px;
+  gap: 8px;
+  border-right: 1px solid var(--ascii-neutral-500);
+  min-width: 0; /* Allow shrinking */
+}
+
+.dos-prompt {
+  color: var(--ascii-white);
+  font-weight: bold;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.dos-command-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--ascii-white);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  padding: 4px 0;
+  min-width: 0;
+}
+
+.dos-command-input::placeholder {
+  color: var(--ascii-neutral-400);
+  font-style: italic;
+}
+
+.dos-command-input:focus {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dos-connecting {
+  color: var(--ascii-neutral-400);
+  font-size: 12px;
+  animation: dos-blink 1s infinite;
+}
+
+@keyframes dos-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
+}
+
+/* Right Section - Stats */
+.dos-stats-section {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 12px;
+  gap: 2px;
+  min-width: 400px;
+  max-width: 500px;
+}
+
+/* Network Stats Row */
+.dos-network-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.dos-network-label {
+  color: var(--ascii-neutral-300);
+  font-weight: bold;
+  min-width: 30px;
+}
+
+.dos-network-name {
+  color: var(--ascii-white);
+  font-weight: bold;
+  min-width: 80px;
+  text-transform: uppercase;
+}
+
+.dos-network-switcher {
+  background: transparent;
+  border: 1px solid var(--ascii-neutral-500);
+  color: var(--ascii-white);
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 2px 6px;
+  min-width: 80px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 0;
+}
+
+.dos-network-switcher:hover {
+  background-color: var(--ascii-neutral-600);
+  border-color: var(--ascii-neutral-400);
+  box-shadow: 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+.dos-network-switcher:focus {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--ascii-neutral-400);
+}
+
+.dos-network-switcher:active {
+  background-color: var(--ascii-neutral-800);
+  transform: translateY(1px);
+}
+
+/* Language Switcher */
+.dos-language-switcher {
+  padding: 4px 12px;
+  border-left: 1px solid var(--ascii-neutral-500);
+  display: flex;
+  align-items: center;
+}
+
+.dos-language-select {
+  background: transparent;
+  border: 1px solid var(--ascii-neutral-500);
+  color: var(--ascii-white);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  padding: 2px 4px;
+  min-width: 80px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 0;
+}
+
+.dos-language-select:hover {
+  background-color: var(--ascii-neutral-600);
+  border-color: var(--ascii-neutral-400);
+}
+
+.dos-language-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--ascii-neutral-400);
+}
+
+.dos-language-select option {
+  background-color: var(--ascii-neutral-800);
+  color: var(--ascii-white);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+}
+.dos-health-indicator {
+  color: var(--ascii-neutral-300);
+  font-size: 16px;
+  line-height: 1;
+  margin-right: 4px;
+}
+
+.dos-stat-item {
+  color: var(--ascii-neutral-300);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* Protocol Stats Row */
+.dos-protocol-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.dos-stat-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dos-stat-label {
+  color: var(--ascii-neutral-400);
+  font-weight: bold;
+  min-width: 30px;
+}
+
+.dos-stat-value {
+  color: var(--ascii-white);
+  font-weight: normal;
+}
+
+/* Health indicator colors using existing ASCII palette */
+.dos-status-bar .dos-health-indicator {
+  color: var(--ascii-neutral-300); /* Default */
+}
+
+/* Healthy state */
+.dos-status-bar[data-health="healthy"] .dos-health-indicator {
+  color: var(--ascii-neutral-600);
+}
+
+/* Degraded state */
+.dos-status-bar[data-health="degraded"] .dos-health-indicator {
+  color: var(--ascii-neutral-500);
+}
+
+/* Down state */
+.dos-status-bar[data-health="down"] .dos-health-indicator {
+  color: var(--ascii-neutral-400);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .dos-stats-section {
+    min-width: 350px;
+    max-width: 400px;
+  }
+  
+  .dos-protocol-stats {
+    gap: 8px;
+  }
+  
+  .dos-stat-group {
+    gap: 2px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dos-status-bar {
+    height: 35px;
+    font-size: 12px;
+  }
+  
+  .dos-prompt {
+    font-size: 12px;
+  }
+  
+  .dos-command-input {
+    font-size: 12px;
+  }
+  
+  .dos-stats-section {
+    min-width: 280px;
+    max-width: 320px;
+    padding: 3px 8px;
+  }
+  
+  .dos-network-stats {
+    font-size: 11px;
+    gap: 6px;
+  }
+  
+  .dos-protocol-stats {
+    font-size: 10px;
+    gap: 6px;
+  }
+  
+  .dos-stat-item {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dos-status-bar {
+    height: 32px;
+    font-size: 11px;
+  }
+  
+  .dos-command-section {
+    padding: 0 8px;
+    gap: 4px;
+  }
+  
+  .dos-prompt {
+    font-size: 11px;
+  }
+  
+  .dos-command-input {
+    font-size: 11px;
+  }
+  
+  .dos-stats-section {
+    min-width: 200px;
+    max-width: 240px;
+    padding: 2px 6px;
+  }
+  
+  .dos-network-stats {
+    font-size: 10px;
+    gap: 4px;
+  }
+  
+  .dos-protocol-stats {
+    font-size: 9px;
+    gap: 4px;
+  }
+  
+  .dos-stat-item {
+    font-size: 9px;
+  }
+  
+  .dos-network-name {
+    min-width: 60px;
+  }
+  
+  .dos-stat-label {
+    min-width: 25px;
+  }
+}
+
+/* Body padding adjustments for DOS status bar */
+.dos-status-body {
+  padding-top: 40px;
+  transition: padding-top 0.3s ease;
+}
+
+/* Responsive body padding */
+@media (max-width: 768px) {
+  .dos-status-body {
+    padding-top: 35px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dos-status-body {
+    padding-top: 32px;
+  }
+}
+
+/* Focus and interaction states */
+.dos-command-input:focus {
+  box-shadow: inset 0 -1px 0 var(--ascii-neutral-400);
+}
+
+/* Command input cursor */
+.dos-command-input {
+  caret-color: var(--ascii-white);
+}
+
+/* Selection styling */
+.dos-command-input::selection {
+  background-color: var(--ascii-neutral-500);
+  color: var(--ascii-white);
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .dos-connecting {
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .dos-status-bar {
+    background-color: #000000;
+    border-bottom-color: #ffffff;
+  }
+  
+  .dos-prompt,
+  .dos-command-input,
+  .dos-network-name,
+  .dos-stat-value {
+    color: #ffffff;
+  }
+  
+  .dos-network-label,
+  .dos-stat-label,
+  .dos-stat-item {
+    color: #cccccc;
+  }
+}
+
+/* Print styles */
+@media print {
+  .dos-status-bar {
+    display: none;
+  }
+}
+/* Expand/Collapse Button */
+.dos-expand-btn {
+  background: transparent;
+  border: 1px solid var(--ascii-neutral-500);
+  color: var(--ascii-white);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 4px 8px;
+  margin-right: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 32px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dos-expand-btn:hover {
+  background-color: var(--ascii-neutral-600);
+  border-color: var(--ascii-neutral-400);
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.2);
+}
+
+.dos-expand-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ascii-neutral-400);
+}
+
+.dos-expand-btn:active {
+  background-color: var(--ascii-neutral-800);
+  transform: translateY(1px);
+}
+
+/* Expanded Terminal */
+.dos-terminal-expanded {
+  position: fixed;
+  top: 40px;
+  left: 0;
+  right: 0;
+  height: 50vh;
+  background-color: var(--ascii-neutral-900);
+  border-bottom: 2px solid var(--ascii-neutral-700);
+  display: flex;
+  flex-direction: column;
+  font-family: 'Courier New', Courier, monospace;
+  z-index: 999;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  animation: slideDown 0.3s ease-out;
+}
+
+.dos-terminal-output {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  background-color: var(--ascii-neutral-900);
+  color: var(--ascii-white);
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.dos-terminal-output::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dos-terminal-output::-webkit-scrollbar-track {
+  background: var(--ascii-neutral-800);
+}
+
+.dos-terminal-output::-webkit-scrollbar-thumb {
+  background: var(--ascii-neutral-600);
+  border-radius: 4px;
+}
+
+.dos-terminal-output::-webkit-scrollbar-thumb:hover {
+  background: var(--ascii-neutral-500);
+}
+
+.dos-terminal-line {
+  margin-bottom: 2px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  color: var(--ascii-white);
+}
+
+.dos-terminal-placeholder {
+  color: var(--ascii-neutral-400);
+  font-style: italic;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.dos-terminal-placeholder b {
+  color: var(--ascii-white);
+  font-weight: bold;
+}
+
+.dos-terminal-input-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: var(--ascii-neutral-800);
+  border-top: 1px solid var(--ascii-neutral-700);
+  gap: 8px;
+}
+
+.dos-terminal-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--ascii-white);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  padding: 4px 0;
+  caret-color: var(--ascii-white);
+}
+
+.dos-terminal-input::placeholder {
+  color: var(--ascii-neutral-500);
+  font-style: italic;
+}
+
+.dos-terminal-input:focus {
+  background-color: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 -1px 0 var(--ascii-neutral-400);
+}
+
+/* Expanded state adjustments */
+.dos-status-bar-expanded {
+  border-bottom-color: var(--ascii-neutral-600);
+}
+
+/* Animation for expand/collapse */
+@keyframes slideDown {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: 50vh;
+    opacity: 1;
+  }
+}
+
+/* Responsive adjustments for expanded terminal */
+@media (max-width: 768px) {
+  .dos-terminal-expanded {
+    height: 60vh;
+    top: 35px;
+  }
+  
+  .dos-terminal-output {
+    padding: 8px;
+    font-size: 11px;
+  }
+  
+  .dos-terminal-input-row {
+    padding: 6px 8px;
+  }
+  
+  .dos-terminal-input {
+    font-size: 11px;
+  }
+  
+  .dos-expand-btn {
+    font-size: 12px;
+    padding: 3px 6px;
+    min-width: 28px;
+    height: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dos-terminal-expanded {
+    height: 70vh;
+    top: 32px;
+  }
+  
+  .dos-terminal-output {
+    padding: 6px;
+    font-size: 10px;
+  }
+  
+  .dos-terminal-input-row {
+    padding: 4px 6px;
+  }
+  
+  .dos-terminal-input {
+    font-size: 10px;
+  }
+}

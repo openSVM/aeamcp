@@ -2,17 +2,19 @@
 
 import { useState } from 'react';
 import { SVMAI_TOKEN_MINT, EXTERNAL_LINKS } from '@/lib/constants';
+import { useI18nContext } from '@/components/common/I18nProvider';
 
 export default function TokenomicsPage() {
+  const { t } = useI18nContext();
   const [activeSection, setActiveSection] = useState('overview');
 
   const sections = [
-    { id: 'overview', label: 'OVERVIEW' },
-    { id: 'escrow-model', label: 'SERVICE ESCROW' },
-    { id: 'dispute-resolution', label: 'DISPUTE RESOLUTION' },
-    { id: 'token-utility', label: 'TOKEN UTILITY' },
-    { id: 'economics', label: 'ECONOMICS' },
-    { id: 'recommendations', label: 'RECOMMENDATIONS' }
+    { id: 'overview', label: t('tokenomics.nav.overview') },
+    { id: 'escrow-model', label: t('tokenomics.nav.escrow') },
+    { id: 'dispute-resolution', label: t('tokenomics.nav.dispute') },
+    { id: 'token-utility', label: t('tokenomics.nav.utility') },
+    { id: 'economics', label: t('tokenomics.nav.economics') },
+    { id: 'recommendations', label: t('tokenomics.nav.recommendations') }
   ];
 
   return (
@@ -25,13 +27,13 @@ export default function TokenomicsPage() {
               <span className="text-3xl font-bold">[$]</span>
             </div>
             <h1 className="ascii-section-title text-4xl md:text-5xl mb-4">
-              SVMAI SERVICE ESCROW TOKENOMICS
+              {t('tokenomics.title')}
             </h1>
             <p className="ascii-lead-text text-lg max-w-4xl mx-auto mb-6">
-              An Analysis of a Service Escrow Tokenomic Model for the SVMAI Token
+              {t('tokenomics.subtitle')}
             </p>
             <div className="ascii-info-box inline-block">
-              <div className="ascii-info-box-title mb-2">CONTRACT ADDRESS</div>
+              <div className="ascii-info-box-title mb-2">{t('tokenomics.contract.address')}</div>
               <div className="flex items-center justify-center space-x-2">
                 <code className="ascii-code text-xs">
                   {SVMAI_TOKEN_MINT.toString()}
@@ -41,7 +43,7 @@ export default function TokenomicsPage() {
                   className="ascii-link text-sm"
                   title="Copy address"
                 >
-                  [COPY]
+                  [{t('tokenomics.contract.copy')}]
                 </button>
               </div>
               <div className="flex justify-center space-x-2 mt-2">
@@ -52,7 +54,7 @@ export default function TokenomicsPage() {
                   className="ascii-status"
                   style={{ backgroundColor: '#D4D4D4', color: '#171717' }}
                 >
-                  SOLSCAN [EXT]
+                  {t('tokenomics.links.solscan')}
                 </a>
                 <a
                   href={EXTERNAL_LINKS.JUPITER_SWAP}
@@ -61,7 +63,7 @@ export default function TokenomicsPage() {
                   className="ascii-status"
                   style={{ backgroundColor: '#E5E5E5', color: '#171717' }}
                 >
-                  JUPITER [EXT]
+                  {t('tokenomics.links.jupiter')}
                 </a>
               </div>
             </div>
@@ -97,52 +99,52 @@ export default function TokenomicsPage() {
         {activeSection === 'overview' && (
           <div className="space-y-8">
             <div className="ascii-card">
-              <h2 className="ascii-subsection-title mb-6">EXECUTIVE SUMMARY</h2>
+              <h2 className="ascii-subsection-title mb-6">{t('tokenomics.overview.executive.title')}</h2>
               <div className="ascii-body-text space-y-4">
                 <p>
-                  This analysis examines a novel tokenomic model for the SVMAI token, designed to facilitate secure service engagements between clients and agents through an innovative escrow mechanism.
+                  {t('tokenomics.overview.executive.p1')}
                 </p>
                 <p>
-                  The model replaces previous NFT and veToken frameworks with a direct utility approach where clients lock SVMAI tokens as stakes while agents lock their fees, creating mutual commitment and security.
+                  {t('tokenomics.overview.executive.p2')}
                 </p>
                 <div className="ascii-info-box">
-                  <h3 className="ascii-info-box-title">KEY FINDINGS:</h3>
+                  <h3 className="ascii-info-box-title">{t('tokenomics.overview.findings.title')}</h3>
                   <ul className="list-disc list-inside space-y-2 ascii-info-box-text">
-                    <li>Current "winner-takes-all" dispute outcome creates significant client-side moral hazard</li>
-                    <li>Model heavily disadvantages agents and could discourage participation</li>
-                    <li>Success depends on implementing robust decentralized dispute resolution (DDR)</li>
-                    <li>"Perceived free service" phenomenon requires careful management</li>
-                    <li>Strong potential if critical recommendations are implemented</li>
+                    <li>{t('tokenomics.overview.findings.1')}</li>
+                    <li>{t('tokenomics.overview.findings.2')}</li>
+                    <li>{t('tokenomics.overview.findings.3')}</li>
+                    <li>{t('tokenomics.overview.findings.4')}</li>
+                    <li>{t('tokenomics.overview.findings.5')}</li>
                   </ul>
                 </div>
               </div>
             </div>
 
             <div className="ascii-card">
-              <h3 className="ascii-subsection-title mb-4">CRITICAL RECOMMENDATIONS</h3>
+              <h3 className="ascii-subsection-title mb-4">{t('tokenomics.recommendations.title')}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="ascii-info-box">
-                  <h4 className="ascii-info-box-title">1. OVERHAUL DISPUTE RESOLUTION</h4>
+                  <h4 className="ascii-info-box-title">{t('tokenomics.recommendations.1.title')}</h4>
                   <p className="ascii-info-box-text">
-                    Replace binary "client reclaims all" with robust DDR system featuring staked jurors and nuanced outcomes.
+                    {t('tokenomics.recommendations.1.desc')}
                   </p>
                 </div>
                 <div className="ascii-info-box">
-                  <h4 className="ascii-info-box-title">2. ENHANCE SMART CONTRACT SECURITY</h4>
+                  <h4 className="ascii-info-box-title">{t('tokenomics.recommendations.2.title')}</h4>
                   <p className="ascii-info-box-text">
-                    Mandate multiple security audits and implement proven design patterns for fund protection.
+                    {t('tokenomics.recommendations.2.desc')}
                   </p>
                 </div>
                 <div className="ascii-info-box">
-                  <h4 className="ascii-info-box-title">3. MITIGATE "FREE SERVICE" PERCEPTION</h4>
+                  <h4 className="ascii-info-box-title">{t('tokenomics.recommendations.3.title')}</h4>
                   <p className="ascii-info-box-text">
-                    Introduce small platform fees and clear value communication to maintain service appreciation.
+                    {t('tokenomics.recommendations.3.desc')}
                   </p>
                 </div>
                 <div className="ascii-info-box">
-                  <h4 className="ascii-info-box-title">4. EXPAND TOKEN UTILITY</h4>
+                  <h4 className="ascii-info-box-title">{t('tokenomics.recommendations.4.title')}</h4>
                   <p className="ascii-info-box-text">
-                    Integrate SVMAI into DDR processes, governance, and premium features for enhanced value.
+                    {t('tokenomics.recommendations.4.desc')}
                   </p>
                 </div>
               </div>
@@ -154,25 +156,25 @@ export default function TokenomicsPage() {
         {activeSection === 'escrow-model' && (
           <div className="space-y-8">
             <div className="ascii-card">
-              <h2 className="ascii-subsection-title mb-6">SVMAI SERVICE ESCROW MODEL</h2>
+              <h2 className="ascii-subsection-title mb-6">{t('tokenomics.escrow.title')}</h2>
               <div className="ascii-body-text space-y-4">
                 <p>
-                  The SVMAI service escrow model operates through precise management of token flows, governed by smart contracts that create a secure environment for service transactions.
+                  {t('tokenomics.escrow.desc')}
                 </p>
               </div>
             </div>
 
             <div className="ascii-card">
-              <h3 className="ascii-subsection-title mb-4">TRANSACTION LIFECYCLE</h3>
+              <h3 className="ascii-subsection-title mb-4">{t('tokenomics.lifecycle.title')}</h3>
               <div className="space-y-4">
                 <div className="flex items-start space-x-4">
                   <div className="ascii-logo w-8 h-8 flex-shrink-0">
                     <span className="text-sm font-bold">1</span>
                   </div>
                   <div className="ascii-info-box flex-1">
-                    <h4 className="ascii-info-box-title">SERVICE INITIATION</h4>
+                    <h4 className="ascii-info-box-title">{t('tokenomics.lifecycle.step1.title')}</h4>
                     <p className="ascii-info-box-text">
-                      Client locks predetermined SVMAI tokens as stake, signaling commitment and providing security deposit.
+                      {t('tokenomics.lifecycle.step1.desc')}
                     </p>
                   </div>
                 </div>
@@ -181,9 +183,9 @@ export default function TokenomicsPage() {
                     <span className="text-sm font-bold">2</span>
                   </div>
                   <div className="ascii-info-box flex-1">
-                    <h4 className="ascii-info-box-title">AGENT ENGAGEMENT</h4>
+                    <h4 className="ascii-info-box-title">{t('tokenomics.lifecycle.step2.title')}</h4>
                     <p className="ascii-info-box-text">
-                      Agent's agreed-upon fee (in SVMAI tokens) is locked into escrow, securing compensation contingent on delivery.
+                      {t('tokenomics.lifecycle.step2.desc')}
                     </p>
                   </div>
                 </div>
@@ -192,9 +194,9 @@ export default function TokenomicsPage() {
                     <span className="text-sm font-bold">3</span>
                   </div>
                   <div className="ascii-info-box flex-1">
-                    <h4 className="ascii-info-box-title">SERVICE DELIVERY</h4>
+                    <h4 className="ascii-info-box-title">{t('tokenomics.lifecycle.step3.title')}</h4>
                     <p className="ascii-info-box-text">
-                      Agent performs and delivers the agreed-upon service according to specifications.
+                      {t('tokenomics.lifecycle.step3.desc')}
                     </p>
                   </div>
                 </div>
@@ -203,9 +205,9 @@ export default function TokenomicsPage() {
                     <span className="text-sm font-bold">4</span>
                   </div>
                   <div className="ascii-info-box flex-1">
-                    <h4 className="ascii-info-box-title">CLIENT DECISION</h4>
+                    <h4 className="ascii-info-box-title">{t('tokenomics.lifecycle.step4.title')}</h4>
                     <p className="ascii-info-box-text">
-                      Client reviews work and decides to either approve (releasing funds) or dispute (triggering resolution process).
+                      {t('tokenomics.lifecycle.step4.desc')}
                     </p>
                   </div>
                 </div>

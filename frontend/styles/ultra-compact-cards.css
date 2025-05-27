@@ -1,0 +1,358 @@
+/* Ultra-Compact Grid System */
+.ultra-compact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 8px;
+  padding: 8px;
+  width: 100%;
+}
+
+/* Responsive Grid */
+@media (max-width: 480px) {
+  .ultra-compact-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 6px;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .ultra-compact-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 6px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .ultra-compact-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 8px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .ultra-compact-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 8px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+}
+
+/* Ultra-Compact Card */
+.ultra-compact-card {
+  background-color: var(--ascii-neutral-100);
+  border: 1px solid var(--ascii-neutral-400);
+  box-shadow: 1px 1px 0px var(--ascii-neutral-400);
+  padding: 8px;
+  font-family: 'Courier New', Courier, monospace;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+  min-height: 120px;
+}
+
+.ultra-compact-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 2px 2px 0px var(--ascii-neutral-400);
+  background-color: var(--ascii-neutral-50);
+}
+
+/* Card Link Wrapper */
+.card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.card-link:hover {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Card Header */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  height: 16px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.type-indicator {
+  font-size: 10px;
+  font-weight: bold;
+  color: var(--ascii-neutral-700);
+  background-color: var(--ascii-neutral-300);
+  padding: 1px 3px;
+  border: 1px solid var(--ascii-neutral-400);
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid var(--ascii-neutral-600);
+}
+
+.rating-compact {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.rating-icon {
+  font-size: 10px;
+  color: var(--ascii-neutral-600);
+}
+
+.rating-value {
+  font-size: 10px;
+  font-weight: bold;
+  color: var(--ascii-neutral-900);
+}
+
+/* Card Title */
+.card-title {
+  margin-bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.title-text {
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--ascii-neutral-900);
+  margin: 0;
+  line-height: 1.1;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  margin-right: 4px;
+}
+
+.version-text {
+  font-size: 9px;
+  color: var(--ascii-neutral-600);
+  white-space: nowrap;
+}
+
+/* Metrics Row */
+.metrics-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  padding: 2px 4px;
+  background-color: var(--ascii-neutral-200);
+  border: 1px solid var(--ascii-neutral-300);
+}
+
+.metric-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
+}
+
+.metric-value {
+  font-size: 10px;
+  font-weight: bold;
+  color: var(--ascii-neutral-900);
+  line-height: 1;
+}
+
+.metric-label {
+  font-size: 8px;
+  color: var(--ascii-neutral-600);
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+/* Features Compact */
+.features-compact {
+  margin-bottom: 4px;
+  min-height: 16px;
+}
+
+.feature-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.feature-tag {
+  padding: 1px 3px;
+  font-size: 8px;
+  font-weight: bold;
+  background-color: var(--ascii-neutral-300);
+  color: var(--ascii-neutral-800);
+  border: 1px solid var(--ascii-neutral-400);
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.feature-tag-more {
+  padding: 1px 3px;
+  font-size: 8px;
+  font-weight: bold;
+  background-color: var(--ascii-neutral-400);
+  color: var(--ascii-neutral-100);
+  border: 1px solid var(--ascii-neutral-500);
+  line-height: 1;
+}
+
+/* Card Footer */
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 2px;
+  border-top: 1px dotted var(--ascii-neutral-400);
+  height: 12px;
+}
+
+.provider-text {
+  font-size: 8px;
+  color: var(--ascii-neutral-500);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.view-link {
+  font-size: 10px;
+  font-weight: bold;
+  color: var(--ascii-neutral-600);
+}
+
+.view-link:hover {
+  color: var(--ascii-neutral-900);
+}
+
+/* Loading States */
+.ultra-compact-card.loading {
+  background-color: var(--ascii-neutral-200);
+  animation: compact-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes compact-pulse {
+  0%, 100% {
+    background-color: var(--ascii-neutral-200);
+  }
+  50% {
+    background-color: var(--ascii-neutral-300);
+  }
+}
+
+.compact-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--ascii-neutral-300) 0px,
+    var(--ascii-neutral-200) 40px,
+    var(--ascii-neutral-300) 80px
+  );
+  background-size: 200px 100%;
+  animation: compact-shimmer 1.5s infinite;
+}
+
+@keyframes compact-shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+/* Tailwind height classes for skeleton */
+.h-3 {
+  height: 0.75rem;
+}
+
+.h-2 {
+  height: 0.5rem;
+}
+
+.w-3\/4 {
+  width: 75%;
+}
+
+.w-1\/2 {
+  width: 50%;
+}
+
+.w-2\/3 {
+  width: 66.666667%;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.mb-1 {
+  margin-bottom: 0.25rem;
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 480px) {
+  .ultra-compact-card {
+    padding: 6px;
+    min-height: 100px;
+  }
+  
+  .title-text {
+    font-size: 10px;
+  }
+  
+  .metric-value {
+    font-size: 9px;
+  }
+  
+  .metric-label {
+    font-size: 7px;
+  }
+  
+  .feature-tag {
+    font-size: 7px;
+    padding: 1px 2px;
+  }
+}
+
+/* Focus States for Accessibility */
+.ultra-compact-card:focus {
+  outline: 2px solid var(--ascii-neutral-600);
+  outline-offset: 1px;
+}
+
+.ultra-compact-card:focus-visible {
+  outline: 2px solid var(--ascii-neutral-900);
+  outline-offset: 1px;
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .ultra-compact-card {
+    min-height: 140px;
+    padding: 10px;
+  }
+  
+  .ultra-compact-card:active {
+    background-color: var(--ascii-neutral-200);
+    transform: scale(0.98);
+  }
+}

@@ -152,33 +152,49 @@ const OnboardingContext = createContext<OnboardingContextType | undefined>(undef
 
 export function OnboardingProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(onboardingReducer, initialState);
+  const [isClient, setIsClient] = React.useState(false);
 
-  // Load state from localStorage on mount
+  // Ensure we're on the client side
   useEffect(() => {
-    const savedState = localStorage.getItem('onboarding-state');
-    if (savedState) {
-      try {
-        const parsed = JSON.parse(savedState);
-        dispatch({ type: 'UPDATE_PREFERENCES', payload: parsed.preferences });
-        // Restore completed tours
-        parsed.completedTours?.forEach((tourId: string) => {
-          // Note: We don't restore active tours, only completed ones
-        });
-      } catch (error) {
-        console.warn('Failed to load onboarding state from localStorage:', error);
-      }
-    }
+    setIsClient(true);
   }, []);
 
-  // Save state to localStorage when it changes
+  // Load state from localStorage on mount - only on client
   useEffect(() => {
-    const stateToSave = {
-      completedTours: state.completedTours,
-      preferences: state.preferences,
-      analytics: state.analytics,
-    };
-    localStorage.setItem('onboarding-state', JSON.stringify(stateToSave));
-  }, [state.completedTours, state.preferences, state.analytics]);
+    if (!isClient) return;
+    
+    try {
+      const savedState = localStorage.getItem('onboarding-state');
+      if (savedState) {
+        const parsed = JSON.parse(savedState);
+        if (parsed.preferences) {
+          dispatch({ type: 'UPDATE_PREFERENCES', payload: parsed.preferences });
+        }
+        // Restore completed tours
+        if (parsed.completedTours?.length > 0) {
+          // Note: We don't restore active tours, only completed ones
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to load onboarding state from localStorage:', error);
+    }
+  }, [isClient]);
+
+  // Save state to localStorage when it changes - only on client
+  useEffect(() => {
+    if (!isClient) return;
+    
+    try {
+      const stateToSave = {
+        completedTours: state.completedTours,
+        preferences: state.preferences,
+        analytics: state.analytics,
+      };
+      localStorage.setItem('onboarding-state', JSON.stringify(stateToSave));
+    } catch (error) {
+      console.warn('Failed to save onboarding state to localStorage:', error);
+    }
+  }, [state.completedTours, state.preferences, state.analytics, isClient]);
 
   const contextValue: OnboardingContextType = {
     state,

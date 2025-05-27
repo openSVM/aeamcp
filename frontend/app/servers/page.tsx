@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import UltraCompactCard from '../../components/common/UltraCompactCard';
+import UltraCompactGrid from '../../components/common/UltraCompactGrid';
+import { useI18nContext } from '../../components/common/I18nProvider';
 
 // Mock data for demonstration
 const mockServers = [
@@ -59,6 +62,7 @@ const mockServers = [
 ];
 
 export default function ServersPage() {
+  const { t } = useI18nContext();
   const [servers, setServers] = useState(mockServers);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -100,13 +104,13 @@ export default function ServersPage() {
   const getStatusDisplay = (status: string) => {
     switch (status) {
       case 'Active':
-        return '[ACTIVE]';
+        return t('agents.status.active');
       case 'Inactive':
-        return '[INACTIVE]';
+        return t('agents.status.inactive');
       case 'Pending':
-        return '[PENDING]';
+        return t('agents.status.pending');
       default:
-        return '[UNKNOWN]';
+        return t('agents.status.unknown');
     }
   };
 
@@ -116,17 +120,17 @@ export default function ServersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
           <h1 className="ascii-section-title text-3xl mb-2">
-            MCP SERVERS REGISTRY
+            {t('servers.title')}
           </h1>
           <p className="ascii-body-text">
-            Discover Model Context Protocol servers on the Solana blockchain
+            {t('servers.subtitle')}
           </p>
         </div>
         <Link
           href="/servers/register"
           className="ascii-button-primary mt-4 sm:mt-0"
         >
-          [+ REGISTER MCP SERVER]
+          [+ {t('servers.register.button')}]
         </Link>
       </div>
 
@@ -169,26 +173,17 @@ export default function ServersPage() {
         </div>
       </div>
 
-      {/* Servers Grid */}
+      {/* Ultra-Compact Servers Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="ascii-card ascii-loading">
-              <div className="h-4 w-3/4 mb-2" style={{ backgroundColor: '#D4D4D4' }}></div>
-              <div className="h-3 w-1/2 mb-4" style={{ backgroundColor: '#D4D4D4' }}></div>
-              <div className="h-3 w-full mb-2" style={{ backgroundColor: '#D4D4D4' }}></div>
-              <div className="h-3 w-2/3" style={{ backgroundColor: '#D4D4D4' }}></div>
-            </div>
-          ))}
-        </div>
+        <UltraCompactGrid loading={true} loadingItems={12} />
       ) : filteredServers.length === 0 ? (
-        <div className="text-center py-12">
+        <div className="text-center py-8">
           <div className="ascii-card inline-block">
-            <div className="ascii-logo w-16 h-12 mx-auto mb-4">
-              <span className="text-2xl">[!]</span>
+            <div className="ascii-logo w-12 h-8 mx-auto mb-2">
+              <span className="text-lg">[!]</span>
             </div>
-            <h3 className="ascii-subsection-title">NO SERVERS FOUND</h3>
-            <p className="ascii-body-text">
+            <h3 className="ascii-subsection-title text-sm">NO SERVERS FOUND</h3>
+            <p className="ascii-body-text text-xs">
               {searchTerm || statusFilter
                 ? 'Try adjusting your search or filters'
                 : 'Be the first to register an MCP server'}
@@ -196,132 +191,23 @@ export default function ServersPage() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <UltraCompactGrid>
           {filteredServers.map((server) => (
-            <div key={server.id} className="ascii-card">
-              {/* Server Header */}
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h3 className="ascii-subsection-title text-lg mb-1">
-                    {server.name.toUpperCase()}
-                  </h3>
-                  <p className="ascii-body-text text-sm" style={{ color: '#525252' }}>
-                    v{server.version} • {server.provider}
-                  </p>
-                </div>
-                <span className="ascii-status ascii-status-active">
-                  {getStatusDisplay(server.status)}
-                </span>
-              </div>
-              
-              {/* Description */}
-              <p className="ascii-body-text text-sm mb-4" style={{ fontSize: '0.875rem', lineHeight: '1.5' }}>
-                {server.description}
-              </p>
-              
-              {/* Rating and Users */}
-              <div className="ascii-info-box mb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-1">
-                    <span className="font-bold">[*]</span>
-                    <span className="ascii-body-text font-bold">
-                      {server.rating}
-                    </span>
-                  </div>
-                  <div className="ascii-body-text text-sm">
-                    {server.users.toLocaleString()} USERS
-                  </div>
-                </div>
-              </div>
-              
-              {/* Tools */}
-              <div className="mb-4">
-                <div className="ascii-body-text text-sm font-bold mb-2">TOOLS:</div>
-                <div className="flex flex-wrap gap-1">
-                  {server.tools.slice(0, 3).map((tool) => (
-                    <span
-                      key={tool}
-                      className="ascii-status"
-                      style={{ backgroundColor: '#D4D4D4', color: '#171717' }}
-                    >
-                      {tool.toUpperCase()}
-                    </span>
-                  ))}
-                  {server.tools.length > 3 && (
-                    <span className="ascii-status" style={{ backgroundColor: '#E5E5E5', color: '#525252' }}>
-                      +{server.tools.length - 3}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Resources */}
-              <div className="mb-4">
-                <div className="ascii-body-text text-sm font-bold mb-2">RESOURCES:</div>
-                <div className="flex flex-wrap gap-1">
-                  {server.resources.slice(0, 3).map((resource) => (
-                    <span
-                      key={resource}
-                      className="ascii-status"
-                      style={{ backgroundColor: '#E5E5E5', color: '#525252' }}
-                    >
-                      {resource.toUpperCase()}
-                    </span>
-                  ))}
-                  {server.resources.length > 3 && (
-                    <span className="ascii-status" style={{ backgroundColor: '#E5E5E5', color: '#525252' }}>
-                      +{server.resources.length - 3}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Prompts */}
-              <div className="mb-4">
-                <div className="ascii-body-text text-sm font-bold mb-2">PROMPTS:</div>
-                <div className="flex flex-wrap gap-1">
-                  {server.prompts.slice(0, 2).map((prompt) => (
-                    <span
-                      key={prompt}
-                      className="ascii-status"
-                      style={{ backgroundColor: '#F5F5F5', color: '#404040' }}
-                    >
-                      {prompt.toUpperCase()}
-                    </span>
-                  ))}
-                  {server.prompts.length > 2 && (
-                    <span className="ascii-status" style={{ backgroundColor: '#E5E5E5', color: '#525252' }}>
-                      +{server.prompts.length - 2}
-                    </span>
-                  )}
-                </div>
-              </div>
-              
-              {/* Footer */}
-              <div className="flex items-center justify-between pt-4" style={{ borderTop: '1px dotted #A3A3A3' }}>
-                <div className="ascii-body-text text-xs" style={{ color: '#525252' }}>
-                  UPDATED {new Date(server.lastUpdate).toLocaleDateString().toUpperCase()}
-                </div>
-                <div className="flex space-x-2">
-                  <a
-                    href={server.providerUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ascii-link text-sm"
-                  >
-                    [EXT]
-                  </a>
-                  <Link
-                    href={`/servers/${server.id}`}
-                    className="ascii-link text-sm"
-                  >
-                    VIEW DETAILS →
-                  </Link>
-                </div>
-              </div>
-            </div>
+            <UltraCompactCard
+              key={server.id}
+              data={{
+                ...server,
+                performance: {
+                  uptime: 0.95 + Math.random() * 0.05,
+                  responseTime: 50 + Math.random() * 100,
+                  requestsPerSecond: 100 + Math.random() * 500,
+                }
+              }}
+              type="mcp_server"
+              href={`/servers/${server.id}`}
+            />
           ))}
-        </div>
+        </UltraCompactGrid>
       )}
     </div>
   );
