@@ -2,7 +2,11 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import useRetroStatusData from '@/hooks/useRetroStatusData';
+import useRealStatusData, { 
+  ProgramActivity, 
+  AgentMetrics, 
+  MCPEntry 
+} from '@/hooks/useRealStatusData';
 
 const RetroStatusBar: React.FC = () => {
   const {
@@ -12,7 +16,7 @@ const RetroStatusBar: React.FC = () => {
     mcpEntries,
     recentAction,
     wsStatus
-  } = useRetroStatusData();
+  } = useRealStatusData();
   
   const [isCollapsed, setIsCollapsed] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);

@@ -3,7 +3,7 @@ import withPWA from 'next-pwa';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
+  //swcMinify: true,
   images: {
     domains: ['localhost'],
   },
@@ -20,7 +20,7 @@ export default withPWA({
   disable: process.env.NODE_ENV === 'development',
   runtimeCaching: [
     {
-      urlPattern: /^https:\/\/api\.devnet\.solana\.com/,
+      urlPattern: /^https:\/\/solana-devnet\.drpc\.com/,
       handler: 'NetworkFirst',
       options: {
         cacheName: 'solana-rpc-cache',

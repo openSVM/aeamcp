@@ -1,16 +1,186 @@
-import { PublicKey } from '@solana/web3.js';
+import { PublicKey, Commitment } from '@solana/web3.js';
 
-// Solana Network Configuration
+// ============================================================================
+// RPC CONFIGURATION INTERFACES
+// ============================================================================
+
+/**
+ * RPC endpoint configuration for connection management
+ */
+export interface RPCEndpointConfig {
+  /** Endpoint URL */
+  url: string;
+  /** Endpoint priority (lower = higher priority) */
+  priority: number;
+  /** Maximum connections for this endpoint */
+  maxConnections: number;
+  /** Request timeout in milliseconds */
+  timeout: number;
+  /** Maximum retry attempts */
+  retryAttempts: number;
+  /** Whether this endpoint supports WebSocket */
+  supportsWebSocket: boolean;
+  /** WebSocket endpoint URL (if different from HTTP) */
+  websocketUrl?: string;
+  /** Endpoint provider name for monitoring */
+  provider: string;
+  /** Geographic region (for latency optimization) */
+  region?: string;
+}
+
+/**
+ * Network-specific configuration
+ */
+export interface NetworkConfig {
+  /** Network name */
+  name: string;
+  /** List of RPC endpoints for this network */
+  endpoints: RPCEndpointConfig[];
+  /** Default commitment level */
+  commitment: Commitment;
+  /** Network-specific timeout overrides */
+  defaultTimeout: number;
+  /** Maximum retry attempts for this network */
+  maxRetries: number;
+  /** Health check interval in milliseconds */
+  healthCheckInterval: number;
+  /** Whether this is a production network */
+  isProduction: boolean;
+}
+
+// ============================================================================
+// NETWORK CONFIGURATIONS
+// ============================================================================
+
+/**
+ * Comprehensive RPC endpoint configurations for all Solana networks
+ */
+export const NETWORK_CONFIGS: Record<string, NetworkConfig> = {
+  devnet: {
+    name: 'devnet',
+    commitment: 'confirmed',
+    defaultTimeout: 30000,
+    maxRetries: 3,
+    healthCheckInterval: 30000,
+    isProduction: false,
+    endpoints: [
+      {
+        url: process.env.NEXT_PUBLIC_RPC_ENDPOINT || 'https://api.devnet.solana.com',
+        priority: 1,
+        maxConnections: 10,
+        timeout: 30000,
+        retryAttempts: 3,
+        supportsWebSocket: true,
+        provider: 'Solana Foundation',
+        region: 'global'
+      },
+      {
+        url: 'https://devnet.helius-rpc.com/?api-key=2eb1ae21-40d0-4b6d-adde-ccb3d56ad570',
+        priority: 2,
+        maxConnections: 8,
+        timeout: 25000,
+        retryAttempts: 3,
+        supportsWebSocket: true,
+        provider: 'dRPC',
+        region: 'global'
+      }
+    ]
+  },
+  
+  testnet: {
+    name: 'testnet',
+    commitment: 'confirmed',
+    defaultTimeout: 25000,
+    maxRetries: 3,
+    healthCheckInterval: 30000,
+    isProduction: false,
+    endpoints: [
+      {
+        url: 'https://api.testnet.solana.com',
+        priority: 1,
+        maxConnections: 8,
+        timeout: 25000,
+        retryAttempts: 3,
+        supportsWebSocket: true,
+        provider: 'Solana Foundation',
+        region: 'global'
+      },
+      {
+        url: 'https://devnet.helius-rpc.com/?api-key=2eb1ae21-40d0-4b6d-adde-ccb3d56ad570',
+        priority: 2,
+        maxConnections: 6,
+        timeout: 20000,
+        retryAttempts: 3,
+        supportsWebSocket: true,
+        provider: 'dRPC',
+        region: 'global'
+      },
+      {
+        url: 'https://rpc.ankr.com/solana_testnet',
+        priority: 3,
+        maxConnections: 5,
+        timeout: 20000,
+        retryAttempts: 2,
+        supportsWebSocket: true,
+        provider: 'Ankr',
+        region: 'global'
+      }
+    ]
+  },
+  
+  'mainnet-beta': {
+    name: 'mainnet-beta',
+    commitment: 'confirmed',
+    defaultTimeout: 20000,
+    maxRetries: 5,
+    healthCheckInterval: 15000,
+    isProduction: true,
+    endpoints: [
+      {
+        url: 'https://api.mainnet-beta.solana.com',
+        priority: 3,
+        maxConnections: 15,
+        timeout: 20000,
+        retryAttempts: 5,
+        supportsWebSocket: true,
+        provider: 'Solana Foundation',
+        region: 'global'
+      },
+      {
+        url: 'https://solana-mainnet.core.chainstack.com/3bf1bc5d6e5232077dbee1a6a172c4e2',
+        priority: 1,
+        maxConnections: 100,
+        timeout: 1500,
+        retryAttempts: 3,
+        supportsWebSocket: true,
+        provider: 'Chainstack',
+        region: 'global'
+      },
+    ]
+  }
+};
+
+// ============================================================================
+// LEGACY COMPATIBILITY (Deprecated - Use NETWORK_CONFIGS instead)
+// ============================================================================
+
+/**
+ * @deprecated Use getRPCConfiguration().getCurrentNetworkConfig().name instead
+ */
 export const SOLANA_NETWORK = process.env.NEXT_PUBLIC_SOLANA_NETWORK || 'devnet';
+
+/**
+ * @deprecated Use getRPCConfiguration().getPrimaryEndpoint().url instead
+ */
 export const RPC_ENDPOINT = process.env.NEXT_PUBLIC_RPC_ENDPOINT || 'https://api.devnet.solana.com';
 
-// Program IDs (replace with actual deployed program IDs)
+// Program IDs (deployed program addresses)
 export const AGENT_REGISTRY_PROGRAM_ID = new PublicKey(
-  process.env.NEXT_PUBLIC_AGENT_PROGRAM_ID || '11111111111111111111111111111111'
+  process.env.NEXT_PUBLIC_AGENT_PROGRAM_ID || 'BruRLHGfNaf6C5HKUqFu6md5ePJNELafm1vZdhctPkpr'
 );
 
 export const MCP_SERVER_REGISTRY_PROGRAM_ID = new PublicKey(
-  process.env.NEXT_PUBLIC_MCP_PROGRAM_ID || '11111111111111111111111111111111'
+  process.env.NEXT_PUBLIC_MCP_PROGRAM_ID || 'BCBVehUHR3yhbDbvhV3QHS3s27k3LTbpX5CrXQ2sR2SR'
 );
 
 

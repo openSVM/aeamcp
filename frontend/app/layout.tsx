@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import './onboarding.css';
 import WalletProvider from '@/components/common/WalletProvider';
+import QueryProvider from '@/components/common/QueryProvider';
 import Navigation from '@/components/common/Navigation';
 import PWAInstaller from '@/components/common/PWAInstaller';
 import DOSStatusBar from '@/components/common/DOSStatusBar';
@@ -48,66 +49,68 @@ export default function RootLayout({
       <body className="min-h-screen" style={{ fontFamily: "'Courier New', Courier, monospace", backgroundColor: '#FFFFFF', color: '#262626' }}>
         <I18nProvider>
           <OnboardingProvider>
-            <WalletProvider>
-              <DOSStatusBar />
-              <div className="flex flex-col min-h-screen">
-                <Navigation />
-                <main className="flex-1">
-                  {children}
-                </main>
-            <footer className="ascii-footer py-8">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center ascii-footer-text">
-                  <p>&copy; 2024 AEAMCP. Built on Solana blockchain. Powered by $SVMAI token. • PWA Enabled</p>
-                  <div className="mt-2 space-x-4">
-                    <a
-                      href="https://github.com/openSVM/aeamcp"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="ascii-footer-link"
-                    >
-                      GitHub
-                    </a>
-                    <a
-                      href="/aeamcp.html"
-                      className="ascii-footer-link"
-                    >
-                      Project Website
-                    </a>
-                    <a
-                      href="/docs.html"
-                      className="ascii-footer-link"
-                    >
-                      Documentation
-                    </a>
-                    <a
-                      href="/tokenomics"
-                      className="ascii-footer-link"
-                    >
-                      $SVMAI Tokenomics
-                    </a>
-                  </div>
+            <QueryProvider>
+              <WalletProvider>
+                <DOSStatusBar />
+                <div className="flex flex-col min-h-screen">
+                  <Navigation />
+                  <main className="flex-1">
+                    {children}
+                  </main>
+                  <footer className="ascii-footer py-8">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                      <div className="text-center ascii-footer-text">
+                        <p>&copy; 2024 AEAMCP. Built on Solana blockchain. Powered by $SVMAI token. • PWA Enabled</p>
+                        <div className="mt-2 space-x-4">
+                          <a
+                            href="https://github.com/openSVM/aeamcp"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="ascii-footer-link"
+                          >
+                            GitHub
+                          </a>
+                          <a
+                            href="/aeamcp.html"
+                            className="ascii-footer-link"
+                          >
+                            Project Website
+                          </a>
+                          <a
+                            href="/docs.html"
+                            className="ascii-footer-link"
+                          >
+                            Documentation
+                          </a>
+                          <a
+                            href="/tokenomics"
+                            className="ascii-footer-link"
+                          >
+                            $SVMAI Tokenomics
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </footer>
                 </div>
-              </div>
-            </footer>
-            </div>
-            <PWAInstaller />
-            <Toaster
-              position="bottom-right"
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: '#404040',
-                  color: '#FFFFFF',
-                  fontFamily: "'Courier New', Courier, monospace",
-                  border: '1px solid #A3A3A3',
-                  borderRadius: '0',
-                },
-              }}
-            />
-          </WalletProvider>
-          <OnboardingManager autoStart={true} showOnFirstVisit={true} />
-        </OnboardingProvider>
+                <PWAInstaller />
+                <Toaster
+                  position="bottom-right"
+                  toastOptions={{
+                    duration: 4000,
+                    style: {
+                      background: '#404040',
+                      color: '#FFFFFF',
+                      fontFamily: "'Courier New', Courier, monospace",
+                      border: '1px solid #A3A3A3',
+                      borderRadius: '0',
+                    },
+                  }}
+                />
+              </WalletProvider>
+            </QueryProvider>
+            <OnboardingManager autoStart={true} showOnFirstVisit={true} />
+          </OnboardingProvider>
         </I18nProvider>
         
         <script

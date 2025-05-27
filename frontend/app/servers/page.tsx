@@ -1,105 +1,77 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import UltraCompactCard from '../../components/common/UltraCompactCard';
 import UltraCompactGrid from '../../components/common/UltraCompactGrid';
 import { useI18nContext } from '../../components/common/I18nProvider';
-
-// Mock data for demonstration
-const mockServers = [
-  {
-    id: 'file-manager-mcp',
-    name: 'File Manager MCP Server',
-    description: 'Comprehensive file management server providing tools for reading, writing, and organizing files across various storage systems.',
-    version: '2.1.0',
-    provider: 'FileSystemCorp',
-    providerUrl: 'https://filesystemcorp.com',
-    endpoint: 'https://api.filesystemcorp.com/mcp',
-    tools: ['read_file', 'write_file', 'list_directory', 'create_folder'],
-    resources: ['file_content', 'directory_structure', 'file_metadata'],
-    prompts: ['file_summary', 'directory_analysis'],
-    status: 'Active',
-    registrationDate: '2024-01-12',
-    lastUpdate: '2024-01-22',
-    rating: 4.7,
-    users: 850,
-  },
-  {
-    id: 'database-connector-mcp',
-    name: 'Database Connector MCP',
-    description: 'Universal database connector supporting PostgreSQL, MySQL, MongoDB, and Redis with advanced querying capabilities.',
-    version: '1.8.2',
-    provider: 'DataBridge',
-    providerUrl: 'https://databridge.io',
-    endpoint: 'https://api.databridge.io/mcp',
-    tools: ['execute_query', 'create_table', 'insert_data', 'backup_database'],
-    resources: ['schema_info', 'query_results', 'connection_status'],
-    prompts: ['query_optimization', 'schema_design'],
-    status: 'Active',
-    registrationDate: '2024-01-08',
-    lastUpdate: '2024-01-21',
-    rating: 4.9,
-    users: 1420,
-  },
-  {
-    id: 'api-gateway-mcp',
-    name: 'API Gateway MCP Server',
-    description: 'Powerful API gateway and proxy server with rate limiting, authentication, and request transformation capabilities.',
-    version: '3.0.1',
-    provider: 'GatewayTech',
-    providerUrl: 'https://gatewaytech.com',
-    endpoint: 'https://api.gatewaytech.com/mcp',
-    tools: ['proxy_request', 'rate_limit', 'authenticate', 'transform_data'],
-    resources: ['api_specs', 'rate_limits', 'auth_tokens'],
-    prompts: ['api_documentation', 'security_analysis'],
-    status: 'Active',
-    registrationDate: '2024-01-03',
-    lastUpdate: '2024-01-20',
-    rating: 4.5,
-    users: 670,
-  },
-];
+import { useMcpServers } from '../../lib/hooks/useRegistry';
+import { McpServerSearchParams, PaginationOptions } from '../../lib/types/ui-types';
 
 export default function ServersPage() {
   const { t } = useI18nContext();
-  const [servers, setServers] = useState(mockServers);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [sortBy, setSortBy] = useState('rating');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
 
-  useEffect(() => {
-    // Simulate loading
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  }, []);
+  // Build search parameters
+  const searchParams = useMemo((): McpServerSearchParams => {
+    const params: McpServerSearchParams = {
+      sortOrder: 'desc'
+    };
 
-  const filteredServers = servers
-    .filter(server => {
-      if (searchTerm && !server.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-          !server.description.toLowerCase().includes(searchTerm.toLowerCase()) &&
-          !server.tools.some(tool => tool.toLowerCase().includes(searchTerm.toLowerCase()))) {
-        return false;
-      }
-      if (statusFilter && server.status !== statusFilter) {
-        return false;
-      }
-      return true;
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case 'rating':
-          return b.rating - a.rating;
-        case 'users':
-          return b.users - a.users;
-        case 'recent':
-          return new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime();
-        default:
-          return 0;
-      }
-    });
+    // Map UI sort options to API sort options
+    switch (sortBy) {
+      case 'rating':
+        params.sortBy = 'rating';
+        break;
+      case 'users':
+        params.sortBy = 'rating'; // Use rating as proxy for popularity
+        break;
+      case 'recent':
+        params.sortBy = 'lastUpdate';
+        break;
+      default:
+        params.sortBy = 'rating';
+    }
+
+    if (searchTerm.trim()) {
+      params.query = searchTerm.trim();
+    }
+
+    if (statusFilter) {
+      params.status = [statusFilter as any];
+    }
+
+    return params;
+  }, [searchTerm, statusFilter, sortBy]);
+
+  // Build pagination options
+  const paginationOptions = useMemo((): PaginationOptions => ({
+    limit: itemsPerPage,
+    offset: (currentPage - 1) * itemsPerPage
+  }), [currentPage]);
+
+  // Fetch MCP servers data with real-time updates
+  const {
+    data: serversResult,
+    loading,
+    error,
+    freshness,
+    refetch,
+    connectionQuality
+  } = useMcpServers(searchParams, paginationOptions, {
+    realtime: true,
+    validateData: true,
+    staleTime: 30000, // 30 seconds
+    cacheTime: 300000 // 5 minutes
+  });
+
+  const servers = serversResult?.data || [];
+  const totalPages = serversResult?.totalPages || 1;
+  const hasMore = serversResult?.hasMore || false;
 
   const getStatusDisplay = (status: string) => {
     switch (status) {
@@ -174,9 +146,27 @@ export default function ServersPage() {
       </div>
 
       {/* Ultra-Compact Servers Grid */}
-      {loading ? (
+      {loading.isLoading ? (
         <UltraCompactGrid loading={true} loadingItems={12} />
-      ) : filteredServers.length === 0 ? (
+      ) : error.hasError ? (
+        <div className="text-center py-8">
+          <div className="ascii-card inline-block">
+            <div className="ascii-logo w-12 h-8 mx-auto mb-2">
+              <span className="text-lg">[!]</span>
+            </div>
+            <h3 className="ascii-subsection-title text-sm">ERROR LOADING SERVERS</h3>
+            <p className="ascii-body-text text-xs mb-4">
+              {error.message || 'Failed to load MCP servers from blockchain'}
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="ascii-button-secondary text-xs"
+            >
+              [RETRY]
+            </button>
+          </div>
+        </div>
+      ) : servers.length === 0 ? (
         <div className="text-center py-8">
           <div className="ascii-card inline-block">
             <div className="ascii-logo w-12 h-8 mx-auto mb-2">
@@ -191,23 +181,66 @@ export default function ServersPage() {
           </div>
         </div>
       ) : (
-        <UltraCompactGrid>
-          {filteredServers.map((server) => (
-            <UltraCompactCard
-              key={server.id}
-              data={{
-                ...server,
-                performance: {
-                  uptime: 0.95 + Math.random() * 0.05,
-                  responseTime: 50 + Math.random() * 100,
-                  requestsPerSecond: 100 + Math.random() * 500,
-                }
-              }}
-              type="mcp_server"
-              href={`/servers/${server.id}`}
-            />
-          ))}
-        </UltraCompactGrid>
+        <>
+          {/* Connection Status Indicator */}
+          {freshness.source !== 'blockchain' && (
+            <div className="mb-4 text-center">
+              <div className="ascii-card inline-block bg-yellow-50 border-yellow-200">
+                <p className="ascii-body-text text-xs text-yellow-700">
+                  [!] {freshness.source === 'cache' ? 'CACHED DATA' : 'FALLBACK DATA'} -
+                  Connection Quality: {connectionQuality}% -
+                  <button onClick={() => refetch()} className="underline">REFRESH</button>
+                </p>
+              </div>
+            </div>
+          )}
+
+          <UltraCompactGrid>
+            {servers.map((server) => (
+              <UltraCompactCard
+                key={server.id}
+                data={{
+                  ...server,
+                  provider: server.provider || 'Unknown',
+                  rating: server.rating || 0,
+                  users: server.users || 0,
+                  performance: {
+                    uptime: server.trustScore ? server.trustScore / 100 : 0.95,
+                    responseTime: 50 + Math.random() * 100,
+                    requestsPerSecond: 100 + Math.random() * 500,
+                  }
+                }}
+                type="mcp_server"
+                href={`/servers/${server.id}`}
+              />
+            ))}
+          </UltraCompactGrid>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-8 flex justify-center items-center gap-4">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="ascii-button-secondary disabled:opacity-50"
+              >
+                [←PREV]
+              </button>
+              
+              <span className="ascii-body-text">
+                PAGE {currentPage} OF {totalPages}
+              </span>
+              
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="ascii-button-secondary disabled:opacity-50"
+              >
+                [NEXT→]
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

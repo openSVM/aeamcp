@@ -1,105 +1,77 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import UltraCompactCard from '../../components/common/UltraCompactCard';
 import UltraCompactGrid from '../../components/common/UltraCompactGrid';
 import { useI18nContext } from '../../components/common/I18nProvider';
-
-// Mock data for demonstration
-const mockAgents = [
-  {
-    id: 'trading-bot-v1',
-    name: 'Advanced Trading Agent',
-    description: 'AI agent for automated trading strategies with risk management and portfolio optimization. Supports multiple DEXs and advanced order types.',
-    version: '1.2.0',
-    provider: 'TradingCorp',
-    providerUrl: 'https://tradingcorp.com',
-    endpoint: 'https://api.tradingcorp.com/agent',
-    capabilities: ['Trading', 'Risk Management', 'Portfolio Analysis'],
-    tags: ['trading', 'defi', 'automated', 'solana'],
-    status: 'Active',
-    stakeRequired: 1000,
-    registrationDate: '2024-01-15',
-    lastUpdate: '2024-01-20',
-    rating: 4.8,
-    users: 1250,
-  },
-  {
-    id: 'nft-analyzer-pro',
-    name: 'NFT Market Analyzer',
-    description: 'Comprehensive NFT market analysis agent providing real-time pricing, rarity scoring, and trend predictions across major marketplaces.',
-    version: '2.0.1',
-    provider: 'NFTLabs',
-    providerUrl: 'https://nftlabs.io',
-    endpoint: 'https://api.nftlabs.io/analyzer',
-    capabilities: ['Market Analysis', 'Rarity Scoring', 'Price Prediction'],
-    tags: ['nft', 'analysis', 'marketplace', 'solana'],
-    status: 'Active',
-    stakeRequired: 500,
-    registrationDate: '2024-01-10',
-    lastUpdate: '2024-01-18',
-    rating: 4.6,
-    users: 890,
-  },
-  {
-    id: 'defi-yield-optimizer',
-    name: 'DeFi Yield Optimizer',
-    description: 'Intelligent yield farming agent that automatically finds and executes optimal yield strategies across Solana DeFi protocols.',
-    version: '1.5.3',
-    provider: 'YieldMax',
-    providerUrl: 'https://yieldmax.fi',
-    endpoint: 'https://api.yieldmax.fi/optimizer',
-    capabilities: ['Yield Farming', 'Strategy Optimization', 'Risk Assessment'],
-    tags: ['defi', 'yield', 'farming', 'optimization'],
-    status: 'Active',
-    stakeRequired: 2000,
-    registrationDate: '2024-01-05',
-    lastUpdate: '2024-01-19',
-    rating: 4.9,
-    users: 2100,
-  },
-];
+import { useAgents } from '../../lib/hooks/useRegistry';
+import { AgentSearchParams, PaginationOptions } from '../../lib/types/ui-types';
 
 export default function AgentsPage() {
   const { t } = useI18nContext();
-  const [agents, setAgents] = useState(mockAgents);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [sortBy, setSortBy] = useState('rating');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
 
-  useEffect(() => {
-    // Simulate loading
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  }, []);
+  // Build search parameters
+  const searchParams = useMemo((): AgentSearchParams => {
+    const params: AgentSearchParams = {
+      sortOrder: 'desc'
+    };
 
-  const filteredAgents = agents
-    .filter(agent => {
-      if (searchTerm && !agent.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-          !agent.description.toLowerCase().includes(searchTerm.toLowerCase()) &&
-          !agent.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))) {
-        return false;
-      }
-      if (statusFilter && agent.status !== statusFilter) {
-        return false;
-      }
-      return true;
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case 'rating':
-          return b.rating - a.rating;
-        case 'users':
-          return b.users - a.users;
-        case 'recent':
-          return new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime();
-        default:
-          return 0;
-      }
-    });
+    // Map UI sort options to API sort options
+    switch (sortBy) {
+      case 'rating':
+        params.sortBy = 'rating';
+        break;
+      case 'users':
+        params.sortBy = 'rating'; // Use rating as proxy for popularity
+        break;
+      case 'recent':
+        params.sortBy = 'lastUpdate';
+        break;
+      default:
+        params.sortBy = 'rating';
+    }
+
+    if (searchTerm.trim()) {
+      params.query = searchTerm.trim();
+    }
+
+    if (statusFilter) {
+      params.status = [statusFilter as any];
+    }
+
+    return params;
+  }, [searchTerm, statusFilter, sortBy]);
+
+  // Build pagination options
+  const paginationOptions = useMemo((): PaginationOptions => ({
+    limit: itemsPerPage,
+    offset: (currentPage - 1) * itemsPerPage
+  }), [currentPage]);
+
+  // Fetch agents data with real-time updates
+  const {
+    data: agentsResult,
+    loading,
+    error,
+    freshness,
+    refetch,
+    connectionQuality
+  } = useAgents(searchParams, paginationOptions, {
+    realtime: true,
+    validateData: true,
+    staleTime: 30000, // 30 seconds
+    cacheTime: 300000 // 5 minutes
+  });
+
+  const agents = agentsResult?.data || [];
+  const totalPages = agentsResult?.totalPages || 1;
+  const hasMore = agentsResult?.hasMore || false;
 
   const getStatusDisplay = (status: string) => {
     switch (status) {
@@ -174,9 +146,27 @@ export default function AgentsPage() {
       </div>
 
       {/* Ultra-Compact Agents Grid */}
-      {loading ? (
+      {loading.isLoading ? (
         <UltraCompactGrid loading={true} loadingItems={12} />
-      ) : filteredAgents.length === 0 ? (
+      ) : error.hasError ? (
+        <div className="text-center py-8">
+          <div className="ascii-card inline-block">
+            <div className="ascii-logo w-12 h-8 mx-auto mb-2">
+              <span className="text-lg">[!]</span>
+            </div>
+            <h3 className="ascii-subsection-title text-sm">ERROR LOADING AGENTS</h3>
+            <p className="ascii-body-text text-xs mb-4">
+              {error.message || 'Failed to load agents from blockchain'}
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="ascii-button-secondary text-xs"
+            >
+              [RETRY]
+            </button>
+          </div>
+        </div>
+      ) : agents.length === 0 ? (
         <div className="text-center py-8">
           <div className="ascii-card inline-block">
             <div className="ascii-logo w-12 h-8 mx-auto mb-2">
@@ -191,23 +181,66 @@ export default function AgentsPage() {
           </div>
         </div>
       ) : (
-        <UltraCompactGrid>
-          {filteredAgents.map((agent) => (
-            <UltraCompactCard
-              key={agent.id}
-              data={{
-                ...agent,
-                performance: {
-                  uptime: 0.95 + Math.random() * 0.05,
-                  responseTime: 50 + Math.random() * 100,
-                  successRate: 0.9 + Math.random() * 0.1,
-                }
-              }}
-              type="agent"
-              href={`/agents/${agent.id}`}
-            />
-          ))}
-        </UltraCompactGrid>
+        <>
+          {/* Connection Status Indicator */}
+          {freshness.source !== 'blockchain' && (
+            <div className="mb-4 text-center">
+              <div className="ascii-card inline-block bg-yellow-50 border-yellow-200">
+                <p className="ascii-body-text text-xs text-yellow-700">
+                  [!] {freshness.source === 'cache' ? 'CACHED DATA' : 'FALLBACK DATA'} -
+                  Connection Quality: {connectionQuality}% -
+                  <button onClick={() => refetch()} className="underline">REFRESH</button>
+                </p>
+              </div>
+            </div>
+          )}
+
+          <UltraCompactGrid>
+            {agents.map((agent) => (
+              <UltraCompactCard
+                key={agent.id}
+                data={{
+                  ...agent,
+                  stakeRequired: agent.stakeRequired || 0,
+                  rating: agent.rating || 0,
+                  users: agent.users || 0,
+                  performance: {
+                    uptime: agent.trustScore ? agent.trustScore / 100 : 0.95,
+                    responseTime: 50 + Math.random() * 100,
+                    successRate: agent.rating ? agent.rating / 5 : 0.9,
+                  }
+                }}
+                type="agent"
+                href={`/agents/${agent.id}`}
+              />
+            ))}
+          </UltraCompactGrid>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-8 flex justify-center items-center gap-4">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="ascii-button-secondary disabled:opacity-50"
+              >
+                [←PREV]
+              </button>
+              
+              <span className="ascii-body-text">
+                PAGE {currentPage} OF {totalPages}
+              </span>
+              
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="ascii-button-secondary disabled:opacity-50"
+              >
+                [NEXT→]
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
