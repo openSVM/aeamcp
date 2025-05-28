@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey, Transaction } from '@solana/web3.js';
 import { toast } from 'react-hot-toast';
+import { registryService, McpServerRegistrationData } from '@/lib/solana/registry';
 import Link from 'next/link';
 
 interface ToolDefinition {
@@ -183,9 +184,6 @@ export default function RegisterServerPage() {
 
     setLoading(true);
     try {
-      // TODO: Implement actual Solana program interaction
-      // This is a placeholder for the actual registration logic
-      
       // Validate all required fields
       if (!validateStep(1) || !validateStep(2) || !validateStep(3)) {
         toast.error('Please fill in all required fields');
@@ -193,14 +191,45 @@ export default function RegisterServerPage() {
         return;
       }
 
-      // Simulate transaction creation and signing
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Prepare MCP server registration data
+      const mcpServerRegistrationData: McpServerRegistrationData = {
+        serverId: formData.serverId,
+        name: formData.name,
+        description: formData.description,
+        version: formData.version,
+        providerName: formData.providerName,
+        providerUrl: formData.providerUrl,
+        documentationUrl: formData.documentationUrl,
+        endpointUrl: formData.endpointUrl,
+        capabilitiesSummary: formData.capabilitiesSummary,
+        toolDefinitions: formData.toolDefinitions,
+        resourceDefinitions: formData.resourceDefinitions,
+        promptDefinitions: formData.promptDefinitions,
+        fullCapabilitiesUri: formData.fullCapabilitiesUri,
+        tags: formData.tags,
+      };
+
+      // Create the transaction
+      const transaction = await registryService.registerMcpServer(mcpServerRegistrationData, publicKey);
+
+      // Sign the transaction
+      const signedTransaction = await signTransaction(transaction);
+
+      // Send the transaction
+      const signature = await registryService.connection.sendRawTransaction(signedTransaction.serialize());
+
+      // Confirm the transaction
+      await registryService.connection.confirmTransaction(signature, 'confirmed');
       
       toast.success('MCP Server registered successfully!');
       router.push('/servers');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error);
-      toast.error('Failed to register MCP server. Please try again.');
+      if (error.message.includes('User rejected the request')) {
+        toast.error('Transaction rejected by user.');
+      } else {
+        toast.error(`Failed to register MCP server: ${error.message || 'Unknown error'}`);
+      }
     } finally {
       setLoading(false);
     }

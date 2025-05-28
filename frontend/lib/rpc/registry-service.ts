@@ -13,6 +13,7 @@ import {
   GetProgramAccountsFilter,
   Commitment
 } from '@solana/web3.js';
+import bs58 from 'bs58'; // Import bs58
 import { rpcConnectionManager, RPCRequestOptions } from './connection-manager';
 import { RequestPriority } from './rate-limiter';
 import { registrySerializer } from '../solana/serialization';
@@ -589,7 +590,7 @@ export class RegistryRPCService {
     filters.push({
       memcmp: {
         offset: 0,
-        bytes: registrySerializer.getAccountDiscriminator('AgentRegistryEntryV1').toString('base64')
+        bytes: bs58.encode(registrySerializer.getAccountDiscriminator('AgentRegistryEntryV1')) // Use bs58.encode
       }
     });
 
@@ -610,7 +611,7 @@ export class RegistryRPCService {
     filters.push({
       memcmp: {
         offset: 0,
-        bytes: registrySerializer.getAccountDiscriminator('McpServerRegistryEntryV1').toString('base64')
+        bytes: bs58.encode(registrySerializer.getAccountDiscriminator('McpServerRegistryEntryV1')) // Use bs58.encode
       }
     });
 

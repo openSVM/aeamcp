@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Gaming Status Bar Demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Retro Gaming Status Bar Demo Styles */
+        
+        /* Retro Gaming Color Palette */
+        :root {
+            /* Primary Background */
+            --retro-bg-primary: #1a1a2e;
+            --retro-bg-secondary: #16213e;
+            --retro-bg-tertiary: #0f3460;
+            
+            /* Neon Accents */
+            --retro-neon-blue: #00d4ff;
+            --retro-neon-green: #00ff41;
+            --retro-neon-pink: #ff0080;
+            --retro-neon-yellow: #ffff00;
+            --retro-neon-purple: #8000ff;
+            --retro-neon-cyan: #00ffff;
+            
+            /* Status Colors */
+            --retro-success: #00ff41;
+            --retro-warning: #ffff00;
+            --retro-error: #ff0040;
+            --retro-info: #00d4ff;
+            
+            /* Text Colors */
+            --retro-text-primary: #ffffff;
+            --retro-text-secondary: #b0b0b0;
+            --retro-text-accent: #00d4ff;
+            
+            /* Border and Shadow */
+            --retro-border: #333366;
+            --retro-glow: 0 0 10px;
+            --retro-glow-intense: 0 0 20px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Orbitron', 'Courier New', monospace;
+            background: #000;
+            color: #fff;
+            padding-top: 80px;
+            min-height: 100vh;
+        }
+
+        /* Main Status Bar Container */
+        .retro-status-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: linear-gradient(135deg, var(--retro-bg-primary) 0%, var(--retro-bg-secondary) 50%, var(--retro-bg-tertiary) 100%);
+            border-bottom: 2px solid var(--retro-neon-blue);
+            box-shadow: var(--retro-glow) var(--retro-neon-blue);
+            z-index: 1000;
+            font-size: 12px;
+            font-weight: 400;
+            color: var(--retro-text-primary);
+            overflow: hidden;
+        }
+
+        /* Animated scan lines */
+        .retro-scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 212, 255, 0.03) 2px,
+                rgba(0, 212, 255, 0.03) 4px
+            );
+            animation: retro-scan 2s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes retro-scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        /* Main content container */
+        .retro-status-content {
+            position: relative;
+            display: flex;
+            align-items: center;
+            height: 100%;
+            padding: 0 20px;
+            gap: 20px;
+            z-index: 1;
+        }
+
+        /* Network Status Section */
+        .retro-network-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--retro-border);
+            border-left: 3px solid var(--retro-neon-blue);
+            box-shadow: var(--retro-glow) var(--retro-neon-blue);
+        }
+
+        .retro-network-orb {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--retro-success);
+            animation: retro-pulse 2s ease-in-out infinite;
+            box-shadow: var(--retro-glow) var(--retro-success);
+        }
+
+        @keyframes retro-pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.2); }
+        }
+
+        .retro-network-text {
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--retro-text-accent);
+            text-shadow: 0 0 5px currentColor;
+        }
+
+        .retro-ws-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: 12px;
+            padding-left: 12px;
+            border-left: 1px solid var(--retro-border);
+        }
+
+        .retro-ws-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--retro-success);
+            border-radius: 50%;
+            animation: retro-blink 1s ease-in-out infinite;
+            box-shadow: var(--retro-glow) var(--retro-success);
+        }
+
+        @keyframes retro-blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        /* Programs Section */
+        .retro-programs-section {
+            flex: 1;
+            max-width: 60%;
+            height: 100%;
+        }
+
+        .retro-programs-container {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--retro-border);
+            border-left: 3px solid var(--retro-neon-green);
+            box-shadow: var(--retro-glow) var(--retro-neon-green);
+        }
+
+        .retro-programs-scroll {
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+            animation: retro-scroll 60s linear infinite;
+            white-space: nowrap;
+        }
+
+        @keyframes retro-scroll {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .retro-program-item {
+            display: flex;
+            flex-direction: column;
+            min-width: 180px;
+            padding: 8px 12px;
+            background: rgba(0, 255, 65, 0.1);
+            border: 1px solid var(--retro-neon-green);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .retro-program-item:hover {
+            background: rgba(0, 255, 65, 0.2);
+            box-shadow: var(--retro-glow-intense) var(--retro-neon-green);
+            transform: translateY(-2px);
+        }
+
+        .retro-program-address {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--retro-neon-green);
+            text-shadow: 0 0 3px currentColor;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .retro-program-stats {
+            font-size: 10px;
+            color: var(--retro-text-secondary);
+            font-weight: 400;
+        }
+
+        /* Metrics Section */
+        .retro-metrics-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 300px;
+            height: 100%;
+            padding: 8px 0;
+        }
+
+        .retro-section-label {
+            font-size: 10px;
+            font-weight: 900;
+            color: var(--retro-neon-yellow);
+            text-shadow: 0 0 3px currentColor;
+            letter-spacing: 2px;
+            margin-bottom: 4px;
+        }
+
+        .retro-agents {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .retro-agent-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--retro-border);
+            border-left: 2px solid var(--retro-neon-pink);
+        }
+
+        .retro-agent-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--retro-success);
+            animation: retro-pulse 1.5s ease-in-out infinite;
+            box-shadow: var(--retro-glow) currentColor;
+        }
+
+        .retro-agent-name {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--retro-text-primary);
+            min-width: 60px;
+        }
+
+        .retro-agent-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+        }
+
+        .retro-progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--retro-border);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .retro-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--retro-neon-pink), var(--retro-neon-purple));
+            transition: width 0.5s ease;
+            box-shadow: 0 0 5px var(--retro-neon-pink);
+            width: 85%;
+        }
+
+        .retro-agent-stats {
+            font-size: 9px;
+            color: var(--retro-text-secondary);
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Demo content */
+        .demo-content {
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .demo-title {
+            font-size: 2.5rem;
+            color: var(--retro-neon-blue);
+            text-align: center;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        .demo-description {
+            font-size: 1.1rem;
+            color: var(--retro-text-secondary);
+            text-align: center;
+            margin-bottom: 3rem;
+            line-height: 1.6;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: rgba(26, 26, 46, 0.8);
+            border: 1px solid var(--retro-border);
+            border-left: 3px solid var(--retro-neon-green);
+            padding: 1.5rem;
+            box-shadow: var(--retro-glow) var(--retro-neon-green);
+        }
+
+        .feature-title {
+            color: var(--retro-neon-green);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 5px currentColor;
+        }
+
+        .feature-text {
+            color: var(--retro-text-secondary);
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .retro-status-bar {
+                height: 60px;
+            }
+            
+            body {
+                padding-top: 60px;
+            }
+            
+            .retro-programs-section {
+                display: none;
+            }
+            
+            .retro-metrics-section {
+                min-width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Retro Gaming Status Bar -->
+    <div class="retro-status-bar">
+        <div class="retro-scanlines"></div>
+        
+        <!-- Main Content -->
+        <div class="retro-status-content">
+            <!-- Left Section - Network Status -->
+            <div class="retro-status-section">
+                <div class="retro-network-status">
+                    <div class="retro-network-orb"></div>
+                    <span class="retro-network-text">DEVNET • 45ms</span>
+                    <div class="retro-ws-indicator">
+                        <div class="retro-ws-dot"></div>
+                        <span>LIVE</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Section - Scrollable Programs -->
+            <div class="retro-status-section retro-programs-section">
+                <div class="retro-programs-container">
+                    <div class="retro-programs-scroll">
+                        <div class="retro-program-item">
+                            <div class="retro-program-address">9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM</div>
+                            <div class="retro-program-stats">1,247 • 94%</div>
+                        </div>
+                        <div class="retro-program-item">
+                            <div class="retro-program-address">TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA</div>
+                            <div class="retro-program-stats">2,891 • 98%</div>
+                        </div>
+                        <div class="retro-program-item">
+                            <div class="retro-program-address">11111111111111111111111111111112</div>
+                            <div class="retro-program-stats">5,432 • 99%</div>
+                        </div>
+                        <div class="retro-program-item">
+                            <div class="retro-program-address">ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL</div>
+                            <div class="retro-program-stats">876 • 91%</div>
+                        </div>
+                        <div class="retro-program-item">
+                            <div class="retro-program-address">So1endDq2YkqhipRh3WViPa8hdiSpxWy6z3Z6tMCpAo</div>
+                            <div class="retro-program-stats">1,654 • 96%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Section - Agents, MCP, Recent Action -->
+            <div class="retro-status-section retro-metrics-section">
+                <!-- Top Agents -->
+                <div class="retro-agents">
+                    <span class="retro-section-label">AGENTS</span>
+                    <div class="retro-agent-item">
+                        <div class="retro-agent-status"></div>
+                        <span class="retro-agent-name">AI Agent 1</span>
+                        <div class="retro-agent-metrics">
+                            <div class="retro-progress-bar">
+                                <div class="retro-progress-fill"></div>
+                            </div>
+                            <span class="retro-agent-stats">85% • 120ms • 7</span>
+                        </div>
+                    </div>
+                    <div class="retro-agent-item">
+                        <div class="retro-agent-status"></div>
+                        <span class="retro-agent-name">AI Agent 2</span>
+                        <div class="retro-agent-metrics">
+                            <div class="retro-progress-bar">
+                                <div class="retro-progress-fill" style="width: 92%;"></div>
+                            </div>
+                            <span class="retro-agent-stats">92% • 89ms • 12</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demo Content -->
+    <div class="demo-content">
+        <h1 class="demo-title">🎮 RETRO GAMING STATUS BAR</h1>
+        <p class="demo-description">
+            Experience the authentic 8-bit/16-bit era design with modern functionality. 
+            This status bar provides real-time monitoring of your Solana AI registries 
+            with a nostalgic gaming console aesthetic.
+        </p>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3 class="feature-title">🌐 Network Monitoring</h3>
+                <p class="feature-text">
+                    Real-time Solana network status with animated health indicators, 
+                    latency monitoring, and live WebSocket connection status.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <h3 class="feature-title">📊 Program Activities</h3>
+                <p class="feature-text">
+                    Horizontally scrolling display of the top 24 most active program addresses 
+                    with transaction counts, success rates, and click-to-copy functionality.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <h3 class="feature-title">🤖 Agent Metrics</h3>
+                <p class="feature-text">
+                    Performance tracking for AI agents with retro-style progress bars, 
+                    response times, and active task monitoring.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <h3 class="feature-title">🎨 Retro Aesthetics</h3>
+                <p class="feature-text">
+                    Authentic gaming console design with scan lines, neon colors, 
+                    CRT effects, and smooth animations for an immersive experience.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <h3 class="feature-title">📱 Responsive Design</h3>
+                <p class="feature-text">
+                    Intelligent progressive hiding of information on smaller screens 
+                    while maintaining core functionality and visual appeal.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <h3 class="feature-title">♿ Accessibility</h3>
+                <p class="feature-text">
+                    WCAG AA compliant with high contrast ratios, keyboard navigation, 
+                    and reduced motion support for all users.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

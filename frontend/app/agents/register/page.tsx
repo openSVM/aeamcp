@@ -171,9 +171,6 @@ export default function RegisterAgentPage() {
 
     setLoading(true);
     try {
-      // TODO: Implement actual Solana program interaction
-      // This is a placeholder for the actual registration logic
-      
       // Validate all required fields
       if (!validateStep(1) || !validateStep(2) || !validateStep(3)) {
         toast.error('Please fill in all required fields');
@@ -181,14 +178,46 @@ export default function RegisterAgentPage() {
         return;
       }
 
-      // Simulate transaction creation and signing
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Prepare agent registration data
+      const agentRegistrationData: AgentRegistrationData = {
+        agentId: formData.agentId,
+        name: formData.name,
+        description: formData.description,
+        version: formData.version,
+        providerName: formData.providerName,
+        providerUrl: formData.providerUrl,
+        documentationUrl: formData.documentationUrl,
+        serviceEndpoints: formData.serviceEndpoints,
+        supportedModes: formData.supportedModes,
+        skills: formData.skills,
+        securityInfoUri: formData.securityInfoUri,
+        aeaAddress: formData.aeaAddress,
+        economicIntent: formData.economicIntent,
+        extendedMetadataUri: formData.extendedMetadataUri,
+        tags: formData.tags,
+      };
+
+      // Create the transaction
+      const transaction = await registryService.registerAgent(agentRegistrationData, publicKey);
+
+      // Sign the transaction
+      const signedTransaction = await signTransaction(transaction);
+
+      // Send the transaction
+      const signature = await registryService.connection.sendRawTransaction(signedTransaction.serialize());
+
+      // Confirm the transaction
+      await registryService.connection.confirmTransaction(signature, 'confirmed');
       
       toast.success('Agent registered successfully!');
       router.push('/agents');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error);
-      toast.error('Failed to register agent. Please try again.');
+      if (error.message.includes('User rejected the request')) {
+        toast.error('Transaction rejected by user.');
+      } else {
+        toast.error(`Failed to register agent: ${error.message || 'Unknown error'}`);
+      }
     } finally {
       setLoading(false);
     }

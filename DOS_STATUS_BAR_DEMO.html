@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOS Command Line Status Bar Demo</title>
+    <style>
+        /* ASCII Grayscale Color Palette */
+        :root {
+            --ascii-white: #FFFFFF;
+            --ascii-neutral-50: #FAFAFA;
+            --ascii-neutral-100: #F5F5F5;
+            --ascii-neutral-200: #E5E5E5;
+            --ascii-neutral-300: #D4D4D4;
+            --ascii-neutral-400: #A3A3A3;
+            --ascii-neutral-500: #737373;
+            --ascii-neutral-600: #525252;
+            --ascii-neutral-700: #404040;
+            --ascii-neutral-800: #262626;
+            --ascii-neutral-900: #171717;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background: var(--ascii-white);
+            color: var(--ascii-neutral-800);
+            padding-top: 40px;
+            min-height: 100vh;
+        }
+
+        /* DOS Status Bar Container */
+        .dos-status-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background-color: var(--ascii-neutral-700);
+            border-bottom: 2px solid var(--ascii-neutral-900);
+            display: flex;
+            align-items: center;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            color: var(--ascii-white);
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Left Section - Command Input */
+        .dos-command-section {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            padding: 0 12px;
+            gap: 8px;
+            border-right: 1px solid var(--ascii-neutral-500);
+            min-width: 0;
+        }
+
+        .dos-prompt {
+            color: var(--ascii-white);
+            font-weight: bold;
+            white-space: nowrap;
+            font-size: 14px;
+        }
+
+        .dos-command-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--ascii-white);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            padding: 4px 0;
+            min-width: 0;
+            caret-color: var(--ascii-white);
+        }
+
+        .dos-command-input::placeholder {
+            color: var(--ascii-neutral-400);
+            font-style: italic;
+        }
+
+        .dos-command-input:focus {
+            background-color: rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 -1px 0 var(--ascii-neutral-400);
+        }
+
+        .dos-connecting {
+            color: var(--ascii-neutral-400);
+            font-size: 12px;
+            animation: dos-blink 1s infinite;
+        }
+
+        @keyframes dos-blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        /* Right Section - Stats */
+        .dos-stats-section {
+            display: flex;
+            flex-direction: column;
+            padding: 4px 12px;
+            gap: 2px;
+            min-width: 400px;
+            max-width: 500px;
+        }
+
+        /* Network Stats Row */
+        .dos-network-stats {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            line-height: 1;
+        }
+
+        .dos-network-label {
+            color: var(--ascii-neutral-300);
+            font-weight: bold;
+            min-width: 30px;
+        }
+
+        .dos-network-name {
+            color: var(--ascii-white);
+            font-weight: bold;
+            min-width: 80px;
+            text-transform: uppercase;
+        }
+
+        .dos-health-indicator {
+            color: var(--ascii-neutral-600);
+            font-size: 16px;
+            line-height: 1;
+            margin-right: 4px;
+        }
+
+        .dos-stat-item {
+            color: var(--ascii-neutral-300);
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        /* Protocol Stats Row */
+        .dos-protocol-stats {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 11px;
+            line-height: 1;
+        }
+
+        .dos-stat-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .dos-stat-label {
+            color: var(--ascii-neutral-400);
+            font-weight: bold;
+            min-width: 30px;
+        }
+
+        .dos-stat-value {
+            color: var(--ascii-white);
+            font-weight: normal;
+        }
+
+        /* Demo content */
+        .demo-content {
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .demo-title {
+            font-size: 2rem;
+            color: var(--ascii-neutral-900);
+            text-align: center;
+            margin-bottom: 2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .demo-description {
+            font-size: 1rem;
+            color: var(--ascii-neutral-600);
+            text-align: center;
+            margin-bottom: 3rem;
+            line-height: 1.6;
+        }
+
+        .command-examples {
+            background: var(--ascii-neutral-100);
+            border: 1px solid var(--ascii-neutral-400);
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .command-examples h3 {
+            color: var(--ascii-neutral-900);
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .command-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .command-list li {
+            margin: 8px 0;
+            color: var(--ascii-neutral-700);
+        }
+
+        .command {
+            color: var(--ascii-neutral-900);
+            font-weight: bold;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: var(--ascii-neutral-100);
+            border: 1px solid var(--ascii-neutral-400);
+            padding: 1.5rem;
+            box-shadow: 2px 2px 0px var(--ascii-neutral-400);
+        }
+
+        .feature-title {
+            color: var(--ascii-neutral-900);
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .feature-text {
+            color: var(--ascii-neutral-700);
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .dos-status-bar {
+                height: 35px;
+                font-size: 12px;
+            }
+            
+            body {
+                padding-top: 35px;
+            }
+            
+            .dos-stats-section {
+                min-width: 280px;
+                max-width: 320px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- DOS Command Line Status Bar -->
+    <div class="dos-status-bar">
+        <!-- Left side - Command input -->
+        <div class="dos-command-section">
+            <span class="dos-prompt">C:\AEAMCP&gt;</span>
+            <input
+                type="text"
+                class="dos-command-input"
+                placeholder="Type command... (help for commands)"
+                id="commandInput"
+                autocomplete="off"
+                spellcheck="false"
+            />
+        </div>
+
+        <!-- Right side - Network and Protocol Stats -->
+        <div class="dos-stats-section">
+            <!-- Network Stats -->
+            <div class="dos-network-stats">
+                <span class="dos-network-label">NET:</span>
+                <span class="dos-network-name" id="networkName">DEVNET</span>
+                <span class="dos-health-indicator" id="healthIndicator">●</span>
+                <span class="dos-stat-item" id="blockHeight">BLK:285,432,156</span>
+                <span class="dos-stat-item" id="latency">45MS</span>
+                <span class="dos-stat-item" id="tps">TPS:2847</span>
+            </div>
+
+            <!-- Protocol Stats -->
+            <div class="dos-protocol-stats">
+                <span class="dos-stat-group">
+                    <span class="dos-stat-label">AGT:</span>
+                    <span class="dos-stat-value" id="agents">18/24</span>
+                </span>
+                <span class="dos-stat-group">
+                    <span class="dos-stat-label">MCP:</span>
+                    <span class="dos-stat-value" id="mcp">9/12</span>
+                </span>
+                <span class="dos-stat-group">
+                    <span class="dos-stat-label">TXN:</span>
+                    <span class="dos-stat-value" id="transactions">1,247</span>
+                </span>
+                <span class="dos-stat-group">
+                    <span class="dos-stat-label">SUC:</span>
+                    <span class="dos-stat-value" id="success">94.2%</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demo Content -->
+    <div class="demo-content">
+        <h1 class="demo-title">DOS Command Line Status Bar</h1>
+        <p class="demo-description">
+            A classic DOS-style command line interface that matches the ASCII grayscale theme. 
+            Type commands on the left to control network settings and view real-time protocol statistics on the right.
+        </p>
+
+        <div class="command-examples">
+            <h3>Available Commands:</h3>
+            <ul class="command-list">
+                <li><span class="command">network mainnet</span> - Switch to Solana Mainnet</li>
+                <li><span class="command">network devnet</span> - Switch to Solana Devnet</li>
+                <li><span class="command">network custom &lt;url&gt;</span> - Connect to custom RPC endpoint</li>
+                <li><span class="command">status</span> - Show current network status</li>
+                <li><span class="command">refresh</span> - Update all statistics</li>
+                <li><span class="command">help</span> - Show available commands</li>
+            </ul>
+        </div>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3 class="feature-title">Command Line Interface</h3>
+                <p class="feature-text">
+                    Classic DOS-style command prompt with command history navigation using arrow keys. 
+                    Type commands to control network settings and view system information.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <h3 class="feature-title">Network Switching</h3>
+                <p class="feature-text">
+                    Easily switch between Mainnet, Devnet, or custom RPC endpoints using simple commands. 
+                    Real-time connection status and health monitoring.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <h3 class="feature-title">Protocol Statistics</h3>
+                <p class="feature-text">
+                    Live monitoring of AI agents, MCP servers, transaction counts, and success rates. 
+                    Compact display optimized for quick status overview.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <h3 class="feature-title">ASCII Theme Integration</h3>
+                <p class="feature-text">
+                    Perfectly matches the existing grayscale ASCII aesthetic with consistent colors, 
+                    typography, and styling throughout the interface.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <h3 class="feature-title">Responsive Design</h3>
+                <p class="feature-text">
+                    Adapts to different screen sizes while maintaining functionality. 
+                    Compact 40px height (half of original request) for minimal screen space usage.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <h3 class="feature-title">Real-time Updates</h3>
+                <p class="feature-text">
+                    Automatic polling of Solana network data with live updates to block height, 
+                    latency, TPS, and protocol statistics every 5 seconds.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple demo functionality
+        const commandInput = document.getElementById('commandInput');
+        const networkName = document.getElementById('networkName');
+        const healthIndicator = document.getElementById('healthIndicator');
+        
+        let commandHistory = [];
+        let historyIndex = -1;
+
+        commandInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const command = this.value.trim().toLowerCase();
+                if (command) {
+                    executeCommand(command);
+                    commandHistory.push(this.value);
+                    if (commandHistory.length > 20) commandHistory.shift();
+                    historyIndex = -1;
+                    this.value = '';
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (commandHistory.length > 0) {
+                    historyIndex = historyIndex === -1 ? commandHistory.length - 1 : Math.max(0, historyIndex - 1);
+                    this.value = commandHistory[historyIndex];
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (historyIndex !== -1) {
+                    historyIndex = historyIndex + 1;
+                    if (historyIndex >= commandHistory.length) {
+                        historyIndex = -1;
+                        this.value = '';
+                    } else {
+                        this.value = commandHistory[historyIndex];
+                    }
+                }
+            }
+        });
+
+        function executeCommand(cmd) {
+            const parts = cmd.split(' ');
+            const mainCmd = parts[0];
+            const args = parts.slice(1);
+
+            switch (mainCmd) {
+                case 'network':
+                case 'net':
+                    if (args[0] === 'mainnet' || args[0] === 'main') {
+                        networkName.textContent = 'MAINNET';
+                        alert('Switched to Mainnet');
+                    } else if (args[0] === 'devnet' || args[0] === 'dev') {
+                        networkName.textContent = 'DEVNET';
+                        alert('Switched to Devnet');
+                    } else if (args[0] === 'custom' && args[1]) {
+                        networkName.textContent = `CUSTOM (${new URL(args[1]).hostname})`;
+                        alert(`Switched to custom RPC: ${args[1]}`);
+                    } else {
+                        alert('Usage: network [mainnet|devnet|custom <url>]');
+                    }
+                    break;
+
+                case 'status':
+                case 'stat':
+                    alert(`Network: ${networkName.textContent} | Health: ${healthIndicator.textContent} | Status: Active`);
+                    break;
+
+                case 'refresh':
+                case 'update':
+                    // Simulate stats update
+                    document.getElementById('transactions').textContent = (Math.floor(Math.random() * 1000) + 1000).toLocaleString();
+                    alert('Stats refreshed');
+                    break;
+
+                case 'help':
+                case '?':
+                    alert('Commands: network [mainnet|devnet|custom <url>], status, refresh, help');
+                    break;
+
+                default:
+                    alert(`Unknown command: ${mainCmd}. Type 'help' for available commands.`);
+            }
+        }
+
+        // Simulate real-time updates
+        setInterval(() => {
+            const transactions = document.getElementById('transactions');
+            const current = parseInt(transactions.textContent.replace(/,/g, ''));
+            transactions.textContent = (current + Math.floor(Math.random() * 10)).toLocaleString();
+            
+            const success = document.getElementById('success');
+            const currentSuccess = parseFloat(success.textContent);
+            const newSuccess = Math.max(85, Math.min(99, currentSuccess + (Math.random() - 0.5) * 2));
+            success.textContent = newSuccess.toFixed(1) + '%';
+        }, 5000);
+    </script>
+</body>
+</html>

@@ -70,7 +70,7 @@ export interface McpServerRegistrationData {
 
 // Registry Service Class
 export class RegistryService {
-  private connection: Connection;
+  public connection: Connection; // Changed to public
 
   constructor() {
     this.connection = new Connection(RPC_ENDPOINT, 'confirmed');
