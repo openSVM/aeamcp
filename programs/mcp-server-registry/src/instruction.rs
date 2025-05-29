@@ -71,6 +71,106 @@ pub enum McpServerRegistryInstruction {
     /// 0. `[writable]` MCP server entry account (PDA)
     /// 1. `[signer]` Owner authority
     DeregisterMcpServer,
+    
+    /// Register a new MCP server with SVMAI token payment
+    ///
+    /// Accounts expected:
+    /// 0. `[writable]` MCP server entry account (PDA)
+    /// 1. `[signer]` Owner authority
+    /// 2. `[signer, writable]` Payer account
+    /// 3. `[writable]` Owner's token account
+    /// 4. `[writable]` Registration vault token account
+    /// 5. `[]` Token mint (SVMAI)
+    /// 6. `[]` Token program
+    /// 7. `[]` System program
+    /// 8. `[]` Clock sysvar
+    RegisterMcpServerWithToken {
+        server_id: String,
+        name: String,
+        server_version: String,
+        service_endpoint: String,
+        documentation_url: Option<String>,
+        server_capabilities_summary: Option<String>,
+        supports_resources: bool,
+        supports_tools: bool,
+        supports_prompts: bool,
+        onchain_tool_definitions: Vec<McpToolDefinitionOnChainInput>,
+        onchain_resource_definitions: Vec<McpResourceDefinitionOnChainInput>,
+        onchain_prompt_definitions: Vec<McpPromptDefinitionOnChainInput>,
+        full_capabilities_uri: Option<String>,
+        tags: Vec<String>,
+    },
+    
+    /// Stake tokens for server verification
+    ///
+    /// Accounts expected:
+    /// 0. `[signer]` Server owner
+    /// 1. `[writable]` Server registry PDA
+    /// 2. `[writable]` Owner's token account
+    /// 3. `[writable]` Verification vault token account
+    /// 4. `[]` Token program
+    /// 5. `[]` Clock sysvar
+    StakeForVerification {
+        amount: u64,
+        lock_period: i64,
+    },
+    
+    /// Configure usage fees
+    ///
+    /// Accounts expected:
+    /// 0. `[signer]` Server owner
+    /// 1. `[writable]` Server registry PDA
+    /// 2. `[]` Clock sysvar
+    ConfigureUsageFees {
+        tool_base_fee: u64,
+        resource_base_fee: u64,
+        prompt_base_fee: u64,
+        bulk_discount_threshold: u32,
+        bulk_discount_percentage: u8,
+    },
+    
+    /// Record usage and collect fees
+    ///
+    /// Accounts expected:
+    /// 0. `[signer]` User (caller)
+    /// 1. `[writable]` Server registry PDA
+    /// 2. `[writable]` User's token account
+    /// 3. `[writable]` Server's token account
+    /// 4. `[]` Token program
+    /// 5. `[]` Clock sysvar
+    RecordUsageAndCollectFee {
+        usage_type: UsageType,
+        count: u32,
+    },
+    
+    /// Update quality metrics (oracle/monitoring service)
+    ///
+    /// Accounts expected:
+    /// 0. `[signer]` Authorized oracle
+    /// 1. `[writable]` Server registry PDA
+    UpdateQualityMetrics {
+        uptime_percentage: u8,
+        avg_response_time: u32,
+        error_rate: u8,
+    },
+    
+    /// Withdraw pending fees
+    ///
+    /// Accounts expected:
+    /// 0. `[signer]` Server owner
+    /// 1. `[writable]` Server registry PDA
+    /// 2. `[writable]` Fee vault token account
+    /// 3. `[writable]` Owner's token account
+    /// 4. `[]` Token program
+    WithdrawPendingFees,
+}
+
+/// Usage type for tracking different service calls
+#[derive(BorshSerialize, BorshDeserialize, Debug, Clone, Copy, PartialEq)]
+pub enum UsageType {
+    Tool,
+    Resource,
+    Prompt,
 }
 
 /// Input struct for updating MCP server details

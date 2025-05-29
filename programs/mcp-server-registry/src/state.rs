@@ -61,6 +61,50 @@ pub struct McpServerRegistryEntryV1 {
     pub full_capabilities_uri: Option<String>,
     /// General discoverability tags for the server
     pub tags: Vec<String>,
+    
+    // Token-related fields for Phase 1
+    /// SVMAI Token mint address
+    pub token_mint: Pubkey,
+    /// SVMAI staked for verification
+    pub verification_stake: u64,
+    /// When tokens were staked
+    pub staking_timestamp: i64,
+    /// Lock period end
+    pub stake_locked_until: i64,
+    /// Verification tier (0: Basic, 1: Verified, 2: Premium)
+    pub verification_tier: u8,
+    /// Total tool invocations
+    pub total_tool_calls: u64,
+    /// Total resource fetches
+    pub total_resource_accesses: u64,
+    /// Total prompt executions
+    pub total_prompt_uses: u64,
+    /// Total SVMAI earned
+    pub total_fees_collected: u64,
+    /// Server quality metric (0-10000)
+    pub quality_score: u64,
+    /// Last 30 days uptime (0-100)
+    pub uptime_percentage: u8,
+    /// Average response time in ms
+    pub avg_response_time: u32,
+    /// Error percentage (0-100)
+    pub error_rate: u8,
+    /// Base fee per tool call
+    pub tool_base_fee: u64,
+    /// Base fee per resource access
+    pub resource_base_fee: u64,
+    /// Base fee per prompt use
+    pub prompt_base_fee: u64,
+    /// Number of calls for discount
+    pub bulk_discount_threshold: u32,
+    /// Discount percentage (0-50)
+    pub bulk_discount_percentage: u8,
+    /// Amount paid for registration
+    pub registration_fee_paid: u64,
+    /// Timestamp of last fee collection
+    pub last_fee_collection: i64,
+    /// Uncollected fees
+    pub pending_fees: u64,
 }
 
 impl McpServerRegistryEntryV1 {
@@ -87,7 +131,29 @@ impl McpServerRegistryEntryV1 {
         + 8  // registration_timestamp
         + 8  // last_update_timestamp
         + 1 + 4 + MAX_FULL_CAPABILITIES_URI_LEN // full_capabilities_uri (Option)
-        + 4 + (MAX_SERVER_TAGS * (4 + MAX_SERVER_TAG_LEN)); // tags
+        + 4 + (MAX_SERVER_TAGS * (4 + MAX_SERVER_TAG_LEN)) // tags
+        // Token-related fields
+        + 32 // token_mint
+        + 8  // verification_stake
+        + 8  // staking_timestamp
+        + 8  // stake_locked_until
+        + 1  // verification_tier
+        + 8  // total_tool_calls
+        + 8  // total_resource_accesses
+        + 8  // total_prompt_uses
+        + 8  // total_fees_collected
+        + 8  // quality_score
+        + 1  // uptime_percentage
+        + 4  // avg_response_time
+        + 1  // error_rate
+        + 8  // tool_base_fee
+        + 8  // resource_base_fee
+        + 8  // prompt_base_fee
+        + 4  // bulk_discount_threshold
+        + 1  // bulk_discount_percentage
+        + 8  // registration_fee_paid
+        + 8  // last_fee_collection
+        + 8; // pending_fees
 
     /// Create a new MCP server registry entry
     pub fn new(
@@ -132,6 +198,28 @@ impl McpServerRegistryEntryV1 {
             last_update_timestamp: timestamp,
             full_capabilities_uri,
             tags,
+            // Initialize token fields with defaults
+            token_mint: Pubkey::default(),
+            verification_stake: 0,
+            staking_timestamp: 0,
+            stake_locked_until: 0,
+            verification_tier: 0,
+            total_tool_calls: 0,
+            total_resource_accesses: 0,
+            total_prompt_uses: 0,
+            total_fees_collected: 0,
+            quality_score: 0,
+            uptime_percentage: 0,
+            avg_response_time: 0,
+            error_rate: 0,
+            tool_base_fee: 0,
+            resource_base_fee: 0,
+            prompt_base_fee: 0,
+            bulk_discount_threshold: 0,
+            bulk_discount_percentage: 0,
+            registration_fee_paid: 0,
+            last_fee_collection: 0,
+            pending_fees: 0,
         }
     }
 
@@ -243,6 +331,95 @@ impl McpServerRegistryEntryV1 {
         }
         capabilities.join(", ")
     }
+    
+    /// Update verification staking
+    pub fn update_verification_stake(
+        &mut self,
+        amount: u64,
+        tier: u8,
+        lock_until: i64,
+        timestamp: i64,
+    ) {
+        self.verification_stake = amount;
+        self.verification_tier = tier;
+        self.stake_locked_until = lock_until;
+        self.staking_timestamp = timestamp;
+        self.last_update_timestamp = timestamp;
+        self.state_version += 1;
+    }
+    
+    /// Update usage fees
+    pub fn update_usage_fees(
+        &mut self,
+        tool_base_fee: u64,
+        resource_base_fee: u64,
+        prompt_base_fee: u64,
+        bulk_discount_threshold: u32,
+        bulk_discount_percentage: u8,
+        timestamp: i64,
+    ) {
+        self.tool_base_fee = tool_base_fee;
+        self.resource_base_fee = resource_base_fee;
+        self.prompt_base_fee = prompt_base_fee;
+        self.bulk_discount_threshold = bulk_discount_threshold;
+        self.bulk_discount_percentage = bulk_discount_percentage;
+        self.last_fee_collection = timestamp;
+        self.last_update_timestamp = timestamp;
+        self.state_version += 1;
+    }
+    
+    /// Record usage and update metrics
+    pub fn record_usage(
+        &mut self,
+        usage_type: UsageType,
+        count: u32,
+        fee_collected: u64,
+    ) {
+        match usage_type {
+            UsageType::Tool => self.total_tool_calls += count as u64,
+            UsageType::Resource => self.total_resource_accesses += count as u64,
+            UsageType::Prompt => self.total_prompt_uses += count as u64,
+        }
+        self.pending_fees += fee_collected;
+        self.state_version += 1;
+    }
+    
+    /// Withdraw pending fees
+    pub fn withdraw_pending_fees(&mut self) -> u64 {
+        let fees = self.pending_fees;
+        self.pending_fees = 0;
+        self.total_fees_collected += fees;
+        self.state_version += 1;
+        fees
+    }
+    
+    /// Update quality metrics
+    pub fn update_quality_metrics(
+        &mut self,
+        uptime_percentage: u8,
+        avg_response_time: u32,
+        error_rate: u8,
+        quality_score: u64,
+    ) {
+        self.uptime_percentage = uptime_percentage;
+        self.avg_response_time = avg_response_time;
+        self.error_rate = error_rate;
+        self.quality_score = quality_score;
+        self.state_version += 1;
+    }
+    
+    /// Check if stake can be withdrawn
+    pub fn can_unstake(&self, current_timestamp: i64) -> bool {
+        current_timestamp >= self.stake_locked_until
+    }
+}
+
+/// Usage type enum for tracking different service calls
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum UsageType {
+    Tool,
+    Resource,
+    Prompt,
 }
 
 impl Default for McpServerRegistryEntryV1 {
@@ -270,6 +447,28 @@ impl Default for McpServerRegistryEntryV1 {
             last_update_timestamp: 0,
             full_capabilities_uri: None,
             tags: Vec::new(),
+            // Token fields defaults
+            token_mint: Pubkey::default(),
+            verification_stake: 0,
+            staking_timestamp: 0,
+            stake_locked_until: 0,
+            verification_tier: 0,
+            total_tool_calls: 0,
+            total_resource_accesses: 0,
+            total_prompt_uses: 0,
+            total_fees_collected: 0,
+            quality_score: 0,
+            uptime_percentage: 0,
+            avg_response_time: 0,
+            error_rate: 0,
+            tool_base_fee: 0,
+            resource_base_fee: 0,
+            prompt_base_fee: 0,
+            bulk_discount_threshold: 0,
+            bulk_discount_percentage: 0,
+            registration_fee_paid: 0,
+            last_fee_collection: 0,
+            pending_fees: 0,
         }
     }
 }
@@ -400,9 +599,28 @@ mod tests {
         let initial_timestamp = entry.last_update_timestamp;
         let new_timestamp = 1640995200;
 
-        entry.touch(new_timestamp);
+        let result = entry.touch(new_timestamp, 0);
+        assert!(result.is_ok());
         assert_eq!(entry.last_update_timestamp, new_timestamp);
         assert_ne!(entry.last_update_timestamp, initial_timestamp);
+        assert_eq!(entry.state_version, 1);
+    }
+    
+    #[test]
+    fn test_update_status_with_version() {
+        let mut entry = McpServerRegistryEntryV1::default();
+        let timestamp = 1640995200;
+        
+        // Test with correct version
+        let result = entry.update_status(McpServerStatus::Active as u8, timestamp, 0);
+        assert!(result.is_ok());
+        assert_eq!(entry.status, McpServerStatus::Active as u8);
+        assert_eq!(entry.state_version, 1);
+        
+        // Test with wrong version
+        let result = entry.update_status(McpServerStatus::Inactive as u8, timestamp + 100, 0);
+        assert!(result.is_err());
+        assert_eq!(entry.status, McpServerStatus::Active as u8); // Should not change
     }
 
     #[test]

@@ -123,6 +123,35 @@ pub enum RegistryError {
     IncorrectAccountOwner,
     #[error("PDA collision detected - insufficient entropy")]
     PdaCollision,
+    
+    // Token Integration Errors
+    #[error("Insufficient stake amount")]
+    InsufficientStake,
+    #[error("Stake is still locked")]
+    StakeLocked,
+    #[error("Fee is below minimum allowed")]
+    FeeTooLow,
+    #[error("Invalid priority multiplier")]
+    InvalidMultiplier,
+    #[error("Invalid staking tier")]
+    InvalidStakingTier,
+    #[error("Token account not found")]
+    TokenAccountNotFound,
+    #[error("Invalid token mint")]
+    InvalidTokenMint,
+    #[error("Insufficient token balance")]
+    InsufficientTokenBalance,
+#[error("Invalid lock period specified")]
+    InvalidLockPeriod,
+    // Authority Verification Errors
+    #[error("Unauthorized program - not in authorized list")]
+    UnauthorizedProgram,
+    #[error("Invalid program account - not executable")]
+    InvalidProgramAccount,
+    #[error("Program signature verification failed")]
+    ProgramSignatureVerificationFailed,
+    #[error("Cross-program invocation authority mismatch")]
+    CpiAuthorityMismatch,
 }
 
 impl From<RegistryError> for ProgramError {

@@ -63,6 +63,99 @@ pub enum AgentRegistryInstruction {
     /// 0. `[writable]` Agent entry PDA
     /// 1. `[signer]` Owner authority
     DeregisterAgent,
+    
+    /// Register a new agent with SVMAI token payment
+    ///
+    /// Accounts expected:
+    /// 0. `[writable, signer]` Agent entry PDA (to be created)
+    /// 1. `[signer]` Owner authority
+    /// 2. `[signer]` Payer
+    /// 3. `[writable]` Owner's token account
+    /// 4. `[writable]` Registration vault token account
+    /// 5. `[]` Token mint (SVMAI)
+    /// 6. `[]` Token program
+    /// 7. `[]` System program
+    /// 8. `[]` Clock sysvar
+    RegisterAgentWithToken {
+        agent_id: String,
+        name: String,
+        description: String,
+        agent_version: String,
+        provider_name: Option<String>,
+        provider_url: Option<String>,
+        documentation_url: Option<String>,
+        service_endpoints: Vec<ServiceEndpointInput>,
+        capabilities_flags: u64,
+        supported_input_modes: Vec<String>,
+        supported_output_modes: Vec<String>,
+        skills: Vec<AgentSkillInput>,
+        security_info_uri: Option<String>,
+        aea_address: Option<String>,
+        economic_intent_summary: Option<String>,
+        supported_aea_protocols_hash: Option<[u8; HASH_SIZE]>,
+        extended_metadata_uri: Option<String>,
+        tags: Vec<String>,
+    },
+    
+    /// Stake SVMAI tokens for tier benefits
+    ///
+    /// Accounts expected:
+    /// 0. `[signer]` Agent owner
+    /// 1. `[writable]` Agent registry PDA
+    /// 2. `[writable]` Agent's token account
+    /// 3. `[writable]` Staking vault token account
+    /// 4. `[]` Token program
+    /// 5. `[]` Clock sysvar
+    StakeTokens {
+        amount: u64,
+        lock_period: i64, // in seconds
+    },
+    
+    /// Unstake tokens after lock period
+    ///
+    /// Accounts expected:
+    /// 0. `[signer]` Agent owner
+    /// 1. `[writable]` Agent registry PDA
+    /// 2. `[writable]` Staking vault token account
+    /// 3. `[writable]` Agent's token account
+    /// 4. `[]` Token program
+    /// 5. `[]` Clock sysvar
+    UnstakeTokens {
+        amount: u64,
+    },
+    
+    /// Update service fee configuration
+    ///
+    /// Accounts expected:
+    /// 0. `[signer]` Agent owner
+    /// 1. `[writable]` Agent registry PDA
+    /// 2. `[]` Clock sysvar
+    UpdateServiceFees {
+        base_fee: u64,
+        priority_multiplier: u8,
+        accepts_escrow: bool,
+    },
+    
+    /// Record service completion (called by escrow)
+    ///
+    /// Accounts expected:
+    /// 0. `[signer]` Escrow program
+    /// 1. `[writable]` Agent registry PDA
+    /// 2. `[]` Clock sysvar
+    RecordServiceCompletion {
+        earnings: u64,
+        rating: u8,
+        response_time: u32,
+    },
+    
+    /// Record dispute outcome (called by DDR)
+    ///
+    /// Accounts expected:
+    /// 0. `[signer]` DDR program
+    /// 1. `[writable]` Agent registry PDA
+    RecordDisputeOutcome {
+        won: bool,
+    },
 }
 
 /// Input struct for updating agent details
@@ -136,6 +229,66 @@ impl AgentRegistryInstruction {
                 Self::UpdateAgentStatus { new_status }
             }
             3 => Self::DeregisterAgent,
+            4 => {
+                let data = RegisterAgentData::try_from_slice(rest)
+                    .map_err(|_| ProgramError::InvalidInstructionData)?;
+                Self::RegisterAgentWithToken {
+                    agent_id: data.agent_id,
+                    name: data.name,
+                    description: data.description,
+                    agent_version: data.agent_version,
+                    provider_name: data.provider_name,
+                    provider_url: data.provider_url,
+                    documentation_url: data.documentation_url,
+                    service_endpoints: data.service_endpoints,
+                    capabilities_flags: data.capabilities_flags,
+                    supported_input_modes: data.supported_input_modes,
+                    supported_output_modes: data.supported_output_modes,
+                    skills: data.skills,
+                    security_info_uri: data.security_info_uri,
+                    aea_address: data.aea_address,
+                    economic_intent_summary: data.economic_intent_summary,
+                    supported_aea_protocols_hash: data.supported_aea_protocols_hash,
+                    extended_metadata_uri: data.extended_metadata_uri,
+                    tags: data.tags,
+                }
+            }
+            5 => {
+                let data = StakeTokensData::try_from_slice(rest)
+                    .map_err(|_| ProgramError::InvalidInstructionData)?;
+                Self::StakeTokens {
+                    amount: data.amount,
+                    lock_period: data.lock_period,
+                }
+            }
+            6 => {
+                let amount = u64::try_from_slice(rest)
+                    .map_err(|_| ProgramError::InvalidInstructionData)?;
+                Self::UnstakeTokens { amount }
+            }
+            7 => {
+                let data = UpdateServiceFeesData::try_from_slice(rest)
+                    .map_err(|_| ProgramError::InvalidInstructionData)?;
+                Self::UpdateServiceFees {
+                    base_fee: data.base_fee,
+                    priority_multiplier: data.priority_multiplier,
+                    accepts_escrow: data.accepts_escrow,
+                }
+            }
+            8 => {
+                let data = RecordServiceCompletionData::try_from_slice(rest)
+                    .map_err(|_| ProgramError::InvalidInstructionData)?;
+                Self::RecordServiceCompletion {
+                    earnings: data.earnings,
+                    rating: data.rating,
+                    response_time: data.response_time,
+                }
+            }
+            9 => {
+                let won = bool::try_from_slice(rest)
+                    .map_err(|_| ProgramError::InvalidInstructionData)?;
+                Self::RecordDisputeOutcome { won }
+            }
             _ => return Err(ProgramError::InvalidInstructionData),
         })
     }
@@ -198,6 +351,83 @@ impl AgentRegistryInstruction {
             Self::DeregisterAgent => {
                 buf.push(3);
             }
+            Self::RegisterAgentWithToken {
+                agent_id,
+                name,
+                description,
+                agent_version,
+                provider_name,
+                provider_url,
+                documentation_url,
+                service_endpoints,
+                capabilities_flags,
+                supported_input_modes,
+                supported_output_modes,
+                skills,
+                security_info_uri,
+                aea_address,
+                economic_intent_summary,
+                supported_aea_protocols_hash,
+                extended_metadata_uri,
+                tags,
+            } => {
+                buf.push(4);
+                let data = RegisterAgentData {
+                    agent_id: agent_id.clone(),
+                    name: name.clone(),
+                    description: description.clone(),
+                    agent_version: agent_version.clone(),
+                    provider_name: provider_name.clone(),
+                    provider_url: provider_url.clone(),
+                    documentation_url: documentation_url.clone(),
+                    service_endpoints: service_endpoints.clone(),
+                    capabilities_flags: *capabilities_flags,
+                    supported_input_modes: supported_input_modes.clone(),
+                    supported_output_modes: supported_output_modes.clone(),
+                    skills: skills.clone(),
+                    security_info_uri: security_info_uri.clone(),
+                    aea_address: aea_address.clone(),
+                    economic_intent_summary: economic_intent_summary.clone(),
+                    supported_aea_protocols_hash: *supported_aea_protocols_hash,
+                    extended_metadata_uri: extended_metadata_uri.clone(),
+                    tags: tags.clone(),
+                };
+                buf.extend_from_slice(&data.try_to_vec().unwrap());
+            }
+            Self::StakeTokens { amount, lock_period } => {
+                buf.push(5);
+                let data = StakeTokensData {
+                    amount: *amount,
+                    lock_period: *lock_period,
+                };
+                buf.extend_from_slice(&data.try_to_vec().unwrap());
+            }
+            Self::UnstakeTokens { amount } => {
+                buf.push(6);
+                buf.extend_from_slice(&amount.try_to_vec().unwrap());
+            }
+            Self::UpdateServiceFees { base_fee, priority_multiplier, accepts_escrow } => {
+                buf.push(7);
+                let data = UpdateServiceFeesData {
+                    base_fee: *base_fee,
+                    priority_multiplier: *priority_multiplier,
+                    accepts_escrow: *accepts_escrow,
+                };
+                buf.extend_from_slice(&data.try_to_vec().unwrap());
+            }
+            Self::RecordServiceCompletion { earnings, rating, response_time } => {
+                buf.push(8);
+                let data = RecordServiceCompletionData {
+                    earnings: *earnings,
+                    rating: *rating,
+                    response_time: *response_time,
+                };
+                buf.extend_from_slice(&data.try_to_vec().unwrap());
+            }
+            Self::RecordDisputeOutcome { won } => {
+                buf.push(9);
+                buf.extend_from_slice(&won.try_to_vec().unwrap());
+            }
         }
         buf
     }
@@ -224,6 +454,29 @@ struct RegisterAgentData {
     supported_aea_protocols_hash: Option<[u8; HASH_SIZE]>,
     extended_metadata_uri: Option<String>,
     tags: Vec<String>,
+}
+
+/// Helper struct for StakeTokens instruction data
+#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
+struct StakeTokensData {
+    amount: u64,
+    lock_period: i64,
+}
+
+/// Helper struct for UpdateServiceFees instruction data
+#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
+struct UpdateServiceFeesData {
+    base_fee: u64,
+    priority_multiplier: u8,
+    accepts_escrow: bool,
+}
+
+/// Helper struct for RecordServiceCompletion instruction data
+#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
+struct RecordServiceCompletionData {
+    earnings: u64,
+    rating: u8,
+    response_time: u32,
 }
 
 #[cfg(test)]

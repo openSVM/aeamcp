@@ -9,8 +9,10 @@ use solana_program::{
     pubkey::Pubkey,
     rent::Rent,
     system_instruction,
-    sysvar::Sysvar,
+    sysvar::{clock::Clock, Sysvar},
 };
+use anchor_lang::prelude::*;
+use anchor_spl::token::{self, Token, TokenAccount};
 use aeamcp_common::{
     constants::*,
     error::RegistryError,
@@ -19,7 +21,17 @@ use aeamcp_common::{
         get_agent_pda_secure, verify_account_owner, verify_signer_authority,
         get_current_timestamp,
     },
+    token_utils::{
+        transfer_tokens_with_pda, transfer_tokens_with_pda_signer, StakingTier,
+        calculate_agent_quality_score, validate_fee_config, is_stake_unlocked,
+        derive_staking_vault_pda, derive_registration_vault_pda,
+        transfer_tokens_with_account_info, transfer_tokens_with_pda_signer_account_info,
+    },
+    authority::{
+        verify_escrow_program_authority, verify_ddr_program_authority, get_authority_registry,
+    },
     AgentStatus,
+    AGENT_REGISTRATION_FEE, MIN_SERVICE_FEE,
 };
 
 use crate::{
@@ -90,6 +102,82 @@ impl Processor {
             }
             AgentRegistryInstruction::DeregisterAgent => {
                 Self::process_deregister_agent(program_id, accounts)
+            }
+            AgentRegistryInstruction::RegisterAgentWithToken {
+                agent_id,
+                name,
+                description,
+                agent_version,
+                provider_name,
+                provider_url,
+                documentation_url,
+                service_endpoints,
+                capabilities_flags,
+                supported_input_modes,
+                supported_output_modes,
+                skills,
+                security_info_uri,
+                aea_address,
+                economic_intent_summary,
+                supported_aea_protocols_hash,
+                extended_metadata_uri,
+                tags,
+            } => Self::process_register_agent_with_token(
+                program_id,
+                accounts,
+                agent_id,
+                name,
+                description,
+                agent_version,
+                provider_name,
+                provider_url,
+                documentation_url,
+                service_endpoints,
+                capabilities_flags,
+                supported_input_modes,
+                supported_output_modes,
+                skills,
+                security_info_uri,
+                aea_address,
+                economic_intent_summary,
+                supported_aea_protocols_hash,
+                extended_metadata_uri,
+                tags,
+            ),
+            AgentRegistryInstruction::StakeTokens { amount, lock_period } => {
+                Self::process_stake_tokens(program_id, accounts, amount, lock_period)
+            }
+            AgentRegistryInstruction::UnstakeTokens { amount } => {
+                Self::process_unstake_tokens(program_id, accounts, amount)
+            }
+            AgentRegistryInstruction::UpdateServiceFees {
+                base_fee,
+                priority_multiplier,
+                accepts_escrow
+            } => {
+                Self::process_update_service_fees(
+                    program_id,
+                    accounts,
+                    base_fee,
+                    priority_multiplier,
+                    accepts_escrow,
+                )
+            }
+            AgentRegistryInstruction::RecordServiceCompletion {
+                earnings,
+                rating,
+                response_time
+            } => {
+                Self::process_record_service_completion(
+                    program_id,
+                    accounts,
+                    earnings,
+                    rating,
+                    response_time,
+                )
+            }
+            AgentRegistryInstruction::RecordDisputeOutcome { won } => {
+                Self::process_record_dispute_outcome(program_id, accounts, won)
             }
         }
     }
@@ -563,6 +651,401 @@ impl Processor {
             agent_entry.last_update_timestamp,
         );
         emit_agent_deregistered(&event);
+
+        Ok(())
+    }
+
+    /// Process register agent with token payment
+    #[allow(clippy::too_many_arguments)]
+    fn process_register_agent_with_token(
+        program_id: &Pubkey,
+        accounts: &[AccountInfo],
+        agent_id: String,
+        name: String,
+        description: String,
+        agent_version: String,
+        provider_name: Option<String>,
+        provider_url: Option<String>,
+        documentation_url: Option<String>,
+        service_endpoints: Vec<ServiceEndpointInput>,
+        capabilities_flags: u64,
+        supported_input_modes: Vec<String>,
+        supported_output_modes: Vec<String>,
+        skills: Vec<AgentSkillInput>,
+        security_info_uri: Option<String>,
+        aea_address: Option<String>,
+        economic_intent_summary: Option<String>,
+        supported_aea_protocols_hash: Option<[u8; HASH_SIZE]>,
+        extended_metadata_uri: Option<String>,
+        tags: Vec<String>,
+    ) -> ProgramResult {
+        let account_info_iter = &mut accounts.iter();
+        let agent_entry_info = next_account_info(account_info_iter)?;
+        let owner_authority_info = next_account_info(account_info_iter)?;
+        let payer_info = next_account_info(account_info_iter)?;
+        let owner_token_account_info = next_account_info(account_info_iter)?;
+        let registration_vault_info = next_account_info(account_info_iter)?;
+        let token_mint_info = next_account_info(account_info_iter)?;
+        let token_program_info = next_account_info(account_info_iter)?;
+        let system_program_info = next_account_info(account_info_iter)?;
+        let clock_info = next_account_info(account_info_iter)?;
+
+        // First register the agent using existing logic
+        Self::process_register_agent(
+            program_id,
+            &[
+                agent_entry_info.clone(),
+                owner_authority_info.clone(),
+                payer_info.clone(),
+                system_program_info.clone(),
+            ],
+            agent_id.clone(),
+            name,
+            description,
+            agent_version,
+            provider_name,
+            provider_url,
+            documentation_url,
+            service_endpoints,
+            capabilities_flags,
+            supported_input_modes,
+            supported_output_modes,
+            skills,
+            security_info_uri,
+            aea_address,
+            economic_intent_summary,
+            supported_aea_protocols_hash,
+            extended_metadata_uri,
+            tags,
+        )?;
+
+        // Now handle the token payment
+        let owner_token_account = TokenAccount::try_deserialize(&mut &owner_token_account_info.data.borrow()[..])?;
+        
+        // Verify registration vault PDA
+        let (expected_vault, _) = derive_registration_vault_pda(program_id);
+        if registration_vault_info.key != &expected_vault {
+            return Err(RegistryError::InvalidPda.into());
+        }
+
+        // Transfer registration fee
+        transfer_tokens_with_account_info(
+            owner_token_account_info,
+            registration_vault_info,
+            owner_authority_info,
+            token_program_info,
+            AGENT_REGISTRATION_FEE,
+        )?;
+
+        // Update agent entry with token info
+        let mut data = agent_entry_info.try_borrow_mut_data()?;
+        let mut agent_entry = AgentRegistryEntryV1::try_from_slice(&data)?;
+        
+        agent_entry.token_mint = *token_mint_info.key;
+        agent_entry.registration_fee_paid = AGENT_REGISTRATION_FEE;
+        agent_entry.total_fees_collected += AGENT_REGISTRATION_FEE;
+        
+        agent_entry.serialize(&mut &mut data[..])?;
+
+        // Emit event
+        let event = create_agent_registered_with_token_event(
+            agent_id,
+            *owner_authority_info.key,
+            AGENT_REGISTRATION_FEE,
+        );
+        emit_agent_registered_with_token(&event);
+
+        Ok(())
+    }
+
+    /// Process stake tokens instruction
+    fn process_stake_tokens(
+        program_id: &Pubkey,
+        accounts: &[AccountInfo],
+        amount: u64,
+        lock_period: i64,
+    ) -> ProgramResult {
+        let account_info_iter = &mut accounts.iter();
+        let owner_info = next_account_info(account_info_iter)?;
+        let agent_entry_info = next_account_info(account_info_iter)?;
+        let owner_token_account_info = next_account_info(account_info_iter)?;
+        let staking_vault_info = next_account_info(account_info_iter)?;
+        let token_program_info = next_account_info(account_info_iter)?;
+        let clock_info = next_account_info(account_info_iter)?;
+
+        // Verify account ownership
+        verify_account_owner(agent_entry_info, program_id)?;
+        
+        let mut data = agent_entry_info.try_borrow_mut_data()?;
+        let mut agent_entry = AgentRegistryEntryV1::try_from_slice(&data)?;
+
+        // Verify owner authority
+        verify_signer_authority(owner_info, &agent_entry.owner_authority)?;
+
+        // Verify staking vault PDA
+        let (expected_vault, _) = derive_staking_vault_pda(program_id);
+        if staking_vault_info.key != &expected_vault {
+            return Err(RegistryError::InvalidPda.into());
+        }
+
+        // Get clock
+        let clock = Clock::from_account_info(clock_info)?;
+
+        // Calculate new staking tier
+        let new_total_stake = agent_entry.staked_amount + amount;
+        let new_tier = StakingTier::from_amount(new_total_stake);
+
+        // Transfer tokens to staking vault
+        transfer_tokens_with_account_info(
+            owner_token_account_info,
+            staking_vault_info,
+            owner_info,
+            token_program_info,
+            amount,
+        )?;
+
+        // Update agent staking info
+        agent_entry.update_staking(
+            new_total_stake,
+            new_tier.value(),
+            clock.unix_timestamp + lock_period,
+            clock.unix_timestamp,
+        );
+
+        agent_entry.serialize(&mut &mut data[..])?;
+
+        // Emit event
+        let event = create_tokens_staked_event(
+            agent_entry.agent_id.clone(),
+            *owner_info.key,
+            amount,
+            new_tier.value(),
+            agent_entry.stake_locked_until,
+        );
+        emit_tokens_staked(&event);
+
+        Ok(())
+    }
+
+    /// Process unstake tokens instruction
+    fn process_unstake_tokens(
+        program_id: &Pubkey,
+        accounts: &[AccountInfo],
+        amount: u64,
+    ) -> ProgramResult {
+        let account_info_iter = &mut accounts.iter();
+        let owner_info = next_account_info(account_info_iter)?;
+        let agent_entry_info = next_account_info(account_info_iter)?;
+        let staking_vault_info = next_account_info(account_info_iter)?;
+        let owner_token_account_info = next_account_info(account_info_iter)?;
+        let token_program_info = next_account_info(account_info_iter)?;
+        let clock_info = next_account_info(account_info_iter)?;
+
+        // Verify account ownership
+        verify_account_owner(agent_entry_info, program_id)?;
+        
+        let mut data = agent_entry_info.try_borrow_mut_data()?;
+        let mut agent_entry = AgentRegistryEntryV1::try_from_slice(&data)?;
+
+        // Verify owner authority
+        verify_signer_authority(owner_info, &agent_entry.owner_authority)?;
+
+        // Get clock
+        let clock = Clock::from_account_info(clock_info)?;
+
+        // Check if stake can be unlocked
+        if !agent_entry.can_unstake(clock.unix_timestamp) {
+            return Err(RegistryError::StakeLocked.into());
+        }
+
+        // Check if sufficient stake available
+        if amount > agent_entry.staked_amount {
+            return Err(RegistryError::InsufficientStake.into());
+        }
+
+        // Verify staking vault PDA
+        let (expected_vault, vault_bump) = derive_staking_vault_pda(program_id);
+        if staking_vault_info.key != &expected_vault {
+            return Err(RegistryError::InvalidPda.into());
+        }
+
+        // Transfer tokens from staking vault
+        let vault_seeds = &[b"staking_vault".as_ref(), &[vault_bump]];
+        
+        transfer_tokens_with_pda_signer_account_info(
+            staking_vault_info,
+            owner_token_account_info,
+            staking_vault_info,
+            token_program_info,
+            amount,
+            &[vault_seeds],
+        )?;
+
+        // Update agent staking info
+        let new_staked_amount = agent_entry.staked_amount - amount;
+        let new_tier = StakingTier::from_amount(new_staked_amount);
+        
+        agent_entry.update_staking(
+            new_staked_amount,
+            new_tier.value(),
+            if new_staked_amount > 0 { agent_entry.stake_locked_until } else { 0 },
+            clock.unix_timestamp,
+        );
+
+        agent_entry.serialize(&mut &mut data[..])?;
+
+        // Emit event
+        let event = create_tokens_unstaked_event(
+            agent_entry.agent_id.clone(),
+            *owner_info.key,
+            amount,
+            new_tier.value(),
+        );
+        emit_tokens_unstaked(&event);
+
+        Ok(())
+    }
+
+    /// Process update service fees instruction
+    fn process_update_service_fees(
+        program_id: &Pubkey,
+        accounts: &[AccountInfo],
+        base_fee: u64,
+        priority_multiplier: u8,
+        accepts_escrow: bool,
+    ) -> ProgramResult {
+        let account_info_iter = &mut accounts.iter();
+        let owner_info = next_account_info(account_info_iter)?;
+        let agent_entry_info = next_account_info(account_info_iter)?;
+        let clock_info = next_account_info(account_info_iter)?;
+
+        // Validate fee configuration
+        validate_fee_config(base_fee, MIN_SERVICE_FEE, priority_multiplier as u16)?;
+
+        // Verify account ownership
+        verify_account_owner(agent_entry_info, program_id)?;
+        
+        let mut data = agent_entry_info.try_borrow_mut_data()?;
+        let mut agent_entry = AgentRegistryEntryV1::try_from_slice(&data)?;
+
+        // Verify owner authority
+        verify_signer_authority(owner_info, &agent_entry.owner_authority)?;
+
+        // Get clock
+        let clock = Clock::from_account_info(clock_info)?;
+
+        // Update service fees
+        agent_entry.update_service_fees(
+            base_fee,
+            priority_multiplier,
+            accepts_escrow,
+            clock.unix_timestamp,
+        );
+
+        agent_entry.serialize(&mut &mut data[..])?;
+
+        // Emit event
+        let event = create_service_fees_updated_event(
+            agent_entry.agent_id.clone(),
+            base_fee,
+            priority_multiplier,
+            accepts_escrow,
+        );
+        emit_service_fees_updated(&event);
+
+        Ok(())
+    }
+
+    /// Process record service completion (called by escrow)
+    fn process_record_service_completion(
+        program_id: &Pubkey,
+        accounts: &[AccountInfo],
+        earnings: u64,
+        rating: u8,
+        response_time: u32,
+    ) -> ProgramResult {
+        let account_info_iter = &mut accounts.iter();
+        let escrow_program_info = next_account_info(account_info_iter)?;
+        let agent_entry_info = next_account_info(account_info_iter)?;
+        let _clock_info = next_account_info(account_info_iter)?;
+
+        // SECURITY FIX: Implement proper escrow program authority verification
+        let authority_registry = get_authority_registry();
+        verify_escrow_program_authority(escrow_program_info, &authority_registry)?;
+
+        // Verify account ownership
+        verify_account_owner(agent_entry_info, program_id)?;
+        
+        let mut data = agent_entry_info.try_borrow_mut_data()?;
+        let mut agent_entry = AgentRegistryEntryV1::try_from_slice(&data)?;
+
+        // Record service completion
+        agent_entry.record_service_completion(earnings, rating, response_time);
+
+        // Update reputation score
+        agent_entry.reputation_score = calculate_agent_quality_score(
+            agent_entry.completed_services,
+            &agent_entry.quality_ratings,
+            agent_entry.dispute_wins,
+            agent_entry.dispute_count,
+            agent_entry.response_time_avg,
+        );
+
+        agent_entry.serialize(&mut &mut data[..])?;
+
+        // Emit event
+        let event = create_service_completed_event(
+            agent_entry.agent_id.clone(),
+            earnings,
+            rating,
+            agent_entry.reputation_score,
+        );
+        emit_service_completed(&event);
+
+        Ok(())
+    }
+
+    /// Process record dispute outcome (called by DDR)
+    fn process_record_dispute_outcome(
+        program_id: &Pubkey,
+        accounts: &[AccountInfo],
+        won: bool,
+    ) -> ProgramResult {
+        let account_info_iter = &mut accounts.iter();
+        let ddr_program_info = next_account_info(account_info_iter)?;
+        let agent_entry_info = next_account_info(account_info_iter)?;
+
+        // SECURITY FIX: Implement proper DDR program authority verification
+        let authority_registry = get_authority_registry();
+        verify_ddr_program_authority(ddr_program_info, &authority_registry)?;
+
+        // Verify account ownership
+        verify_account_owner(agent_entry_info, program_id)?;
+        
+        let mut data = agent_entry_info.try_borrow_mut_data()?;
+        let mut agent_entry = AgentRegistryEntryV1::try_from_slice(&data)?;
+
+        // Record dispute outcome
+        agent_entry.record_dispute_outcome(won);
+
+        // Update reputation score
+        agent_entry.reputation_score = calculate_agent_quality_score(
+            agent_entry.completed_services,
+            &agent_entry.quality_ratings,
+            agent_entry.dispute_wins,
+            agent_entry.dispute_count,
+            agent_entry.response_time_avg,
+        );
+
+        agent_entry.serialize(&mut &mut data[..])?;
+
+        // Emit event
+        let event = create_dispute_recorded_event(
+            agent_entry.agent_id.clone(),
+            won,
+            agent_entry.reputation_score,
+        );
+        emit_dispute_recorded(&event);
 
         Ok(())
     }

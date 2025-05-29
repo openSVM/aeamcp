@@ -147,3 +147,63 @@ impl McpServerStatus {
         }
     }
 }
+
+/// ## Token Integration Constants
+
+// Agent Registry Token Constants
+/// Agent registration fee in A2AMPL (with 9 decimals)
+pub const AGENT_REGISTRATION_FEE: u64 = 100 * 1_000_000_000; // 100 A2AMPL
+
+// Token staking tiers for agents (in A2AMPL base units with 9 decimals)
+pub const BRONZE_TIER_STAKE: u64 = 1_000 * 1_000_000_000; // 1,000 A2AMPL
+pub const SILVER_TIER_STAKE: u64 = 10_000 * 1_000_000_000; // 10,000 A2AMPL
+pub const GOLD_TIER_STAKE: u64 = 50_000 * 1_000_000_000; // 50,000 A2AMPL
+pub const PLATINUM_TIER_STAKE: u64 = 100_000 * 1_000_000_000; // 100,000 A2AMPL
+
+// Lock periods for agent staking tiers (in seconds)
+pub const BRONZE_LOCK_PERIOD: i64 = 30 * 24 * 60 * 60; // 30 days
+pub const SILVER_LOCK_PERIOD: i64 = 90 * 24 * 60 * 60; // 90 days
+pub const GOLD_LOCK_PERIOD: i64 = 180 * 24 * 60 * 60; // 180 days
+pub const PLATINUM_LOCK_PERIOD: i64 = 365 * 24 * 60 * 60; // 365 days
+
+// MCP Server Registry Token Constants
+/// MCP Server registration fee in A2AMPL (with 9 decimals)
+pub const MCP_REGISTRATION_FEE: u64 = 50 * 1_000_000_000; // 50 A2AMPL
+
+// MCP Server verification stakes (in A2AMPL base units with 9 decimals)
+pub const BASIC_SERVER_STAKE: u64 = 500 * 1_000_000_000; // 500 A2AMPL
+pub const VERIFIED_SERVER_STAKE: u64 = 5_000 * 1_000_000_000; // 5,000 A2AMPL
+pub const PREMIUM_SERVER_STAKE: u64 = 25_000 * 1_000_000_000; // 25,000 A2AMPL
+
+// MCP Server staking limits and periods
+pub const MIN_STAKE_AMOUNT: u64 = BASIC_SERVER_STAKE; // Minimum stake = 500 A2AMPL
+pub const MIN_LOCK_PERIOD: i64 = 7 * 24 * 60 * 60; // 7 days minimum lock
+pub const MAX_LOCK_PERIOD: i64 = 730 * 24 * 60 * 60; // 2 years maximum lock
+
+// Service fee limits
+pub const MIN_SERVICE_FEE: u64 = 1 * 1_000_000_000; // 1 A2AMPL minimum service fee
+pub const MIN_TOOL_FEE: u64 = 1_000_000_000; // 1 A2AMPL
+pub const MIN_RESOURCE_FEE: u64 = 500_000_000; // 0.5 A2AMPL
+pub const MIN_PROMPT_FEE: u64 = 2_000_000_000; // 2 A2AMPL
+pub const MAX_BULK_DISCOUNT: u8 = 50; // 50% maximum discount
+
+// Quality metrics
+pub const QUALITY_UPDATE_INTERVAL: i64 = 24 * 60 * 60; // 24 hours
+pub const MIN_UPTIME_FOR_PREMIUM: u8 = 95; // 95% uptime required
+
+// Priority multiplier limits
+pub const MIN_PRIORITY_MULTIPLIER: u16 = 100; // 1.0x
+pub const MAX_PRIORITY_MULTIPLIER: u16 = 300; // 3.0x
+
+// A2AMPL Token decimals
+pub const A2AMPL_DECIMALS: u8 = 9;
+pub const A2AMPL_BASE_UNIT: u64 = 1_000_000_000; // 1 A2AMPL = 10^9 base units
+
+// A2AMPL Token Mint Address (network-specific)
+pub const A2AMPL_TOKEN_MINT_MAINNET: &str = "Cpzvdx6pppc9TNArsGsqgShCsKC9NCCjA2gtzHvUpump";
+pub const A2AMPL_TOKEN_MINT_DEVNET: &str = "A2AMPLyncKHwfSnwRNsJ2qsjsetgo9fGkP8YZPsDZ9mE";
+
+// Token vault PDA seeds
+pub const STAKING_VAULT_SEED: &[u8] = b"staking_vault";
+pub const FEE_VAULT_SEED: &[u8] = b"fee_vault";
+pub const REGISTRATION_VAULT_SEED: &[u8] = b"registration_vault";

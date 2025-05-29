@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey, Transaction } from '@solana/web3.js';
 import { toast } from 'react-hot-toast';
-import { registryService, AgentRegistrationData } from '@/lib/solana/registry';
+import { tokenRegistryService, AgentRegistrationData, TokenBalance } from '@/lib/solana/token-registry';
+import { SVMAI_REGISTRATION_FEE_AGENT, SVMAI_TOKEN_SYMBOL } from '@/lib/constants';
 import Link from 'next/link';
 
 interface AgentFormData {
@@ -59,6 +60,32 @@ export default function RegisterAgentPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [newTag, setNewTag] = useState('');
   const [newMode, setNewMode] = useState('');
+  const [tokenBalance, setTokenBalance] = useState<TokenBalance | null>(null);
+  const [loadingBalance, setLoadingBalance] = useState(false);
+
+  // Load token balance when wallet connects
+  useEffect(() => {
+    if (connected && publicKey) {
+      loadTokenBalance();
+    } else {
+      setTokenBalance(null);
+    }
+  }, [connected, publicKey]);
+
+  const loadTokenBalance = async () => {
+    if (!publicKey) return;
+    
+    setLoadingBalance(true);
+    try {
+      const balance = await tokenRegistryService.getTokenBalance(publicKey);
+      setTokenBalance(balance);
+    } catch (error) {
+      console.error('Error loading token balance:', error);
+      toast.error('Failed to load SVMAI token balance');
+    } finally {
+      setLoadingBalance(false);
+    }
+  };
 
   const handleInputChange = (field: keyof AgentFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -178,6 +205,20 @@ export default function RegisterAgentPage() {
         return;
       }
 
+      // Check token balance first
+      if (!tokenBalance) {
+        await loadTokenBalance();
+      }
+
+      const requiredTokens = SVMAI_REGISTRATION_FEE_AGENT;
+      const userBalance = tokenBalance ? parseFloat(tokenBalance.formattedBalance) : 0;
+
+      if (userBalance < requiredTokens) {
+        toast.error(`Insufficient ${SVMAI_TOKEN_SYMBOL} tokens. Required: ${requiredTokens} ${SVMAI_TOKEN_SYMBOL}, Available: ${userBalance.toFixed(2)} ${SVMAI_TOKEN_SYMBOL}`);
+        setLoading(false);
+        return;
+      }
+
       // Prepare agent registration data
       const agentRegistrationData: AgentRegistrationData = {
         agentId: formData.agentId,
@@ -197,24 +238,30 @@ export default function RegisterAgentPage() {
         tags: formData.tags,
       };
 
-      // Create the transaction
-      const transaction = await registryService.registerAgent(agentRegistrationData, publicKey);
+      // Create the transaction with token payment
+      const transaction = await tokenRegistryService.registerAgentWithToken(agentRegistrationData, publicKey);
 
       // Sign the transaction
       const signedTransaction = await signTransaction(transaction);
 
       // Send the transaction
-      const signature = await registryService.connection.sendRawTransaction(signedTransaction.serialize());
+      const signature = await tokenRegistryService.connection.sendRawTransaction(signedTransaction.serialize());
 
       // Confirm the transaction
-      await registryService.connection.confirmTransaction(signature, 'confirmed');
+      await tokenRegistryService.connection.confirmTransaction(signature, 'confirmed');
       
-      toast.success('Agent registered successfully!');
+      toast.success(`Agent registered successfully! Paid ${requiredTokens} ${SVMAI_TOKEN_SYMBOL}`);
+      
+      // Refresh token balance
+      await loadTokenBalance();
+      
       router.push('/agents');
     } catch (error: any) {
       console.error('Registration error:', error);
       if (error.message.includes('User rejected the request')) {
         toast.error('Transaction rejected by user.');
+      } else if (error.message.includes('Insufficient SVMAI tokens')) {
+        toast.error(error.message);
       } else {
         toast.error(`Failed to register agent: ${error.message || 'Unknown error'}`);
       }
@@ -630,9 +677,75 @@ export default function RegisterAgentPage() {
           REGISTER AI AGENT
         </h1>
         <p className="ascii-body-text">
-          Register your AI agent on the Solana blockchain
+          Register your AI agent on the Solana blockchain with {SVMAI_TOKEN_SYMBOL} token payment
         </p>
       </div>
+
+      {/* Token Balance & Fee Information */}
+      {connected && (
+        <div className="ascii-card mb-8" style={{ backgroundColor: '#F8F9FA', borderColor: '#E5E5E5' }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Token Balance */}
+            <div>
+              <h3 className="ascii-subsection-title text-sm mb-2">YOUR {SVMAI_TOKEN_SYMBOL} BALANCE</h3>
+              {loadingBalance ? (
+                <p className="ascii-body-text">Loading balance...</p>
+              ) : tokenBalance ? (
+                <div>
+                  <p className="ascii-body-text text-lg font-bold">
+                    {tokenBalance.formattedBalance} {SVMAI_TOKEN_SYMBOL}
+                  </p>
+                  <p className="ascii-body-text text-xs" style={{ color: '#525252' }}>
+                    {tokenBalance.balance.toLocaleString()} lamports
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <p className="ascii-body-text text-sm" style={{ color: '#DC3545' }}>
+                    No {SVMAI_TOKEN_SYMBOL} tokens found
+                  </p>
+                  <button
+                    onClick={loadTokenBalance}
+                    className="ascii-button-secondary text-xs mt-1"
+                  >
+                    [REFRESH BALANCE]
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Registration Fee */}
+            <div>
+              <h3 className="ascii-subsection-title text-sm mb-2">REGISTRATION FEE</h3>
+              <div>
+                <p className="ascii-body-text text-lg font-bold">
+                  {SVMAI_REGISTRATION_FEE_AGENT} {SVMAI_TOKEN_SYMBOL}
+                </p>
+                <p className="ascii-body-text text-xs" style={{ color: '#525252' }}>
+                  One-time fee to register your agent
+                </p>
+                {tokenBalance && parseFloat(tokenBalance.formattedBalance) < SVMAI_REGISTRATION_FEE_AGENT && (
+                  <p className="ascii-body-text text-xs mt-1" style={{ color: '#DC3545' }}>
+                    ⚠ Insufficient balance for registration
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Fee Breakdown */}
+          <div className="mt-4 pt-4" style={{ borderTop: '1px solid #E5E5E5' }}>
+            <h4 className="ascii-body-text text-xs font-bold mb-2">WHAT'S INCLUDED:</h4>
+            <ul className="ascii-body-text text-xs space-y-1" style={{ color: '#525252' }}>
+              <li>• Permanent on-chain registration</li>
+              <li>• Searchable in agent directory</li>
+              <li>• API access and integration</li>
+              <li>• Basic quality metrics tracking</li>
+              <li>• Support for service fee collection</li>
+            </ul>
+          </div>
+        </div>
+      )}
 
       {/* Progress Steps */}
       <div className="ascii-card mb-8">
@@ -705,22 +818,64 @@ export default function RegisterAgentPage() {
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={loading || !connected}
+            disabled={
+              loading ||
+              !connected ||
+              (tokenBalance ? parseFloat(tokenBalance.formattedBalance) < SVMAI_REGISTRATION_FEE_AGENT : true)
+            }
             className="ascii-button-primary"
+            title={
+              !connected
+                ? 'Connect wallet to register'
+                : tokenBalance && parseFloat(tokenBalance.formattedBalance) < SVMAI_REGISTRATION_FEE_AGENT
+                ? `Insufficient ${SVMAI_TOKEN_SYMBOL} tokens`
+                : 'Register agent with SVMAI token payment'
+            }
           >
-            {loading ? '[REGISTERING...]' : '[REGISTER AGENT]'}
+            {loading
+              ? '[REGISTERING...]'
+              : `[REGISTER AGENT - ${SVMAI_REGISTRATION_FEE_AGENT} ${SVMAI_TOKEN_SYMBOL}]`
+            }
           </button>
         )}
       </div>
 
-      {/* Wallet Connection Notice */}
-      {!connected && (
+      {/* Wallet Connection & Token Requirements Notice */}
+      {!connected ? (
         <div className="ascii-card mt-4" style={{ backgroundColor: '#FFF3CD', borderColor: '#FFEAA7' }}>
           <p className="ascii-body-text text-sm">
             <strong>Notice:</strong> You need to connect your wallet to register an agent.
           </p>
+          <p className="ascii-body-text text-xs mt-2" style={{ color: '#525252' }}>
+            Make sure you have at least {SVMAI_REGISTRATION_FEE_AGENT} {SVMAI_TOKEN_SYMBOL} tokens for registration.
+          </p>
         </div>
-      )}
+      ) : tokenBalance && parseFloat(tokenBalance.formattedBalance) < SVMAI_REGISTRATION_FEE_AGENT ? (
+        <div className="ascii-card mt-4" style={{ backgroundColor: '#FFE6E6', borderColor: '#FF9999' }}>
+          <p className="ascii-body-text text-sm">
+            <strong>Insufficient Balance:</strong> You need {SVMAI_REGISTRATION_FEE_AGENT} {SVMAI_TOKEN_SYMBOL} tokens to register an agent.
+          </p>
+          <p className="ascii-body-text text-xs mt-2" style={{ color: '#525252' }}>
+            Current balance: {tokenBalance.formattedBalance} {SVMAI_TOKEN_SYMBOL}
+          </p>
+          <div className="flex gap-2 mt-3">
+            <button
+              onClick={loadTokenBalance}
+              className="ascii-button-secondary text-xs"
+            >
+              [REFRESH BALANCE]
+            </button>
+            <a
+              href={`https://jup.ag/swap/SOL-${SVMAI_TOKEN_SYMBOL}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ascii-button-secondary text-xs"
+            >
+              [BUY {SVMAI_TOKEN_SYMBOL}]
+            </a>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -1,14 +1,18 @@
 //! Common utilities and types for the Solana AI Registries
 
+pub mod authority;
 pub mod constants;
 pub mod error;
 pub mod serialization;
+pub mod token_utils;
 pub mod utils;
 
 // Re-export commonly used items
+pub use authority::*;
 pub use constants::*;
 pub use error::*;
 pub use serialization::*;
+pub use token_utils::*;
 pub use utils::*;
 
 /// Status of an agent in the Agent Registry

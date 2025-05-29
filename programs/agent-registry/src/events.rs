@@ -60,6 +60,59 @@ pub struct AgentDeregisteredEvent {
     pub deregistration_timestamp: i64,
 }
 
+/// Event emitted when an agent is registered with token payment
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct AgentRegisteredWithTokenEvent {
+    pub agent_id: String,
+    pub owner_authority: Pubkey,
+    pub registration_fee: u64,
+}
+
+/// Event emitted when tokens are staked
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct TokensStakedEvent {
+    pub agent_id: String,
+    pub owner: Pubkey,
+    pub amount: u64,
+    pub new_tier: u8,
+    pub locked_until: i64,
+}
+
+/// Event emitted when tokens are unstaked
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct TokensUnstakedEvent {
+    pub agent_id: String,
+    pub owner: Pubkey,
+    pub amount: u64,
+    pub new_tier: u8,
+}
+
+/// Event emitted when service fees are updated
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct ServiceFeesUpdatedEvent {
+    pub agent_id: String,
+    pub base_fee: u64,
+    pub priority_multiplier: u8,
+    pub accepts_escrow: bool,
+}
+
+/// Event emitted when a service is completed
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct ServiceCompletedEvent {
+    pub agent_id: String,
+    pub earnings: u64,
+    pub rating: u8,
+    pub reputation_score: u64,
+}
+
+/// Event emitted when a dispute is recorded
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct DisputeRecordedEvent {
+    pub agent_id: String,
+    pub won: bool,
+    pub reputation_score: u64,
+}
+
 /// Emit an agent registered event
 pub fn emit_agent_registered(event: &AgentRegisteredEvent) {
     let data = serde_json::to_value(event).unwrap();
@@ -82,6 +135,42 @@ pub fn emit_agent_status_changed(event: &AgentStatusChangedEvent) {
 pub fn emit_agent_deregistered(event: &AgentDeregisteredEvent) {
     let data = serde_json::to_value(event).unwrap();
     emit_event("AgentDeregistered", &data);
+}
+
+/// Emit an agent registered with token event
+pub fn emit_agent_registered_with_token(event: &AgentRegisteredWithTokenEvent) {
+    let data = serde_json::to_value(event).unwrap();
+    emit_event("AgentRegisteredWithToken", &data);
+}
+
+/// Emit a tokens staked event
+pub fn emit_tokens_staked(event: &TokensStakedEvent) {
+    let data = serde_json::to_value(event).unwrap();
+    emit_event("TokensStaked", &data);
+}
+
+/// Emit a tokens unstaked event
+pub fn emit_tokens_unstaked(event: &TokensUnstakedEvent) {
+    let data = serde_json::to_value(event).unwrap();
+    emit_event("TokensUnstaked", &data);
+}
+
+/// Emit a service fees updated event
+pub fn emit_service_fees_updated(event: &ServiceFeesUpdatedEvent) {
+    let data = serde_json::to_value(event).unwrap();
+    emit_event("ServiceFeesUpdated", &data);
+}
+
+/// Emit a service completed event
+pub fn emit_service_completed(event: &ServiceCompletedEvent) {
+    let data = serde_json::to_value(event).unwrap();
+    emit_event("ServiceCompleted", &data);
+}
+
+/// Emit a dispute recorded event
+pub fn emit_dispute_recorded(event: &DisputeRecordedEvent) {
+    let data = serde_json::to_value(event).unwrap();
+    emit_event("DisputeRecorded", &data);
 }
 
 /// Helper function to create an AgentRegisteredEvent from state
@@ -173,6 +262,94 @@ pub fn create_agent_deregistered_event(
     AgentDeregisteredEvent {
         agent_id,
         deregistration_timestamp,
+    }
+}
+
+/// Helper function to create an AgentRegisteredWithTokenEvent
+pub fn create_agent_registered_with_token_event(
+    agent_id: String,
+    owner_authority: Pubkey,
+    registration_fee: u64,
+) -> AgentRegisteredWithTokenEvent {
+    AgentRegisteredWithTokenEvent {
+        agent_id,
+        owner_authority,
+        registration_fee,
+    }
+}
+
+/// Helper function to create a TokensStakedEvent
+pub fn create_tokens_staked_event(
+    agent_id: String,
+    owner: Pubkey,
+    amount: u64,
+    new_tier: u8,
+    locked_until: i64,
+) -> TokensStakedEvent {
+    TokensStakedEvent {
+        agent_id,
+        owner,
+        amount,
+        new_tier,
+        locked_until,
+    }
+}
+
+/// Helper function to create a TokensUnstakedEvent
+pub fn create_tokens_unstaked_event(
+    agent_id: String,
+    owner: Pubkey,
+    amount: u64,
+    new_tier: u8,
+) -> TokensUnstakedEvent {
+    TokensUnstakedEvent {
+        agent_id,
+        owner,
+        amount,
+        new_tier,
+    }
+}
+
+/// Helper function to create a ServiceFeesUpdatedEvent
+pub fn create_service_fees_updated_event(
+    agent_id: String,
+    base_fee: u64,
+    priority_multiplier: u8,
+    accepts_escrow: bool,
+) -> ServiceFeesUpdatedEvent {
+    ServiceFeesUpdatedEvent {
+        agent_id,
+        base_fee,
+        priority_multiplier,
+        accepts_escrow,
+    }
+}
+
+/// Helper function to create a ServiceCompletedEvent
+pub fn create_service_completed_event(
+    agent_id: String,
+    earnings: u64,
+    rating: u8,
+    reputation_score: u64,
+) -> ServiceCompletedEvent {
+    ServiceCompletedEvent {
+        agent_id,
+        earnings,
+        rating,
+        reputation_score,
+    }
+}
+
+/// Helper function to create a DisputeRecordedEvent
+pub fn create_dispute_recorded_event(
+    agent_id: String,
+    won: bool,
+    reputation_score: u64,
+) -> DisputeRecordedEvent {
+    DisputeRecordedEvent {
+        agent_id,
+        won,
+        reputation_score,
     }
 }
 

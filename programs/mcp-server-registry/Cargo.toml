@@ -21,6 +21,9 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 getrandom = { workspace = true }
 shank = "0.4.3"
+anchor-lang = "0.29.0"
+anchor-spl = "0.29.0"
+spl-token = "=4.0.0"
 
 # Local dependencies
 aeamcp-common = { path = "../common" }

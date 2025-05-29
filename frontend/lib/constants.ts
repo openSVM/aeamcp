@@ -188,20 +188,86 @@ export const MCP_SERVER_REGISTRY_PROGRAM_ID = new PublicKey(
 export const AGENT_REGISTRY_PDA_SEED = 'agent_reg_v1';
 export const MCP_SERVER_REGISTRY_PDA_SEED = 'mcp_srv_reg_v1';
 
-// $SVMAI Token Configuration
-export const SVMAI_TOKEN_MINT = new PublicKey('Cpzvdx6pppc9TNArsGsqgShCsKC9NCCjA2gtzHvUpump');
-export const SVMAI_TOKEN_DECIMALS = 6; // Standard SPL token decimals
-export const SVMAI_TOKEN_SYMBOL = 'SVMAI';
-export const SVMAI_TOKEN_NAME = 'Solana Virtual Machine AI Token';
+// SVMAI Token Program Configuration
+export const SVMAI_TOKEN_PROGRAM_ID = new PublicKey(
+  process.env.NEXT_PUBLIC_SVMAI_TOKEN_PROGRAM_ID || 'SVMAitokenxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+);
 
-// Token Economics
-export const SVMAI_TOTAL_SUPPLY = 1_000_000_000; // 1 billion tokens
-export const SVMAI_MIN_STAKE_AGENT = 1_000; // Minimum stake for agent registration
-export const SVMAI_MIN_STAKE_SERVER = 500; // Minimum stake for server registration
-export const SVMAI_MIN_STAKING_AMOUNT = 1_000; // Minimum for staking rewards
-export const SVMAI_STAKING_LOCK_PERIOD = 30; // Days
-export const SVMAI_ANNUAL_YIELD_MIN = 8; // Percentage
-export const SVMAI_ANNUAL_YIELD_MAX = 12; // Percentage
+// A2AMPL Token Configuration (network-specific)
+const A2AMPL_TOKEN_MINT_MAINNET = 'Cpzvdx6pppc9TNArsGsqgShCsKC9NCCjA2gtzHvUpump';
+const A2AMPL_TOKEN_MINT_DEVNET = 'A2AMPLyncKHwfSnwRNsJ2qsjsetgo9fGkP8YZPsDZ9mE';
+
+// Get the appropriate token mint based on network
+function getA2amplTokenMint(): string {
+  const network = process.env.NEXT_PUBLIC_SOLANA_NETWORK || 'devnet';
+  
+  if (process.env.NEXT_PUBLIC_A2AMPL_TOKEN_MINT) {
+    return process.env.NEXT_PUBLIC_A2AMPL_TOKEN_MINT;
+  }
+  
+  return network === 'mainnet-beta' ? A2AMPL_TOKEN_MINT_MAINNET : A2AMPL_TOKEN_MINT_DEVNET;
+}
+
+export const A2AMPL_TOKEN_MINT = new PublicKey(getA2amplTokenMint());
+// Legacy alias for backward compatibility
+export const SVMAI_TOKEN_MINT = A2AMPL_TOKEN_MINT;
+
+export const A2AMPL_TOKEN_DECIMALS = 9; // Matches our implementation
+export const A2AMPL_TOKEN_SYMBOL = 'A2AMPL';
+export const A2AMPL_TOKEN_NAME = 'Agentic Economy Amplifier Token';
+
+// Legacy aliases for backward compatibility
+export const SVMAI_TOKEN_DECIMALS = A2AMPL_TOKEN_DECIMALS;
+export const SVMAI_TOKEN_SYMBOL = A2AMPL_TOKEN_SYMBOL;
+export const SVMAI_TOKEN_NAME = A2AMPL_TOKEN_NAME;
+
+// Token Economics (all amounts in base units - multiply by 10^9 for lamports)
+export const A2AMPL_TOTAL_SUPPLY = 1_000_000_000; // 1 billion tokens
+export const A2AMPL_REGISTRATION_FEE_AGENT = 100; // 100 A2AMPL for agent registration
+export const A2AMPL_REGISTRATION_FEE_SERVER = 50; // 50 A2AMPL for server registration
+
+// Legacy aliases
+export const SVMAI_TOTAL_SUPPLY = A2AMPL_TOTAL_SUPPLY;
+export const SVMAI_REGISTRATION_FEE_AGENT = A2AMPL_REGISTRATION_FEE_AGENT;
+export const SVMAI_REGISTRATION_FEE_SERVER = A2AMPL_REGISTRATION_FEE_SERVER;
+
+// Agent Staking Tiers (in A2AMPL tokens)
+export const A2AMPL_STAKING_TIERS = {
+  BRONZE: 1_000,    // 1,000 A2AMPL
+  SILVER: 10_000,   // 10,000 A2AMPL
+  GOLD: 50_000,     // 50,000 A2AMPL
+  PLATINUM: 100_000 // 100,000 A2AMPL
+} as const;
+
+// Legacy alias
+export const SVMAI_STAKING_TIERS = A2AMPL_STAKING_TIERS;
+
+// MCP Server Verification Tiers (in A2AMPL tokens)
+export const A2AMPL_VERIFICATION_TIERS = {
+  BASIC: 500,      // 500 A2AMPL
+  VERIFIED: 5_000, // 5,000 A2AMPL
+  PREMIUM: 25_000  // 25,000 A2AMPL
+} as const;
+
+// Legacy alias
+export const SVMAI_VERIFICATION_TIERS = A2AMPL_VERIFICATION_TIERS;
+
+// Staking Configuration
+export const A2AMPL_MIN_STAKING_AMOUNT = 1_000; // Minimum for staking rewards
+export const A2AMPL_STAKING_LOCK_PERIOD = 30; // Days
+export const A2AMPL_ANNUAL_YIELD_MIN = 8; // Percentage
+export const A2AMPL_ANNUAL_YIELD_MAX = 12; // Percentage
+
+// Legacy aliases
+export const SVMAI_MIN_STAKING_AMOUNT = A2AMPL_MIN_STAKING_AMOUNT;
+export const SVMAI_STAKING_LOCK_PERIOD = A2AMPL_STAKING_LOCK_PERIOD;
+export const SVMAI_ANNUAL_YIELD_MIN = A2AMPL_ANNUAL_YIELD_MIN;
+export const SVMAI_ANNUAL_YIELD_MAX = A2AMPL_ANNUAL_YIELD_MAX;
+
+// Token Vault Seeds (must match Rust program constants)
+export const AGENT_REGISTRY_VAULT_SEED = 'agent_registry_vault';
+export const MCP_SERVER_REGISTRY_VAULT_SEED = 'mcp_server_registry_vault';
+export const STAKING_VAULT_SEED = 'staking_vault';
 
 // Agent Status Enum
 export const AgentStatus = {
@@ -229,9 +295,10 @@ export const EXTERNAL_LINKS = {
   GITHUB: 'https://github.com/openSVM/aeamcp',
   DISCORD: 'https://discord.gg/aeamcp',
   TWITTER: 'https://twitter.com/aeamcp',
-  SOLSCAN_TOKEN: `https://solscan.io/token/${SVMAI_TOKEN_MINT.toString()}`,
-  JUPITER_SWAP: `https://jup.ag/swap/SOL-${SVMAI_TOKEN_MINT.toString()}`,
-  RAYDIUM_POOL: `https://raydium.io/swap/?inputCurrency=sol&outputCurrency=${SVMAI_TOKEN_MINT.toString()}`,
+  SOLSCAN_TOKEN: `https://solscan.io/token/Cpzvdx6pppc9TNArsGsqgShCsKC9NCCjA2gtzHvUpump`,
+  JUPITER_SWAP: `https://jup.ag/swap/SOL-Cpzvdx6pppc9TNArsGsqgShCsKC9NCCjA2gtzHvUpump`,
+  RAYDIUM_POOL: `https://raydium.io/swap/?inputCurrency=sol&outputCurrency=Cpzvdx6pppc9TNArsGsqgShCsKC9NCCjA2gtzHvUpump`,
+  PUMP_FUN: `https://pump.fun/Cpzvdx6pppc9TNArsGsqgShCsKC9NCCjA2gtzHvUpump`,
 } as const;
 
 // Validation Rules

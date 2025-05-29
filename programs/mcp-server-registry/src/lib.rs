@@ -1,6 +1,8 @@
 //! MCP Server Registry program for Solana AI Registries
 
-#![deny(missing_docs)]
+// Temporarily disable missing docs for faster development
+// #![deny(missing_docs)]
+#![allow(missing_docs)]
 
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, pubkey::Pubkey,

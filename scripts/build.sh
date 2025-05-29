@@ -63,6 +63,11 @@ print_header "Cleaning previous builds..."
 cargo clean
 
 # Build the programs
+print_header "Building SVMAI Token program..."
+cd programs/svmai-token
+cargo build-sbf --manifest-path Cargo.toml
+cd ../..
+
 print_header "Building Agent Registry program..."
 cd programs/agent-registry
 cargo build-sbf --manifest-path Cargo.toml
@@ -75,6 +80,14 @@ cd ../..
 
 # Verify builds
 print_header "Verifying builds..."
+if [ -f "target/deploy/svmai_token.so" ]; then
+    TOKEN_SIZE=$(stat -c%s target/deploy/svmai_token.so)
+    print_status "✅ SVMAI Token built successfully (${TOKEN_SIZE} bytes)"
+else
+    print_error "❌ SVMAI Token build failed"
+    exit 1
+fi
+
 if [ -f "target/deploy/solana_a2a.so" ]; then
     AGENT_SIZE=$(stat -c%s target/deploy/solana_a2a.so)
     print_status "✅ Agent Registry built successfully (${AGENT_SIZE} bytes)"
@@ -98,6 +111,7 @@ cargo test --verbose
 print_header "🎉 Build completed successfully!"
 echo ""
 echo "📋 Build Summary:"
+echo "  SVMAI Token: target/deploy/svmai_token.so (${TOKEN_SIZE} bytes)"
 echo "  Agent Registry: target/deploy/solana_a2a.so (${AGENT_SIZE} bytes)"
 echo "  MCP Server Registry: target/deploy/solana_mcp.so (${MCP_SIZE} bytes)"
 echo ""

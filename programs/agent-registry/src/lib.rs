@@ -17,6 +17,9 @@ pub mod state;
 pub mod validation;
 pub mod events;
 
+#[cfg(test)]
+pub mod tests;
+
 
 use processor::Processor;
 

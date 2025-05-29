@@ -65,6 +65,46 @@ pub struct AgentRegistryEntryV1 {
     pub extended_metadata_uri: Option<String>,
     /// General discoverability tags for the agent
     pub tags: Vec<String>,
+    
+    // Token-related fields for Phase 1
+    /// SVMAI Token mint address
+    pub token_mint: Pubkey,
+    /// Amount of SVMAI tokens staked
+    pub staked_amount: u64,
+    /// When tokens were staked
+    pub staking_timestamp: i64,
+    /// Lock period end timestamp
+    pub stake_locked_until: i64,
+    /// Staking tier (0: None, 1: Bronze, 2: Silver, 3: Gold, 4: Platinum)
+    pub staking_tier: u8,
+    /// Total SVMAI earned from services
+    pub total_earnings: u64,
+    /// Current number of active service escrows
+    pub active_escrows: u8,
+    /// Total completed services
+    pub completed_services: u32,
+    /// Total disputes (won + lost)
+    pub dispute_count: u16,
+    /// Disputes won by agent
+    pub dispute_wins: u16,
+    /// Calculated reputation (0-10000)
+    pub reputation_score: u64,
+    /// Last 10 service ratings (1-5)
+    pub quality_ratings: Vec<u8>,
+    /// Average response time in seconds
+    pub response_time_avg: u32,
+    /// Minimum SVMAI fee for services
+    pub base_service_fee: u64,
+    /// Fee multiplier for priority (100 = 1x, 150 = 1.5x, etc.)
+    pub priority_multiplier: u8,
+    /// Whether agent uses escrow system
+    pub accepts_escrow: bool,
+    /// Amount paid for registration
+    pub registration_fee_paid: u64,
+    /// Timestamp of last fee update
+    pub last_fee_update: i64,
+    /// Total fees collected in SVMAI
+    pub total_fees_collected: u64,
 }
 
 impl AgentRegistryEntryV1 {
@@ -95,7 +135,27 @@ impl AgentRegistryEntryV1 {
         + 8  // registration_timestamp
         + 8  // last_update_timestamp
         + borsh_size_option_string(MAX_EXTENDED_METADATA_URI_LEN)
-        + borsh_size_vec_string(MAX_AGENT_TAGS, MAX_AGENT_TAG_LEN);
+        + borsh_size_vec_string(MAX_AGENT_TAGS, MAX_AGENT_TAG_LEN)
+        // Token-related fields
+        + 32 // token_mint
+        + 8  // staked_amount
+        + 8  // staking_timestamp
+        + 8  // stake_locked_until
+        + 1  // staking_tier
+        + 8  // total_earnings
+        + 1  // active_escrows
+        + 4  // completed_services
+        + 2  // dispute_count
+        + 2  // dispute_wins
+        + 8  // reputation_score
+        + STRING_LEN_PREFIX_SIZE + (10 * 1) // quality_ratings (Vec<u8> max 10)
+        + 4  // response_time_avg
+        + 8  // base_service_fee
+        + 1  // priority_multiplier
+        + 1  // accepts_escrow
+        + 8  // registration_fee_paid
+        + 8  // last_fee_update
+        + 8; // total_fees_collected
 
     /// Create a new agent registry entry
     pub fn new(
@@ -148,6 +208,26 @@ impl AgentRegistryEntryV1 {
             last_update_timestamp: timestamp,
             extended_metadata_uri,
             tags,
+            // Initialize token fields with defaults
+            token_mint: Pubkey::default(),
+            staked_amount: 0,
+            staking_timestamp: 0,
+            stake_locked_until: 0,
+            staking_tier: 0,
+            total_earnings: 0,
+            active_escrows: 0,
+            completed_services: 0,
+            dispute_count: 0,
+            dispute_wins: 0,
+            reputation_score: 0,
+            quality_ratings: Vec::new(),
+            response_time_avg: 0,
+            base_service_fee: 0,
+            priority_multiplier: 100,
+            accepts_escrow: false,
+            registration_fee_paid: 0,
+            last_fee_update: 0,
+            total_fees_collected: 0,
         }
     }
 
@@ -252,6 +332,78 @@ impl AgentRegistryEntryV1 {
     pub fn has_skill(&self, skill_id: &str) -> bool {
         self.skills.iter().any(|skill| skill.id == skill_id)
     }
+    
+    /// Update staking information
+    pub fn update_staking(
+        &mut self,
+        amount: u64,
+        tier: u8,
+        lock_until: i64,
+        timestamp: i64,
+    ) {
+        self.staked_amount = amount;
+        self.staking_tier = tier;
+        self.stake_locked_until = lock_until;
+        self.staking_timestamp = timestamp;
+        self.last_update_timestamp = timestamp;
+        self.state_version += 1;
+    }
+    
+    /// Update service fees
+    pub fn update_service_fees(
+        &mut self,
+        base_fee: u64,
+        priority_multiplier: u8,
+        accepts_escrow: bool,
+        timestamp: i64,
+    ) {
+        self.base_service_fee = base_fee;
+        self.priority_multiplier = priority_multiplier;
+        self.accepts_escrow = accepts_escrow;
+        self.last_fee_update = timestamp;
+        self.last_update_timestamp = timestamp;
+        self.state_version += 1;
+    }
+    
+    /// Record service completion
+    pub fn record_service_completion(
+        &mut self,
+        earnings: u64,
+        rating: u8,
+        response_time: u32,
+    ) {
+        self.completed_services += 1;
+        self.total_earnings += earnings;
+        
+        // Update quality ratings (keep last 10)
+        self.quality_ratings.push(rating);
+        if self.quality_ratings.len() > 10 {
+            self.quality_ratings.remove(0);
+        }
+        
+        // Update average response time
+        if self.response_time_avg == 0 {
+            self.response_time_avg = response_time;
+        } else {
+            self.response_time_avg = (self.response_time_avg + response_time) / 2;
+        }
+        
+        self.state_version += 1;
+    }
+    
+    /// Record dispute outcome
+    pub fn record_dispute_outcome(&mut self, won: bool) {
+        self.dispute_count += 1;
+        if won {
+            self.dispute_wins += 1;
+        }
+        self.state_version += 1;
+    }
+    
+    /// Check if stake can be unlocked
+    pub fn can_unstake(&self, current_timestamp: i64) -> bool {
+        current_timestamp >= self.stake_locked_until
+    }
 }
 
 impl Default for AgentRegistryEntryV1 {
@@ -283,6 +435,26 @@ impl Default for AgentRegistryEntryV1 {
             last_update_timestamp: 0,
             extended_metadata_uri: None,
             tags: Vec::new(),
+            // Token fields defaults
+            token_mint: Pubkey::default(),
+            staked_amount: 0,
+            staking_timestamp: 0,
+            stake_locked_until: 0,
+            staking_tier: 0,
+            total_earnings: 0,
+            active_escrows: 0,
+            completed_services: 0,
+            dispute_count: 0,
+            dispute_wins: 0,
+            reputation_score: 0,
+            quality_ratings: Vec::new(),
+            response_time_avg: 0,
+            base_service_fee: 0,
+            priority_multiplier: 100,
+            accepts_escrow: false,
+            registration_fee_paid: 0,
+            last_fee_update: 0,
+            total_fees_collected: 0,
         }
     }
 }
@@ -371,13 +543,23 @@ mod tests {
         let mut entry = AgentRegistryEntryV1::default();
         let timestamp = 1640995200;
 
-        entry.update_status(AgentStatus::Active as u8, timestamp);
+        // Test with version checking
+        let result = entry.update_status(AgentStatus::Active as u8, timestamp, 0);
+        assert!(result.is_ok());
         assert!(entry.is_active());
         assert_eq!(entry.last_update_timestamp, timestamp);
+        assert_eq!(entry.state_version, 1);
 
-        entry.update_status(AgentStatus::Deregistered as u8, timestamp + 100);
+        // Test another update with correct version
+        let result = entry.update_status(AgentStatus::Deregistered as u8, timestamp + 100, 1);
+        assert!(result.is_ok());
         assert!(entry.is_deregistered());
         assert_eq!(entry.last_update_timestamp, timestamp + 100);
+        assert_eq!(entry.state_version, 2);
+        
+        // Test update with wrong version
+        let result = entry.update_status(AgentStatus::Active as u8, timestamp + 200, 0);
+        assert!(result.is_err());
     }
 
     #[test]
