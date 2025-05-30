@@ -11,7 +11,6 @@ The history of cryptocurrencies is littered with projects that had brilliant tec
 
 **Success Stories:**
 - **Bitcoin**: Simple store-of-value tokenomics with deflationary supply schedule created digital gold
-- **Ethereum**: Gas fee model creates sustainable demand while staking provides security incentives
 - **Chainlink**: Dual utility (payment for services + staking for security) powers oracle networks
 - **Uniswap**: Revenue sharing with UNI holders aligns community incentives with protocol growth
 
@@ -88,14 +87,9 @@ Our approach draws inspiration from successful dual-token models:
 - **DAI**: Utility token (stablecoin) for payments and DeFi usage
 - **Result**: $8B+ TVL, regulatory clarity, sustainable economics
 
-**Ethereum's ETH/Gas Model:**
-- **ETH**: Store of value, staking rewards, deflationary pressure from burns
-- **Gas**: Pure utility consumption for network usage
-- **Result**: Most successful smart contract platform, clear utility, strong value accrual
-
 **Our SVMAI/AEA Design:**
 - **SVMAI**: Investment token with revenue sharing and governance (like MKR)
-- **AEA**: Pure utility token for AI agent services (like DAI/Gas hybrid)
+- **AEA**: Pure utility token for AI agent services
 - **Innovation**: Cross-chain expansion and dynamic economics
 
 ### **1. Regulatory Clarity & Compliance**
@@ -237,7 +231,7 @@ graph LR
 
 **When This Fails:**
 The Cosmos ecosystem, while a pioneer in interoperability, initially struggled with the hard fork model due to several factors:
-1.  **User Confusion and Friction**: The proliferation of independent "zones" (blockchains) each with its own gas token created a fragmented user experience. Users had to acquire and manage different tokens for different applications, leading to confusion and increased friction, especially for new entrants. This hindered seamless cross-chain interaction despite the underlying technology.
+1.  **User Confusion and Friction**: The proliferation of independent "zones" (blockchains) each with its own 'gas' token created a fragmented user experience. Users had to acquire and manage different tokens for different applications, leading to confusion and increased friction, especially for new entrants. This hindered seamless cross-chain interaction despite the underlying technology.
 2.  **Unclear ATOM Value Accrual**: ATOM, the native token of the Cosmos Hub, was primarily used for staking to secure the Hub and for governance. However, its direct value accrual mechanisms from the broader ecosystem's economic activity were not clearly defined or robust. This led to a perception that ATOM was merely a "security token" without sufficient utility-driven demand, contributing to price stagnation relative to other Layer 1 tokens.
 3.  **Manual Distribution Overhead**: Relying on manual cross-chain transfers and airdrops for token distribution introduced significant operational complexity and delays. This made it difficult to efficiently distribute value or incentives across the interconnected chains, leading to inefficiencies and potential misalignments of incentives.
 
@@ -741,7 +735,7 @@ burning: {
 - **Deflationary Pressure**: Gradual supply reduction supports price stability
 - **Network Value Accrual**: Benefits all AEA holders, not just stakers
 - **Economic Balance**: Small enough not to impact operations, large enough to matter
-- **Precedent**: Ethereum burns part of gas fees, BNB burns quarterly
+- **Precedent**: BNB burns quarterly
 
 ### **SVMAI Token Mechanics**
 
@@ -1046,7 +1040,7 @@ The future of Web3 is inherently multi-chain. Users, developers, and AI agents w
 Expanding across chains introduces several complexities that must be meticulously addressed:
 - **Bridging Complexity**: Securely and efficiently moving tokens between disparate blockchain architectures (e.g., Solana to EVM chains) is technically challenging and a common vector for exploits if not implemented with the highest security standards.
 - **Liquidity Fragmentation**: Spreading token liquidity across multiple decentralized exchanges (DEXs) on different chains can lead to shallower liquidity pools, increased slippage, and a less efficient trading environment for users.
-- **User Experience**: Managing multiple token versions (native vs. wrapped), understanding different gas tokens, and navigating various bridging interfaces can be confusing and cumbersome for end-users, hindering adoption.
+- **User Experience**: Managing multiple token versions (native vs. wrapped) and navigating various bridging interfaces can be confusing and cumbersome for end-users, hindering adoption.
 - **Regulatory Ambiguity**: The regulatory landscape for cross-chain assets and bridges is still evolving, and different jurisdictions may have varying rules, adding another layer of complexity.
 
 ### **Our Cross-Chain Solution: Wrapped AEA & SVMAI**
@@ -1078,7 +1072,7 @@ The wrapped token model ensures that the total supply of AEA and SVMAI remains c
 
 ### **Cross-Chain Fee Model**
 
-Fees for cross-chain transactions (e.g., bridging fees) will be paid in the native gas token of the destination chain (e.g., ETH on Ethereum, MATIC on Polygon), ensuring a seamless user experience without requiring users to hold multiple types of gas tokens. A small, transparent portion of these bridge fees may be routed back to the AEAMCP treasury on Solana, contributing to the overall protocol revenue.
+Fees for cross-chain transactions (e.g., bridging fees) will be paid in the native cryptocurrency of the destination chain (e.g., ETH on Ethereum, MATIC on Polygon), ensuring a seamless user experience without requiring users to hold multiple types of native coins. A small, transparent portion of these bridge fees may be routed back to the AEAMCP treasury on Solana, contributing to the overall protocol revenue.
 
 ```typescript
 const CROSS_CHAIN_FEES = {
