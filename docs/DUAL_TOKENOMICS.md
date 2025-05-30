@@ -590,32 +590,6 @@ graph TD
         CC --> DD[Wrapped AEA/SVMAI on Other Chains];
         DD --> EE[Expanded Utility/Liquidity];
     end
-
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style H fill:#f9f,stroke:#333,stroke-width:2px
-    style I fill:#bbf,stroke:#333,stroke-width:2px
-    style K fill:#bbf,stroke:#333,stroke-width:2px
-    style L fill:#bbf,stroke:#333,stroke-width:2px
-    style M fill:#bbf,stroke:#333,stroke-width:2px
-    style N fill:#afa,stroke:#333,stroke-width:2px
-    style O fill:#afa,stroke:#333,stroke-width:2px
-    style P fill:#afa,stroke:#333,stroke-width:2px
-    style Q fill:#afa,stroke:#333,stroke-width:2px
-    style R fill:#afa,stroke:#333,stroke-width:2px
-    style S fill:#afa,stroke:#333,stroke-width:2px
-    style T fill:#f9f,stroke:#333,stroke-width:2px
-    style U fill:#f9f,stroke:#333,stroke-width:2px
-    style V fill:#f9f,stroke:#333,stroke-width:2px
-    style W fill:#afa,stroke:#333,stroke-width:2px
-    style X fill:#afa,stroke:#333,stroke-width:2px
-    style Y fill:#afa,stroke:#333,stroke-width:2px
-    style Z fill:#fcc,stroke:#333,stroke-width:2px
-    style AA fill:#fcc,stroke:#333,stroke-width:2px
-    style BB fill:#fcc,stroke:#333,stroke-width:2px
-    style CC fill:#ffc,stroke:#333,stroke-width:2px
-    style DD fill:#ffc,stroke:#333,stroke-width:2px
-    style EE fill:#ffc,stroke:#333,stroke-width:2px
-
 ```
 
 ### **Fee Distribution Rationale**
