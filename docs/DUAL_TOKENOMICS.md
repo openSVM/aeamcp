@@ -541,55 +541,80 @@ This diagram illustrates the full lifecycle of SVMAI and AEA tokens within the A
 
 ```mermaid
 graph TD
-    subgraph User Interaction
-        A[New User] --> B(Onboarding/Registration);
-        B --> C{Needs AI Services?};
-        C -->|Yes| D[Acquires AEA];
-        D --> E[Uses AEA for Services];
-        E --> F[Registers Agent/MCP];
-        F --> G[Pays Fees in AEA];
-        C -->|No, Wants Investment| H[Acquires SVMAI];
+    subgraph "User Interaction"
+        A[New User] --> B(Onboarding/Registration)
+        B --> C{Needs AI Services?}
+        C -->|Yes| D[Acquires AEA]
+        D --> E[Uses AEA for Services]
+        E --> F[Registers Agent/MCP]
+        F --> G[Pays Fees in AEA]
+        C -->|No, Wants Investment| H[Acquires SVMAI]
     end
 
-    subgraph Protocol Revenue & Distribution
-        G --> I[Protocol Treasury (AEA)];
-        I --> J{Fee Distribution};
-        J --> K[70% to SVMAI Stakers];
-        J --> L[20% to Liquidity Providers];
-        J --> M[10% to Treasury Reserve];
+    subgraph "Protocol Revenue & Distribution"
+        I[Protocol Treasury - AEA]
+        J{Fee Distribution}
+        K[70% to SVMAI Stakers]
+        L[20% to Liquidity Providers]
+        M[10% to Treasury Reserve]
+        I --> J
+        J --> K
+        J --> L
+        J --> M
     end
 
-    subgraph Value Accrual & Incentives
-        K --> N[SVMAI Staking Rewards (in AEA)];
-        L --> O[LP Rewards (in AEA/SVMAI)];
-        M --> P[Protocol Development & Growth];
-        N --> Q[SVMAI Holders Benefit];
-        O --> R[LP Providers Benefit];
-        P --> S[Enhanced Platform Features];
+    subgraph "Value Accrual & Incentives"
+        N[SVMAI Staking Rewards in AEA]
+        O[LP Rewards in AEA/SVMAI]
+        P[Protocol Development & Growth]
+        Q[SVMAI Holders Benefit]
+        R[LP Providers Benefit]
+        S[Enhanced Platform Features]
+        K --> N
+        L --> O
+        M --> P
+        N --> Q
+        O --> R
+        P --> S
     end
 
-    subgraph Governance & Ecosystem Growth
-        H --> T[SVMAI Staking for Governance];
-        T --> U[Vote on Proposals];
-        U --> V[Influence Protocol Direction];
-        Q --> W[Increased SVMAI Value];
-        R --> X[Stable Liquidity];
-        S --> Y[Attract More Users/Agents];
-        Y --> G;
-        V --> P;
+    subgraph "Governance & Ecosystem Growth"
+        T[SVMAI Staking for Governance]
+        U[Vote on Proposals]
+        V[Influence Protocol Direction]
+        W[Increased SVMAI Value]
+        X[Stable Liquidity]
+        Y[Attract More Users/Agents]
+        H --> T
+        T --> U
+        U --> V
+        Q --> W
+        R --> X
+        S --> Y
     end
 
-    subgraph Token Burning
-        G --> Z[5% of AEA Fees Burned];
-        Z --> AA[Reduced AEA Supply];
-        AA --> BB[Increased AEA Scarcity/Value];
+    subgraph "Token Burning"
+        Z[5% of AEA Fees Burned]
+        AA[Reduced AEA Supply]
+        BB[Increased AEA Scarcity/Value]
+        Z --> AA
+        AA --> BB
     end
 
-    subgraph Cross-Chain Expansion
-        E --> CC[Cross-Chain Bridge];
-        CC --> DD[Wrapped AEA/SVMAI on Other Chains];
-        DD --> EE[Expanded Utility/Liquidity];
+    subgraph "Cross-Chain Expansion"
+        CC[Cross-Chain Bridge]
+        DD[Wrapped AEA/SVMAI on Other Chains]
+        EE[Expanded Utility/Liquidity]
+        E --> CC
+        CC --> DD
+        DD --> EE
     end
+
+    %% Connections between subgraphs
+    G --> I
+    Y --> G
+    V --> P
+    G --> Z
 ```
 
 ### **Fee Distribution Rationale**
