@@ -63,20 +63,6 @@ graph TD
     F & G --> H[Conflicting Optimization Problem];
 ```
 
-**The Regulation Riddle:**
-The SEC's Howey Test, derived from a 1946 Supreme Court case, is the primary legal framework used in the U.S. to determine if an asset qualifies as an "investment contract" and thus a security. It asks four key questions:
-1. **Investment of money**: Does the purchaser invest money?
-2. **Common enterprise**: Is there an expectation of profits from a common enterprise?
-3. **Expectation of profits**: Is there an expectation of profits?
-4. **Derived from efforts of others**: Are these profits derived solely from the efforts of others?
-
-When a single token attempts to serve both as a payment mechanism (utility) and a revenue-sharing or investment vehicle, it often unequivocally meets all four criteria of the Howey Test. For instance, if SVMAI were the sole token and provided both platform utility and revenue share:
-- **Investment of money**: Users buy SVMAI to access services or for potential returns. ✓
-- **Common enterprise**: The AEAMCP platform itself constitutes the common enterprise. ✓
-- **Expectation of profits**: The revenue sharing mechanism explicitly creates an expectation of profits for holders. ✓
-- **From efforts of others**: The value and profits are directly tied to the AEAMCP team's development and operational efforts. ✓
-
-This clear fulfillment of all four prongs would classify SVMAI as a security under U.S. law, subjecting the project to stringent and expensive regulatory compliance, including registration requirements, which can stifle innovation and adoption. Our dual-token approach is designed to strategically navigate this complex regulatory landscape by clearly delineating the functions of each token.
 
 ### **Our Dual Token Solution: Learning from the Best**
 
@@ -92,26 +78,10 @@ Our approach draws inspiration from successful dual-token models:
 - **AEA**: Pure utility token for AI agent services
 - **Innovation**: Cross-chain expansion and dynamic economics
 
-### **1. Regulatory Clarity & Compliance**
-
-**The Howey Test Challenge:**
-The Supreme Court's 1946 Howey decision created a four-part test for securities. Most crypto projects fail this test when tokens provide both utility and investment returns.
-
-**Single Token Problems:**
-When SVMAI serves as both payment mechanism AND provides revenue sharing:
-- **Investment of money**: Users buy SVMAI ✓
-- **Common enterprise**: AEAMCP platform ✓
-- **Expectation of profits**: Revenue sharing promises ✓
-- **From efforts of others**: Team builds platform ✓
-
-This clearly makes SVMAI a security under U.S. law, requiring expensive compliance.
-
 **Our Dual Token Solution:**
 
-**SVMAI (Security-like Token):**
-- **Purpose**: Investment vehicle with clear expectation of returns
+**SVMAI (DAO governance Token):**
 - **Features**: Revenue sharing, governance rights, value appreciation
-- **Regulation**: Treated as security, proper compliance procedures
 - **Precedent**: Similar to traditional stock with dividend payments
 
 **AEA (Utility Token):**
