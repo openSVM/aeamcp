@@ -1,0 +1,61 @@
+{
+  "name": "aeamcp-git-registration-backend",
+  "version": "1.0.0",
+  "description": "Backend service for intelligent Git-based MCP registration",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "nodemon --exec ts-node src/index.ts",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:health": "./scripts/test-api.sh health",
+    "test:api": "./scripts/test-api.sh all",
+    "migrate": "node -e \"console.log('Database migrations would run here')\"",
+    "migrate:rollback": "node -e \"console.log('Database rollback would run here')\"",
+    "seed": "node -e \"console.log('Database seeding would run here')\"",
+    "setup": "./scripts/setup.sh",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:build": "docker-compose build",
+    "lint": "echo 'Linting would run here'",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@octokit/auth-app": "^6.0.0",
+    "@octokit/rest": "^20.0.0",
+    "nodegit": "^0.27.0",
+    "ioredis": "^5.3.0",
+    "typescript": "^5.0.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "bull": "^4.12.2",
+    "knex": "^3.0.1",
+    "pg": "^8.11.3",
+    "dotenv": "^16.3.1",
+    "joi": "^17.11.0",
+    "jsonwebtoken": "^9.0.2",
+    "crypto": "^1.0.1",
+    "uuid": "^9.0.1",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "@types/uuid": "^9.0.7",
+    "@types/pg": "^8.10.9",
+    "@types/jsonwebtoken": "^9.0.5",
+    "ts-node": "^10.9.1",
+    "nodemon": "^3.0.2",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.8",
+    "ts-jest": "^29.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

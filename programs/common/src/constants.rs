@@ -207,3 +207,8 @@ pub const A2AMPL_TOKEN_MINT_DEVNET: &str = "A2AMPLyncKHwfSnwRNsJ2qsjsetgo9fGkP8Y
 pub const STAKING_VAULT_SEED: &[u8] = b"staking_vault";
 pub const FEE_VAULT_SEED: &[u8] = b"fee_vault";
 pub const REGISTRATION_VAULT_SEED: &[u8] = b"registration_vault";
+
+// Authorized External Program IDs
+// TODO: Replace these placeholder program IDs with actual production program IDs
+pub const AUTHORIZED_ESCROW_PROGRAM_ID: &str = "11111111111111111111111111111111";
+pub const AUTHORIZED_DDR_PROGRAM_ID: &str = "11111111111111111111111111111111";

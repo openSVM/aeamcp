@@ -14,11 +14,11 @@ NC='\033[0m' # No Color
 
 # Configuration
 CLUSTER="devnet"
-SVMAI_TOKEN_MINT="Cpzvdx6pppc9TNArsGsqgShCsKC9NCCjA2gtzHvUpump"
+SVMAI_TOKEN_MINT="A2AMPLyncKHwfSnwRNsJ2qsjsetgo9fGkP8YZPsDZ9mE"
 
 echo -e "${BLUE}================================================${NC}"
 echo -e "${BLUE}    AEAMCP Registry Deployment (Devnet)${NC}"
-echo -e "${BLUE}    Using Existing SVMAI Token${NC}"
+echo -e "${BLUE}    Using Existing A2AMPL Token${NC}"
 echo -e "${BLUE}================================================${NC}"
 echo -e "${YELLOW}Token Mint: ${SVMAI_TOKEN_MINT}${NC}"
 echo ""

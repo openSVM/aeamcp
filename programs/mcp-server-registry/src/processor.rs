@@ -12,6 +12,7 @@ use solana_program::{
     msg,
 };
 use borsh::{BorshDeserialize, BorshSerialize};
+use spl_token::state::Account as TokenAccount;
 use aeamcp_common::{
     constants::*,
     error::RegistryError,
@@ -22,18 +23,15 @@ use aeamcp_common::{
         McpResourceDefinitionOnChainInput, McpPromptDefinitionOnChainInput
     },
     token_utils::{
-        transfer_tokens_with_pda_signer_account_info, StakingTier,
-        is_stake_unlocked,
-    },
-    constants::{
-        MIN_STAKE_AMOUNT, MIN_LOCK_PERIOD, MAX_LOCK_PERIOD, STAKING_VAULT_SEED,
-        MCP_SERVER_REGISTRY_PDA_SEED,
+        transfer_tokens_with_pda_signer_account_info, transfer_tokens_with_account_info,
+        StakingTier, is_stake_unlocked, derive_staking_vault_pda, derive_registration_vault_pda,
+        calculate_server_quality_score, validate_fee_config,
     },
 };
 
 use crate::{
     instruction::{McpServerRegistryInstruction, McpServerUpdateDetailsInput, UsageType},
-    state::McpServerRegistryEntryV1,
+    state::{McpServerRegistryEntryV1, UsageType as StateUsageType},
     validation::*,
 };
 
@@ -283,9 +281,6 @@ fn process_update_mcp_server_details(
 
     // SECURITY FIX: Verify account ownership BEFORE data access
     verify_account_owner(mcp_server_entry_info, program_id)?;
-
-    // SECURITY FIX: Verify account ownership BEFORE data access
-    verify_account_owner(mcp_server_entry_info, program_id)?;
     
     let mut data = mcp_server_entry_info.try_borrow_mut_data()?;
     let mut mcp_server_entry = McpServerRegistryEntryV1::try_from_slice(&data)?;
@@ -469,7 +464,7 @@ fn process_update_mcp_server_status(
     Ok(())
 }
 
-/// Process register MCP server with token instruction (stub)
+/// Process register MCP server with token instruction
 fn process_register_mcp_server_with_token(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
@@ -488,11 +483,71 @@ fn process_register_mcp_server_with_token(
     full_capabilities_uri: Option<String>,
     tags: Vec<String>,
 ) -> ProgramResult {
-    // TODO: Implement token-based registration logic
+    let accounts_iter = &mut accounts.iter();
+    let mcp_server_entry_info = next_account_info(accounts_iter)?;
+    let owner_authority_info = next_account_info(accounts_iter)?;
+    let payer_info = next_account_info(accounts_iter)?;
+    let owner_token_account_info = next_account_info(accounts_iter)?;
+    let registration_vault_info = next_account_info(accounts_iter)?;
+    let token_mint_info = next_account_info(accounts_iter)?;
+    let token_program_info = next_account_info(accounts_iter)?;
+    let system_program_info = next_account_info(accounts_iter)?;
+    let clock_info = next_account_info(accounts_iter)?;
+
+    // Validate input
+    validate_register_mcp_server(
+        &server_id,
+        &name,
+        &server_version,
+        &service_endpoint,
+        &documentation_url,
+        &server_capabilities_summary,
+        &onchain_tool_definitions,
+        &onchain_resource_definitions,
+        &onchain_prompt_definitions,
+        &full_capabilities_uri,
+        &tags,
+    ).map_err(|e| ProgramError::from(e))?;
+
+    // Verify signers
+    if !owner_authority_info.is_signer {
+        return Err(RegistryError::Unauthorized.into());
+    }
+    if !payer_info.is_signer {
+        return Err(ProgramError::MissingRequiredSignature);
+    }
+
+    // Verify registration vault PDA
+    let (expected_vault, _) = derive_registration_vault_pda(program_id);
+    if registration_vault_info.key != &expected_vault {
+        return Err(RegistryError::InvalidPda.into());
+    }
+
+    // Verify token program
+    if token_program_info.key != &spl_token::id() {
+        return Err(ProgramError::IncorrectProgramId);
+    }
+
+    // Verify owner has sufficient balance for registration fee
+    // Read token account data manually
+    use spl_token::state::Account;
+    use solana_program::program_pack::Pack;
+    let owner_token_data = owner_token_account_info.try_borrow_data()?;
+    let owner_token_account = Account::unpack(&owner_token_data)?;
+    if owner_token_account.amount < MCP_REGISTRATION_FEE {
+        return Err(RegistryError::InsufficientStake.into());
+    }
+
+    // First register the MCP server using existing logic
     process_register_mcp_server(
         program_id,
-        accounts,
-        server_id,
+        &[
+            mcp_server_entry_info.clone(),
+            owner_authority_info.clone(),
+            payer_info.clone(),
+            system_program_info.clone(),
+        ],
+        server_id.clone(),
         name,
         server_version,
         service_endpoint,
@@ -506,7 +561,42 @@ fn process_register_mcp_server_with_token(
         onchain_prompt_definitions,
         full_capabilities_uri,
         tags,
-    )
+    )?;
+
+    // Transfer registration fee to vault
+    transfer_tokens_with_account_info(
+        owner_token_account_info,
+        registration_vault_info,
+        owner_authority_info,
+        token_program_info,
+        MCP_REGISTRATION_FEE,
+    )?;
+
+    // Update server entry with token info
+    let mut data = mcp_server_entry_info.try_borrow_mut_data()?;
+    let mut server_entry = McpServerRegistryEntryV1::try_from_slice(&data)?;
+    
+    // Update token-related fields
+    server_entry.token_mint = *token_mint_info.key;
+    server_entry.registration_fee_paid = MCP_REGISTRATION_FEE;
+    server_entry.total_fees_collected = MCP_REGISTRATION_FEE;
+    
+    // Set default fee configuration
+    server_entry.tool_base_fee = MIN_TOOL_FEE;
+    server_entry.resource_base_fee = MIN_RESOURCE_FEE;
+    server_entry.prompt_base_fee = MIN_PROMPT_FEE;
+    server_entry.bulk_discount_threshold = 10; // Default to 10 calls for discount
+    server_entry.bulk_discount_percentage = 10; // Default to 10% discount
+    
+    server_entry.serialize(&mut &mut data[..])?;
+
+    // Emit event
+    msg!(
+        "EVENT: McpServerRegisteredWithToken server_id={} fee={}",
+        server_id, MCP_REGISTRATION_FEE
+    );
+
+    Ok(())
 }
 
 /// Process stake for verification instruction
@@ -546,51 +636,55 @@ fn process_stake_for_verification(
         return Err(RegistryError::InvalidLockPeriod.into());
     }
 
-    // Calculate staking vault PDA
-    let (vault_pda, vault_bump) = derive_mcp_staking_vault_pda(
-        &server_entry.server_id,
-        owner_authority_info.key,
-        program_id,
-    );
-
-    if *staking_vault_info.key != vault_pda {
+    // Verify staking vault PDA (using standard staking vault)
+    let (expected_vault, _) = derive_staking_vault_pda(program_id);
+    if staking_vault_info.key != &expected_vault {
         return Err(RegistryError::InvalidPda.into());
     }
 
     // Transfer tokens to staking vault
-    transfer_tokens_with_pda_signer_account_info(
+    transfer_tokens_with_account_info(
         user_token_account_info,
         staking_vault_info,
         owner_authority_info,
         token_program_info,
         amount,
-        &[&[vault_bump]],
     )?;
 
     // Update server entry with staking info
     let current_timestamp = get_current_timestamp()?;
     let stake_locked_until = current_timestamp + lock_period;
     
-    // Calculate verification tier based on staked amount
-    let verification_tier = match amount {
-        a if a >= 1_000_000_000 => 2, // Premium: 1000+ SVMAI
-        a if a >= 100_000_000 => 1,   // Verified: 100+ SVMAI
-        _ => 0,                        // Basic: < 100 SVMAI
+    // Calculate verification tier based on staked amount (using correct A2AMPL values)
+    let verification_tier = if amount >= PREMIUM_SERVER_STAKE {
+        2 // Premium: 25,000 A2AMPL
+    } else if amount >= VERIFIED_SERVER_STAKE {
+        1 // Verified: 5,000 A2AMPL
+    } else if amount >= BASIC_SERVER_STAKE {
+        0 // Basic: 500 A2AMPL
+    } else {
+        return Err(RegistryError::InsufficientStake.into());
     };
 
-    server_entry.update_verification_stake(
-        amount,
-        verification_tier,
-        stake_locked_until,
-        current_timestamp,
-    );
+    // Calculate new total stake
+    let new_total_stake = server_entry.verification_stake + amount;
 
-    // Calculate and update quality score
-    let quality_score = calculate_mcp_quality_score(
+    // Update server staking info
+    server_entry.verification_stake = new_total_stake;
+    server_entry.verification_tier = verification_tier;
+    server_entry.staking_timestamp = current_timestamp;
+    server_entry.stake_locked_until = stake_locked_until;
+    server_entry.last_update_timestamp = current_timestamp;
+
+    // Calculate and update quality score with all uses
+    let total_uses = server_entry.total_tool_calls +
+                    server_entry.total_resource_accesses +
+                    server_entry.total_prompt_uses;
+    let quality_score = calculate_server_quality_score(
         server_entry.uptime_percentage,
         server_entry.avg_response_time,
         server_entry.error_rate,
-        verification_tier,
+        total_uses,
     );
     server_entry.quality_score = quality_score;
 
@@ -857,13 +951,21 @@ fn process_withdraw_pending_fees(
         return Err(RegistryError::InvalidPda.into());
     }
 
+    // Create proper seeds for PDA signing
+    let vault_seeds = &[
+        b"staking_vault",
+        server_entry.server_id.as_bytes(),
+        owner_authority_info.key.as_ref(),
+        &[vault_bump],
+    ];
+    
     transfer_tokens_with_pda_signer_account_info(
         server_fee_vault_info,
         owner_token_account_info,
-        owner_authority_info,
+        server_fee_vault_info, // Vault is the authority
         token_program_info,
         withdrawal_amount,
-        &[&[vault_bump]],
+        &[vault_seeds],
     )?;
 
     // Update last fee collection timestamp

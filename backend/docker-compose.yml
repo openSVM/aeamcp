@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: aeamcp-postgres
+    environment:
+      POSTGRES_DB: aeamcp_git_registration
+      POSTGRES_USER: aeamcp_user
+      POSTGRES_PASSWORD: aeamcp_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aeamcp_user -d aeamcp_git_registration"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: aeamcp-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    command: redis-server --appendonly yes
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aeamcp-backend
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgresql://aeamcp_user:aeamcp_password@postgres:5432/aeamcp_git_registration
+      REDIS_URL: redis://redis:6379
+      GITHUB_APP_ID: ${GITHUB_APP_ID}
+      GITHUB_APP_PRIVATE_KEY: ${GITHUB_APP_PRIVATE_KEY}
+      GITHUB_WEBHOOK_SECRET: ${GITHUB_WEBHOOK_SECRET}
+      JWT_SECRET: development-jwt-secret-change-in-production
+      ENCRYPTION_KEY: dev-encryption-key-32-characters
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX_REQUESTS: 100
+      MAX_REPO_SIZE_MB: 100
+      ANALYSIS_TIMEOUT_MS: 300000
+      TEMP_DIR_TTL_HOURS: 1
+      LOG_LEVEL: info
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./logs:/app/logs
+      - /tmp/git-analysis:/tmp/git-analysis
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  default:
+    name: aeamcp-network

@@ -1,0 +1,61 @@
+{
+  "network": "devnet",
+  "deployment_date": "2025-05-29T01:55:00Z",
+  "deployer_address": "5p7BwGsA5sX9uJaY1tDSoAWsAD5Tehvu3JSMonDMTYQG",
+  "svmai_token_mint": "FEgE1LhC1NyxYxNGL2b5cjC8Pbm1Hehk7CDBHjkR1wcu",
+  "programs": {
+    "agent_registry": {
+      "program_id": "2CyuaQMyxJNg637bYSR1ZhwfDFd3ssCvTJHMBTbCH8D4",
+      "deployment_signature": "4WThBHNKeTsWMVMCSiD9hK51M3gXGK9bWVkF8zhpnBhdNtkTofYBYerqAkoEPpd15G8JLSocc29TJPyqLi83NAdS",
+      "source": "programs/agent-registry/"
+    },
+    "mcp_server_registry": {
+      "program_id": "FYu2V5y6vGjsra7rqCKs5Z4paMLQB2mT4iTc9KABGCSM",
+      "deployment_signature": "rWyAT7fe2LeRhAkeQ2RsdnEa87vM7KiiCGyVk5UQZtcxs1ugjs9Uw7M4ceaEUL3MbFEGqDwxPCQQEV22WeuBsQW",
+      "source": "programs/mcp-server-registry/"
+    }
+  },
+  "token_integration": {
+    "agent_registration_fee": "100 SVMAI",
+    "mcp_registration_fee": "50 SVMAI",
+    "staking_tiers": {
+      "bronze": "1,000 SVMAI",
+      "silver": "10,000 SVMAI", 
+      "gold": "50,000 SVMAI",
+      "platinum": "100,000 SVMAI"
+    },
+    "verification_stakes": {
+      "basic": "500 SVMAI",
+      "verified": "5,000 SVMAI",
+      "premium": "25,000 SVMAI"
+    }
+  },
+  "explorer_urls": {
+    "agent_registry": "https://explorer.solana.com/address/2CyuaQMyxJNg637bYSR1ZhwfDFd3ssCvTJHMBTbCH8D4?cluster=devnet",
+    "mcp_server_registry": "https://explorer.solana.com/address/FYu2V5y6vGjsra7rqCKs5Z4paMLQB2mT4iTc9KABGCSM?cluster=devnet",
+    "svmai_token": "https://explorer.solana.com/address/FEgE1LhC1NyxYxNGL2b5cjC8Pbm1Hehk7CDBHjkR1wcu?cluster=devnet"
+  },
+  "external_links": {
+    "note": "Devnet token - no external trading links available",
+    "solscan_devnet": "https://solscan.io/token/FEgE1LhC1NyxYxNGL2b5cjC8Pbm1Hehk7CDBHjkR1wcu?cluster=devnet"
+  },
+  "rpc_configuration": {
+    "devnet_rpc": "https://api.devnet.solana.com",
+    "mainnet_rpc": "https://api.mainnet-beta.solana.com"
+  },
+  "deployment_status": "✅ COMPLETE",
+  "next_steps": [
+    "Initialize token vaults for each registry",
+    "Set up fee collection mechanisms", 
+    "Configure staking parameters",
+    "Update frontend constants with new program IDs",
+    "Test agent and MCP server registrations",
+    "Begin token-based operations"
+  ],
+  "technical_notes": {
+    "programs_built_with": "cargo build-sbf",
+    "deployment_cost": "~2.4 SOL total",
+    "token_economics": "Deployed new SVMAI token to devnet for testing",
+    "security_status": "Phase 1 security audit completed"
+  }
+}

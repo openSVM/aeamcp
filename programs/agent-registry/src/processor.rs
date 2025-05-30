@@ -367,9 +367,6 @@ impl Processor {
 
         // SECURITY FIX: Verify account ownership BEFORE data access
         verify_account_owner(agent_entry_info, program_id)?;
-
-        // SECURITY FIX: Verify account ownership BEFORE data access
-        verify_account_owner(agent_entry_info, program_id)?;
         
         let mut data = agent_entry_info.try_borrow_mut_data()?;
         let mut agent_entry = AgentRegistryEntryV1::try_from_slice(&data)?;
@@ -853,8 +850,8 @@ impl Processor {
         // Get clock
         let clock = Clock::from_account_info(clock_info)?;
 
-        // Check if stake can be unlocked
-        if !agent_entry.can_unstake(clock.unix_timestamp) {
+        // Check if stake can be unlocked using the is_stake_unlocked utility
+        if !is_stake_unlocked(agent_entry.stake_locked_until, clock.unix_timestamp) {
             return Err(RegistryError::StakeLocked.into());
         }
 
@@ -891,6 +888,16 @@ impl Processor {
             if new_staked_amount > 0 { agent_entry.stake_locked_until } else { 0 },
             clock.unix_timestamp,
         );
+
+        // Update quality score after tier change
+        let quality_score = calculate_agent_quality_score(
+            agent_entry.completed_services,
+            &agent_entry.quality_ratings,
+            agent_entry.dispute_wins,
+            agent_entry.dispute_count,
+            agent_entry.response_time_avg,
+        );
+        agent_entry.reputation_score = quality_score;
 
         agent_entry.serialize(&mut &mut data[..])?;
 

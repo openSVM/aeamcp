@@ -25,17 +25,15 @@ impl AuthorityRegistry {
     pub fn new() -> Self {
         Self {
             authorized_escrow_programs: vec![
-                // Placeholder for actual escrow program IDs
-                // These should be replaced with real program IDs when available
-                "EscrowProgramId11111111111111111111111111111"
+                // TODO: Replace with actual escrow program IDs from production
+                crate::constants::AUTHORIZED_ESCROW_PROGRAM_ID
                     .parse()
                     .expect("Invalid escrow program ID"),
                 // Add more authorized escrow programs as needed
             ],
             authorized_ddr_programs: vec![
-                // Placeholder for actual DDR program IDs
-                // These should be replaced with real program IDs when available
-                "DDRProgramId111111111111111111111111111111111"
+                // TODO: Replace with actual DDR program IDs from production
+                crate::constants::AUTHORIZED_DDR_PROGRAM_ID
                     .parse()
                     .expect("Invalid DDR program ID"),
                 // Add more authorized DDR programs as needed

@@ -63,41 +63,24 @@ print_header "Cleaning previous builds..."
 cargo clean
 
 # Build the programs
-print_header "Building SVMAI Token program..."
-cd programs/svmai-token
-cargo build-sbf --manifest-path Cargo.toml
-cd ../..
-
 print_header "Building Agent Registry program..."
-cd programs/agent-registry
-cargo build-sbf --manifest-path Cargo.toml
-cd ../..
+cargo build-sbf --manifest-path programs/agent-registry/Cargo.toml
 
 print_header "Building MCP Server Registry program..."
-cd programs/mcp-server-registry
-cargo build-sbf --manifest-path Cargo.toml
-cd ../..
+cargo build-sbf --manifest-path programs/mcp-server-registry/Cargo.toml
 
 # Verify builds
 print_header "Verifying builds..."
-if [ -f "target/deploy/svmai_token.so" ]; then
-    TOKEN_SIZE=$(stat -c%s target/deploy/svmai_token.so)
-    print_status "✅ SVMAI Token built successfully (${TOKEN_SIZE} bytes)"
-else
-    print_error "❌ SVMAI Token build failed"
-    exit 1
-fi
-
-if [ -f "target/deploy/solana_a2a.so" ]; then
-    AGENT_SIZE=$(stat -c%s target/deploy/solana_a2a.so)
+if [ -f "programs/agent-registry/target/deploy/agent_registry.so" ]; then
+    AGENT_SIZE=$(stat -c%s programs/agent-registry/target/deploy/agent_registry.so 2>/dev/null || stat -f%z programs/agent-registry/target/deploy/agent_registry.so 2>/dev/null || echo "unknown")
     print_status "✅ Agent Registry built successfully (${AGENT_SIZE} bytes)"
 else
     print_error "❌ Agent Registry build failed"
     exit 1
 fi
 
-if [ -f "target/deploy/solana_mcp.so" ]; then
-    MCP_SIZE=$(stat -c%s target/deploy/solana_mcp.so)
+if [ -f "programs/mcp-server-registry/target/deploy/mcp_server_registry.so" ]; then
+    MCP_SIZE=$(stat -c%s programs/mcp-server-registry/target/deploy/mcp_server_registry.so 2>/dev/null || stat -f%z programs/mcp-server-registry/target/deploy/mcp_server_registry.so 2>/dev/null || echo "unknown")
     print_status "✅ MCP Server Registry built successfully (${MCP_SIZE} bytes)"
 else
     print_error "❌ MCP Server Registry build failed"
@@ -111,11 +94,11 @@ cargo test --verbose
 print_header "🎉 Build completed successfully!"
 echo ""
 echo "📋 Build Summary:"
-echo "  SVMAI Token: target/deploy/svmai_token.so (${TOKEN_SIZE} bytes)"
-echo "  Agent Registry: target/deploy/solana_a2a.so (${AGENT_SIZE} bytes)"
-echo "  MCP Server Registry: target/deploy/solana_mcp.so (${MCP_SIZE} bytes)"
+echo "  Agent Registry: programs/agent-registry/target/deploy/agent_registry.so (${AGENT_SIZE} bytes)"
+echo "  MCP Server Registry: programs/mcp-server-registry/target/deploy/mcp_server_registry.so (${MCP_SIZE} bytes)"
 echo ""
 echo "🚀 Ready for deployment:"
+echo "  • Devnet with existing token: ./scripts/deploy-devnet-with-existing-token.sh"
 echo "  • Devnet: ./scripts/deploy-devnet.sh"
 echo "  • Testnet: ./scripts/deploy-testnet.sh"
 echo ""
