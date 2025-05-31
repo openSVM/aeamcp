@@ -6,6 +6,7 @@ import QueryProvider from '@/components/common/QueryProvider';
 import Navigation from '@/components/common/Navigation';
 import PWAInstaller from '@/components/common/PWAInstaller';
 import DOSStatusBar from '@/components/common/DOSStatusBar';
+import GhostInTheBrowser from '@/components/common/GhostInTheBrowser';
 import { I18nProvider } from '@/components/common/I18nProvider';
 import { OnboardingProvider, OnboardingManager } from '@/components/onboarding';
 import { Toaster } from 'react-hot-toast';
@@ -47,6 +48,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
       </head>
       <body className="min-h-screen" style={{ fontFamily: "'Courier New', Courier, monospace", backgroundColor: '#FFFFFF', color: '#262626' }}>
+        <GhostInTheBrowser />
         <I18nProvider>
           <OnboardingProvider>
             <QueryProvider>

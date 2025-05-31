@@ -96,7 +96,9 @@
 
 /* ASCII Navigation Styles */
 .ascii-header {
-  background-color: var(--ascii-neutral-700);
+  background: rgba(64, 64, 64, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 2px solid var(--ascii-neutral-900);
   font-family: 'Courier New', Courier, monospace;
 }
@@ -320,7 +322,9 @@
 
 /* ASCII Footer */
 .ascii-footer {
-  background-color: var(--ascii-neutral-700);
+  background: rgba(64, 64, 64, 0.80);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-top: 2px solid var(--ascii-neutral-900);
   color: var(--ascii-neutral-300);
   font-family: 'Courier New', Courier, monospace;
@@ -497,4 +501,57 @@
   transition-property: box-shadow;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+}
+
+/* Glassmorphism effects for ghosty background blur */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+.glass-effect-dark {
+  background: rgba(38, 38, 38, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+/* Enhanced ASCII card with glassmorphism */
+.ascii-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--ascii-neutral-400);
+  box-shadow: 2px 2px 0px var(--ascii-neutral-400);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+/* Glass effect for sections */
+.section-glass {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Glass effect for navigation */
+.nav-glass {
+  background: rgba(255, 255, 255, 0.90);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Glass effect for footer */
+.footer-glass {
+  background: rgba(255, 255, 255, 0.80);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
 }
