@@ -18,9 +18,9 @@ export default function TokenomicsPage() {
   ];
 
   return (
-    <div className="min-h-screen" style={{ fontFamily: "'Courier New', Courier, monospace", backgroundColor: '#FFFFFF' }}>
+    <div className="min-h-screen" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
       {/* Header */}
-      <section className="py-12" style={{ backgroundColor: '#F5F5F5', borderBottom: '2px solid #A3A3A3' }}>
+      <section className="py-12 section-glass" style={{ borderBottom: '2px solid #A3A3A3' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="ascii-logo w-16 h-16 mx-auto mb-6">
@@ -72,7 +72,7 @@ export default function TokenomicsPage() {
       </section>
 
       {/* Navigation */}
-      <section className="py-6" style={{ backgroundColor: '#FFFFFF', borderBottom: '1px solid #A3A3A3' }}>
+      <section className="py-6 section-glass" style={{ borderBottom: '1px solid #A3A3A3' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap gap-2 justify-center">
             {sections.map((section) => (
