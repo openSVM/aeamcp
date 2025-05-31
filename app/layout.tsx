@@ -2,7 +2,10 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import WalletProvider from '@/components/common/WalletProvider';
-import Navigation from '@/components/common/Navigation';
+import Navigation from '@/components/common/Navigation'; 
+import GhostInTheBrowser from '@/components/common/GhostInTheBrowser';
+
+
 import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -34,6 +37,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="AEAMCP" />
       </head>
       <body className={`${inter.className} min-h-screen bg-gray-50 dark:bg-gray-900`}>
+        <GhostInTheBrowser>
         <WalletProvider>
           <div className="flex flex-col min-h-screen">
             <Navigation />
@@ -77,6 +81,7 @@ export default function RootLayout({
             }}
           />
         </WalletProvider>
+        </GhostInTheBrowser>
       </body>
     </html>
   );
