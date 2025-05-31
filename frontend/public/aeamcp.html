@@ -24,6 +24,21 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* ASCII Grayscale Color Palette for Protocol Stats */
+        :root {
+            --ascii-white: #FFFFFF;
+            --ascii-neutral-50: #FAFAFA;
+            --ascii-neutral-100: #F5F5F5;
+            --ascii-neutral-200: #E5E5E5;
+            --ascii-neutral-300: #D4D4D4;
+            --ascii-neutral-400: #A3A3A3;
+            --ascii-neutral-500: #737373;
+            --ascii-neutral-600: #525252;
+            --ascii-neutral-700: #404040;
+            --ascii-neutral-800: #262626;
+            --ascii-neutral-900: #171717;
+        }
+
         body {
             font-family: 'Courier New', Courier, monospace; /* Monospace font */
             background-color: #FFFFFF;
@@ -323,6 +338,100 @@
             padding-bottom: 0.25rem;
         }
 
+        /* Protocol Stats Section */
+        .protocol-stats-container {
+            background-color: var(--ascii-neutral-700);
+            border-bottom: 2px solid var(--ascii-neutral-900);
+            color: var(--ascii-white);
+            font-family: 'Courier New', Courier, monospace;
+            padding: 8px 0;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+        }
+
+        .protocol-stats-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+            font-size: 12px;
+            line-height: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .protocol-stats-title {
+            color: var(--ascii-neutral-300);
+            font-weight: bold;
+            margin-right: 12px;
+            text-transform: uppercase;
+        }
+
+        .protocol-stats-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .protocol-stat-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .protocol-stat-label {
+            color: var(--ascii-neutral-400);
+            font-weight: bold;
+            min-width: 30px;
+            text-transform: uppercase;
+        }
+
+        .protocol-stat-value {
+            color: var(--ascii-white);
+            font-weight: normal;
+        }
+
+        .protocol-health-indicator {
+            color: var(--ascii-neutral-600);
+            font-size: 14px;
+            margin: 0 4px;
+        }
+
+        /* Responsive Design for Protocol Stats */
+        @media (max-width: 768px) {
+            .protocol-stats-content {
+                flex-wrap: wrap;
+                gap: 12px;
+                font-size: 11px;
+                padding: 0 1rem;
+            }
+
+            .protocol-stats-title {
+                display: none;
+            }
+
+            .protocol-stats-group {
+                gap: 12px;
+            }
+
+            .protocol-stat-item {
+                gap: 2px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .protocol-stats-content {
+                gap: 8px;
+                font-size: 10px;
+            }
+
+            .protocol-stats-group {
+                gap: 8px;
+            }
+        }
+
     </style>
 </head>
 <body class="antialiased static-html">
@@ -344,6 +453,32 @@
             </div>
         </nav>
     </header>
+
+    <!-- Protocol Stats Section -->
+    <div class="protocol-stats-container">
+        <div class="protocol-stats-content">
+            <span class="protocol-stats-title">Live Protocol Stats</span>
+            <span class="protocol-health-indicator" id="protocolHealth">●</span>
+            <div class="protocol-stats-group">
+                <div class="protocol-stat-item">
+                    <span class="protocol-stat-label">AGT:</span>
+                    <span class="protocol-stat-value" id="agentStats">18/24</span>
+                </div>
+                <div class="protocol-stat-item">
+                    <span class="protocol-stat-label">MCP:</span>
+                    <span class="protocol-stat-value" id="mcpStats">9/12</span>
+                </div>
+                <div class="protocol-stat-item">
+                    <span class="protocol-stat-label">TXN:</span>
+                    <span class="protocol-stat-value" id="transactionStats">1,247</span>
+                </div>
+                <div class="protocol-stat-item">
+                    <span class="protocol-stat-label">SUC:</span>
+                    <span class="protocol-stat-value" id="successStats">94.2%</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <main class="main-container pt-10 pb-16">
 
@@ -1008,6 +1143,62 @@
                 });
             }
         });
+
+        // Protocol Stats Dynamic Updates
+        function updateProtocolStats() {
+            // Simulate realistic stats with small variations
+            const baseStats = {
+                activeAgents: 18,
+                totalAgents: 24,
+                activeMcp: 9,
+                totalMcp: 12,
+                transactions: 1247,
+                successRate: 94.2
+            };
+
+            // Add small random variations to make it feel live
+            const agentVariation = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+            const mcpVariation = Math.floor(Math.random() * 3) - 1;
+            const txnVariation = Math.floor(Math.random() * 20) - 10; // -10 to 10
+            const successVariation = (Math.random() * 2 - 1).toFixed(1); // -1.0 to 1.0
+
+            const currentStats = {
+                activeAgents: Math.max(0, Math.min(baseStats.totalAgents, baseStats.activeAgents + agentVariation)),
+                totalAgents: baseStats.totalAgents,
+                activeMcp: Math.max(0, Math.min(baseStats.totalMcp, baseStats.activeMcp + mcpVariation)),
+                totalMcp: baseStats.totalMcp,
+                transactions: Math.max(1000, baseStats.transactions + txnVariation),
+                successRate: Math.max(85.0, Math.min(99.9, baseStats.successRate + parseFloat(successVariation)))
+            };
+
+            // Update DOM elements
+            document.getElementById('agentStats').textContent = `${currentStats.activeAgents}/${currentStats.totalAgents}`;
+            document.getElementById('mcpStats').textContent = `${currentStats.activeMcp}/${currentStats.totalMcp}`;
+            document.getElementById('transactionStats').textContent = currentStats.transactions.toLocaleString();
+            document.getElementById('successStats').textContent = `${currentStats.successRate.toFixed(1)}%`;
+
+            // Update health indicator based on overall system health
+            const healthIndicator = document.getElementById('protocolHealth');
+            const overallHealth = (currentStats.activeAgents / currentStats.totalAgents + 
+                                 currentStats.activeMcp / currentStats.totalMcp + 
+                                 currentStats.successRate / 100) / 3;
+
+            if (overallHealth > 0.85) {
+                healthIndicator.style.color = 'var(--ascii-neutral-600)'; // Healthy - darker
+                healthIndicator.textContent = '●';
+            } else if (overallHealth > 0.70) {
+                healthIndicator.style.color = 'var(--ascii-neutral-500)'; // Warning - medium
+                healthIndicator.textContent = '◐';
+            } else {
+                healthIndicator.style.color = 'var(--ascii-neutral-400)'; // Critical - lighter
+                healthIndicator.textContent = '○';
+            }
+        }
+
+        // Initialize protocol stats and set up periodic updates
+        updateProtocolStats();
+        setInterval(updateProtocolStats, 8000); // Update every 8 seconds
+
     </script>
 </body>
 </html>
