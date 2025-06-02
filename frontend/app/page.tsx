@@ -8,7 +8,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
       {/* Hero Section */}
-      <section className="py-20" style={{ backgroundColor: '#F5F5F5', borderBottom: '2px solid #A3A3A3' }}>
+      <section className="py-20 section-glass" style={{ borderBottom: '2px solid #A3A3A3' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="ascii-section-title text-4xl md:text-6xl mb-6">
@@ -59,7 +59,7 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20" style={{ backgroundColor: '#FFFFFF' }}>
+      <section className="py-20 section-glass">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="ascii-section-title text-3xl md:text-4xl mb-4">
@@ -132,7 +132,7 @@ export default function HomePage() {
       </section>
 
       {/* $SVMAI Token Benefits */}
-      <section className="py-20" style={{ backgroundColor: '#F5F5F5' }}>
+      <section className="py-20 section-glass">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="ascii-section-title text-3xl md:text-4xl mb-4">
@@ -196,7 +196,7 @@ export default function HomePage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20" style={{ backgroundColor: '#FFFFFF' }}>
+      <section className="py-20 section-glass">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div className="ascii-card">
@@ -228,7 +228,7 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20" style={{ backgroundColor: '#E5E5E5', borderTop: '2px solid #A3A3A3' }}>
+      <section className="py-20 section-glass" style={{ borderTop: '2px solid #A3A3A3' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="ascii-section-title text-3xl md:text-4xl mb-4">
             {t('home.cta.title').toUpperCase()}
