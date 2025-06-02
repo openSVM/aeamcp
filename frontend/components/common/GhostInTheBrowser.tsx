@@ -1060,7 +1060,7 @@ const GhostInTheBrowser = () => {
         // This makes character changes much rarer and less distracting
         if (Math.random() > 0.98) {
           // Use a more limited set of visually calming characters
-          const calmChars = [".", "·", "⋅", "○", "°", "⁕", "~"];
+          const calmChars = [".", "·", "⋅", "-", "⁕", "~"];
           return calmChars[
             Math.floor((Math.sin(time + index) * 0.5 + 0.5) * calmChars.length)
           ];
@@ -1100,8 +1100,8 @@ const GhostInTheBrowser = () => {
       // Theme-aware background
       const isDarkMode = document.documentElement.classList.contains("dark");
       const bgColor = isDarkMode
-        ? "rgba(13, 13, 13, 0.05)"
-        : "rgba(248, 248, 248, 0.05)";
+        ? "rgba(13, 13, 13, 0.15)"
+        : "rgba(248, 248, 248, 0.15)";
 
       // Clear offscreen canvas first
       offscreenCtx.clearRect(0, 0, width, height);
@@ -1127,28 +1127,28 @@ const GhostInTheBrowser = () => {
         // Use a square root function for a gentler transition
         const rawFade = i / trail.length;
         const fade = pos.drawing
-          ? Math.pow(rawFade, 0.4)
-          : Math.pow(rawFade, 0.5); // Dramatically slower fade (0.4/0.5 instead of 1.5/1.0)
+          ? Math.pow(rawFade, 0.2)
+          : Math.pow(rawFade, 0.4); // Dramatically slower fade (0.4/0.5 instead of 1.5/1.0)
 
         // Increase radius for wider visibility
         const radius = pos.drawing ? 120 * (1 - fade) : 100 * (1 - fade); // Increased from 90/80 to 120/100
 
         // Enhanced strength calculation for more persistent visibility
-        const strength = Math.pow(1 - fade, 0.7); // More gradual drop-off in opacity
+        const strength = Math.pow(1 - fade, 0.9); // More gradual drop-off in opacity
 
         // Theme-aware ghost character colors with MUCH higher opacity for better visibility
         const drawingColor = isDarkMode
-          ? `rgba(200, 200, 200, ${0.4 * strength})` // Significantly increased opacity
-          : `rgba(50, 50, 50, ${0.4 * strength})`;
+          ? `rgba(200, 200, 200, ${0.8 * strength})` // Significantly increased opacity
+          : `rgba(50, 50, 50, ${0.8 * strength})`;
 
         const trailColor = isDarkMode
-          ? `rgba(180, 180, 180, ${0.35 * strength})` // Much more visible trails
-          : `rgba(70, 70, 70, ${0.35 * strength})`;
+          ? `rgba(180, 180, 180, ${0.65 * strength})` // Much more visible trails
+          : `rgba(70, 70, 70, ${0.65 * strength})`;
 
         // More prominent calming tints for visibility
         const calmingTint = isDarkMode
-          ? `rgba(200, 200, 200, ${0.22 * strength})` // Soft gray, monochrome
-          : `rgba(180, 180, 180, ${0.22 * strength})`; // Soft gray for light mode, monochrome
+          ? `rgba(200, 200, 200, ${0.42 * strength})` // Soft gray, monochrome
+          : `rgba(180, 180, 180, ${0.42 * strength})`; // Soft gray for light mode, monochrome
 
         // VERY slow, gentle transition between colors - almost imperceptible shifting
         // Use time-based approach to create extremely gentle color blending
@@ -1156,7 +1156,7 @@ const GhostInTheBrowser = () => {
 
         // Smooth sine-based blend between colors rather than binary switching
         // This creates a soft, gradual fade between the colors with no jarring changes
-        const blendFactor = (Math.sin(time + i * 0.01) * 0.5 + 0.5) * 0.8; // Very slow oscillation
+        const blendFactor = (Math.sin(time + i * 0.01) * 0.5 + 0.5) * 0.9; // Very slow oscillation
 
         // Blend colors together based on the blend factor
         const baseColor = pos.drawing ? drawingColor : trailColor;
