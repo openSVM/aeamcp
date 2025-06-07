@@ -20,3 +20,7 @@ version = "1.18"
 
 [workspace.dependencies.solana-sdk]
 version = "1.18"
+
+
+[profile.release]
+overflow-checks = true

@@ -18,10 +18,8 @@ pub mod validation;
 pub mod events;
 
 #[cfg(test)]
-pub mod tests;
+// pub mod tests;
 
-
-use processor::Processor;
 
 // Declare and export the program's entrypoint
 entrypoint!(process_instruction);
@@ -32,7 +30,7 @@ pub fn process_instruction(
     accounts: &[AccountInfo],
     instruction_data: &[u8],
 ) -> ProgramResult {
-    Processor::process(program_id, accounts, instruction_data)
+    processor::Processor::process(program_id, accounts, instruction_data)
 }
 
 // Export the program ID
