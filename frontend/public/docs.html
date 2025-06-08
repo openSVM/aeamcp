@@ -259,6 +259,11 @@
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
         
+        .book-nav-btn:focus {
+            outline: 2px solid #525252;
+            outline-offset: 2px;
+        }
+        
         .book-nav-btn.prev {
             text-align: left;
         }
@@ -313,11 +318,13 @@
 
     <main class="main-container py-8">
         <div class="flex flex-col md:flex-row">
-            <div id="sidebar" class="mb-6 md:mb-0">
+            <aside id="sidebar" class="mb-6 md:mb-0" role="navigation" aria-label="Documentation navigation">
                 <h2 class="text-xl font-bold mb-4">Documentation</h2>
-                <ul id="doc-nav" class="space-y-2"></ul>
-            </div>
-            <div id="content" class="flex-grow">
+                <nav>
+                    <ul id="doc-nav" class="space-y-2" role="menu"></ul>
+                </nav>
+            </aside>
+            <div id="content" class="flex-grow" role="main" aria-label="Documentation content">
                 <div id="markdown-content" class="prose max-w-none"></div>
             </div>
         </div>
@@ -377,8 +384,9 @@
             const a = document.createElement('a');
             a.href = `#${doc.id}`;
             a.dataset.path = doc.path;
-            a.className = 'block p-2 hover:bg-neutral-200 rounded';
+            a.className = 'block p-2 hover:bg-neutral-200 rounded focus:outline-none focus:ring-2 focus:ring-neutral-400';
             a.innerText = doc.name;
+            a.setAttribute('role', 'menuitem');
             a.addEventListener('click', (e) => {
                 e.preventDefault();
                 loadMarkdown(doc.path);
@@ -402,8 +410,9 @@
             a.href = `#${chapter.id}`;
             a.dataset.path = chapter.path;
             a.dataset.chapter = chapter.chapter;
-            a.className = 'block p-2 hover:bg-neutral-200 rounded book-chapter';
+            a.className = 'block p-2 hover:bg-neutral-200 rounded book-chapter focus:outline-none focus:ring-2 focus:ring-neutral-400';
             a.innerText = chapter.name;
+            a.setAttribute('role', 'menuitem');
             a.addEventListener('click', (e) => {
                 e.preventDefault();
                 loadBookChapter(chapter);
@@ -509,7 +518,7 @@
             
             if (prevChapter) {
                 navigation += `
-                    <button class="book-nav-btn prev" onclick="navigateToChapter('${prevChapter.id}')">
+                    <button class="book-nav-btn prev" onclick="navigateToChapter('${prevChapter.id}')" aria-label="Previous chapter: ${prevChapter.name}">
                         ← ${prevChapter.name}
                     </button>
                 `;
@@ -519,7 +528,7 @@
             
             if (nextChapter) {
                 navigation += `
-                    <button class="book-nav-btn next" onclick="navigateToChapter('${nextChapter.id}')">
+                    <button class="book-nav-btn next" onclick="navigateToChapter('${nextChapter.id}')" aria-label="Next chapter: ${nextChapter.name}">
                         ${nextChapter.name} →
                     </button>
                 `;
