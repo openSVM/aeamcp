@@ -13,39 +13,7 @@ registration fees, staking, and potentially service payments.
 
 ## Visual Overview
 
-```mermaid
-flowchart TD
-    A0["Agent Registry Program
-"]
-    A1["MCP Server Registry Program
-"]
-    A2["Registry Entry Accounts
-"]
-    A3["Program Derived Addresses (PDAs)
-"]
-    A4["Registry RPC Service (Frontend)
-"]
-    A5["Solana Wallet Integration
-"]
-    A6["Program Events
-"]
-    A7["A2AMPL (SVMAI) Token
-"]
-    A0 -- "Manages data in" --> A2
-    A1 -- "Manages data in" --> A2
-    A0 -- "Derives account addresses" --> A3
-    A1 -- "Derives account addresses" --> A3
-    A4 -- "Interacts with" --> A0
-    A4 -- "Interacts with" --> A1
-    A4 -- "Fetches data from" --> A2
-    A4 -- "Uses to locate accounts" --> A3
-    A5 -- "Provides transaction signing" --> A4
-    A0 -- "Emits" --> A6
-    A1 -- "Emits" --> A6
-    A4 -- "Listens for" --> A6
-    A7 -- "Required for operations" --> A0
-    A7 -- "Required for operations" --> A1
-    A5 -- "Holds user's tokens" --> A7
+```mermaid:diagrams/intro-overview.mmd
 ```
 
 ## Chapters

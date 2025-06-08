@@ -115,37 +115,7 @@ If any critical error occurs during steps 3-8 (e.g., RPC timeout, deserializatio
 
 Here is a simplified sequence diagram illustrating the `fetchAgents` process:
 
-```mermaid
-sequenceDiagram
-    participant UIComp as UI Component
-    participant RPCService as Registry RPC Service
-    participant Cache as Local Cache
-    participant ConnMgr as Connection Manager
-    participant RpcNode as Solana RPC Node
-    participant Serializer as Data Serializer
-    participant Validator as Data Validator
-    participant Transformer as Data Transformer
-
-    UIComp->>RPCService: Call fetchAgents(searchParams, pagination)
-    RPCService->>Cache: Check for cached data (cacheKey: searchParams, pagination)
-    Cache-->>RPCService: No fresh data
-    RPCService->>RPCService: Prepare getProgramAccounts request (Program ID, filters)
-    RPCService->>ConnMgr: Send getProgramAccounts request
-    ConnMgr->>RpcNode: Forward getProgramAccounts request (with retry/rate limit)
-    RpcNode-->>ConnMgr: Return List of Raw Accounts
-    ConnMgr-->>RPCService: Raw Account List
-    RPCService->>RPCService: Process each account...
-    loop For each Account
-        RPCService->>Serializer: Deserialize Raw Account Data
-        Serializer-->>RPCService: OnChainAgentEntry Object
-        RPCService->>Validator: Validate OnChainAgentEntry (Optional)
-        Validator-->>RPCService: Validation Result
-        RPCService->>Transformer: Transform to UIAgentData
-        Transformer-->>RPCService: UIAgentData Object
-    end
-    RPCService->>RPCService: Apply filtering, sorting, pagination on UIAgentData list
-    RPCService->>Cache: Cache Final Result
-    RPCService-->>UIComp: Return PaginatedResult<UIAgentData>
+```mermaid:diagrams/ch5-rpc-fetch-sequence.mmd
 ```
 *This diagram shows the flow of fetching agent data. The UI component asks the service, which handles talking to the blockchain (via the Connection Manager and RPC Node), processing the raw data, and optionally using a local cache.*
 

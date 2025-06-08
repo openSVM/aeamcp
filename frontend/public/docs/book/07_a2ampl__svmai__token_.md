@@ -145,45 +145,7 @@ async registerAgentWithToken(data, walletPublicKey) {
 
 Here is a simplified sequence diagram showing the token transfer step integrated into the registration flow:
 
-```mermaid
-sequenceDiagram
-    participant User as User
-    participant Wallet as Wallet
-    participant App as Frontend App
-    participant TokenService as tokenRegistryService
-    participant Program as Registry Program
-    participant SPLTokenProg as SPL Token Program
-    participant Solana as Solana Blockchain
-    participant UserTokenAcc as User A2AMPL Account
-    participant VaultTokenAcc as Program Vault Account
-
-    User->>App: Wants to register Agent
-    App->>Wallet: Request 'RegisterAgentWithToken' TX signature
-    Wallet->>User: User approves TX
-    User->>App: Signature provided
-    App->>TokenService: Call registerAgentWithToken(data, publicKey)
-    TokenService->>TokenService: Calculate PDAs for Agent & Vault
-    TokenService->>Solana: Get Account Info (User Token Account)
-    Solana-->>TokenService: User Token Account Info
-    TokenService->>TokenService: Build SPL Token Transfer Instruction (User -> Vault)
-    TokenService->>TokenService: Build Registry Program Instruction (Register)
-    TokenService->>TokenService: Combine Instructions into Transaction
-    TokenService-->>App: Return Unsigned Transaction
-    App->>Wallet: Request signature for Transaction (containing 2 instructions)
-    Wallet->>User: "Authorize TX? (Transfer A2AMPL, Register Agent)"
-    User->>Wallet: User approves
-    Wallet->>Wallet: Signs Transaction
-    Wallet-->>App: Return Signed Transaction
-    App->>Solana: Send Signed Transaction
-    Solana->>SPLTokenProg: Execute Transfer Instruction
-    SPLTokenProg->>UserTokenAcc: Deduct A2AMPL
-    SPLTokenProg->>VaultTokenAcc: Add A2AMPL
-    Solana->>Program: Execute Register Instruction
-    Note over Solana,Program: Program verifies fee was paid to VaultTokenAcc
-    Program->>Solana: Create Agent Entry Account (PDA)
-    Program->>Solana: Emit 'AgentRegistered' event
-    Solana-->>App: Transaction Confirmed
-    App-->>User: Agent registered successfully!
+```mermaid:diagrams/ch7-token-register-sequence.mmd
 ```
 *This diagram adds the token transfer step to the registration flow. The frontend service builds a transaction with two instructions (SPL Token transfer and Registry Program call), the wallet signs it, and Solana executes both instructions atomically.*
 

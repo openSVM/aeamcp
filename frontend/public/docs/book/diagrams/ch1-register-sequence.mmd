@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant User as User
+    participant Wallet as Wallet
+    participant App as Frontend App
+    participant Program as Registry Program
+    participant Solana as Solana Blockchain
+    participant Account as New Registry Account
+
+    User->>App: Wants to register AI Agent
+    App->>Wallet: Request signature for transaction
+    Wallet->>User: User approves transaction
+    User->>App: Signature provided
+    App->>Solana: Send 'register_agent' transaction
+    Solana->>Program: Execute 'register_agent' instruction
+    Program->>Solana: Request new account creation
+    Note over Program,Solana: Program Derived Address (PDA) is used for the new account (more in Chapter 4!)
+    Solana->>Account: Create and fund new account
+    Program->>Account: Write initial agent data into account
+    Program->>Solana: Emit 'AgentRegistered' event (more in Chapter 8!)
+    Solana-->>App: Transaction confirmed
+    App-->>User: Agent registered successfully!

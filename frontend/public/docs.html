@@ -121,12 +121,47 @@
             docNav.appendChild(li);
         });
 
-        // Function to render mermaid diagrams
-        function renderMermaidDiagrams() {
+        // Function to render mermaid diagrams (including external files)
+        async function renderMermaidDiagrams() {
             const mermaidElements = document.querySelectorAll('code.language-mermaid');
-            mermaidElements.forEach((element, index) => {
-                const mermaidCode = element.textContent;
-                const mermaidId = `mermaid-${Date.now()}-${index}`;
+            const renderedIds = new Set(); // Track rendered IDs to prevent collisions
+            
+            for (let index = 0; index < mermaidElements.length; index++) {
+                const element = mermaidElements[index];
+                let mermaidCode = element.textContent.trim();
+                
+                // Check if it's an external file reference
+                if (mermaidCode.startsWith('diagrams/') && mermaidCode.endsWith('.mmd')) {
+                    try {
+                        const filePath = `/docs/book/${mermaidCode}`;
+                        const response = await fetch(filePath);
+                        if (!response.ok) {
+                            throw new Error(`Failed to load ${filePath}`);
+                        }
+                        mermaidCode = await response.text();
+                    } catch (error) {
+                        console.error('Error loading external mermaid file:', error);
+                        element.parentNode.replaceWith(createErrorDiv(`Failed to load diagram: ${mermaidCode}`));
+                        continue;
+                    }
+                }
+                
+                // Generate unique ID with collision detection
+                let mermaidId;
+                let attempt = 0;
+                do {
+                    mermaidId = `mermaid-${Date.now()}-${index}-${attempt}`;
+                    attempt++;
+                } while (renderedIds.has(mermaidId) && attempt < 100);
+                
+                if (renderedIds.has(mermaidId)) {
+                    console.error('Mermaid ID collision detected:', mermaidId);
+                    element.parentNode.replaceWith(createErrorDiv('Diagram ID collision detected'));
+                    continue;
+                }
+                
+                renderedIds.add(mermaidId);
+                
                 const mermaidDiv = document.createElement('div');
                 mermaidDiv.id = mermaidId;
                 mermaidDiv.className = 'mermaid-diagram';
@@ -138,9 +173,17 @@
                     });
                 } catch (error) {
                     console.error('Mermaid rendering error:', error);
-                    mermaidDiv.innerHTML = `<div class="bg-yellow-100 p-4 rounded">Diagram rendering failed</div>`;
+                    mermaidDiv.innerHTML = `<div class="bg-yellow-100 p-4 rounded">Diagram rendering failed: ${error.message}</div>`;
                 }
-            });
+            }
+        }
+        
+        // Helper function to create error div
+        function createErrorDiv(message) {
+            const div = document.createElement('div');
+            div.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded';
+            div.innerHTML = `<strong>Error:</strong> ${message}`;
+            return div;
         }
 
         // Function to load and render markdown content
@@ -153,8 +196,8 @@
                 const markdown = await response.text();
                 document.getElementById('markdown-content').innerHTML = marked.parse(markdown);
                 
-                // Render mermaid diagrams
-                renderMermaidDiagrams();
+                // Render mermaid diagrams (async)
+                await renderMermaidDiagrams();
                 
                 // Hide book navigation for regular docs
                 hideBookNavigation();
@@ -191,8 +234,8 @@
                 document.getElementById('markdown-content').innerHTML = bookContent;
                 currentBookChapter = chapter;
                 
-                // Render mermaid diagrams
-                renderMermaidDiagrams();
+                // Render mermaid diagrams (async)
+                await renderMermaidDiagrams();
                 
                 // Show book navigation
                 showBookNavigation();

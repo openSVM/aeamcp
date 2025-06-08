@@ -244,25 +244,7 @@ export default function RegisterAgentPage() {
 
 Here is a simplified sequence diagram focusing on the transaction signing and sending process:
 
-```mermaid
-sequenceDiagram
-    participant User as User
-    participant WalletApp as Wallet App (e.g. Phantom)
-    participant Frontend as Frontend App
-    participant Solana as Solana Network / RPC Node
-
-    User->>Frontend: Click "Register Agent"
-    Frontend->>Frontend: Gather form data
-    Frontend->>Frontend: Build Transaction object (unsigned)
-    Frontend->>WalletApp: Request signature for Transaction (via Wallet Adapter)
-    WalletApp->>User: "Authorize this transaction?"
-    User->>WalletApp: User approves
-    WalletApp->>WalletApp: Sign Transaction with User's Private Key
-    WalletApp-->>Frontend: Return Signed Transaction object
-    Frontend->>Solana: Send Signed Transaction (via RPC Connection)
-    Solana->>Solana: Process Transaction
-    Solana-->>Frontend: Transaction Confirmed
-    Frontend->>User: Show success message
+```mermaid:diagrams/ch6-wallet-sequence.mmd
 ```
 *This diagram shows how the wallet acts as an intermediary, receiving the unsigned transaction from the frontend, getting user approval, signing it, and returning it to the frontend to be sent to the network.*
 

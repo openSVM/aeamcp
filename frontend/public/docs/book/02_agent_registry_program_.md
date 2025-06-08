@@ -79,31 +79,7 @@ Here's a simplified walkthrough:
 
 Here's a simplified flow diagram for the `RegisterAgent` process:
 
-```mermaid
-sequenceDiagram
-    participant User as User
-    participant Wallet as Wallet
-    participant App as Frontend App
-    participant Solana as Solana Blockchain
-    participant RegProg as Agent Registry Program
-    participant SysProg as System Program
-    participant AgentAcc as New Agent Entry Account
-
-    User->>App: Wants to register AI Agent
-    App->>Wallet: Request 'RegisterAgent' TX signature
-    Wallet->>User: User approves TX
-    User->>App: Signature provided
-    App->>Solana: Send signed TX with 'RegisterAgent' instruction + accounts
-    Solana->>RegProg: Route instruction & accounts
-    RegProg->>RegProg: Validate inputs & accounts
-    RegProg->>RegProg: Derive/Verify PDA for AgentAcc
-    RegProg->>RegProg: Check if AgentAcc exists (shouldn't)
-    RegProg->>SysProg: Request Create Account for AgentAcc
-    SysProg->>Solana: Create Account at PDA for AgentAcc
-    RegProg->>AgentAcc: Write agent data into Account
-    RegProg->>Solana: Emit 'AgentRegistered' event
-    Solana-->>App: Transaction confirmed
-    App-->>User: Agent registered successfully!
+```mermaid:diagrams/ch2-agent-register-sequence.mmd
 ```
 *This diagram shows the sequence of interactions when a user registers an agent via the program.*
 

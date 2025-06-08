@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant UIComp as UI Component
+    participant RPCService as Registry RPC Service
+    participant Cache as Local Cache
+    participant ConnMgr as Connection Manager
+    participant RpcNode as Solana RPC Node
+    participant Serializer as Data Serializer
+    participant Validator as Data Validator
+    participant Transformer as Data Transformer
+
+    UIComp->>RPCService: Call fetchAgents(searchParams, pagination)
+    RPCService->>Cache: Check for cached data (cacheKey: searchParams, pagination)
+    Cache-->>RPCService: No fresh data
+    RPCService->>RPCService: Prepare getProgramAccounts request (Program ID, filters)
+    RPCService->>ConnMgr: Send getProgramAccounts request
+    ConnMgr->>RpcNode: Forward getProgramAccounts request (with retry/rate limit)
+    RpcNode-->>ConnMgr: Return List of Raw Accounts
+    ConnMgr-->>RPCService: Raw Account List
+    RPCService->>RPCService: Process each account...
+    loop For each Account
+        RPCService->>Serializer: Deserialize Raw Account Data
+        Serializer-->>RPCService: OnChainAgentEntry Object
+        RPCService->>Validator: Validate OnChainAgentEntry (Optional)
+        Validator-->>RPCService: Validation Result
+        RPCService->>Transformer: Transform to UIAgentData
+        Transformer-->>RPCService: UIAgentData Object
+    end
+    RPCService->>RPCService: Apply filtering, sorting, pagination on UIAgentData list
+    RPCService->>Cache: Cache Final Result
+    RPCService-->>UIComp: Return PaginatedResult<UIAgentData>

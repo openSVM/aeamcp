@@ -75,31 +75,7 @@ Here's a simplified sequence of what the program does:
 
 Here's a simplified diagram of the registration flow:
 
-```mermaid
-sequenceDiagram
-    participant User as User
-    participant Wallet as Wallet
-    participant App as Frontend App
-    participant Solana as Solana Blockchain
-    participant MCPRegProg as MCP Reg Program
-    participant SysProg as System Program
-    participant ServerAcc as New Server Entry Account
-
-    User->>App: Wants to register MCP Server
-    App->>Wallet: Request 'RegisterMcpServer' TX signature
-    Wallet->>User: User approves TX
-    User->>App: Signature provided
-    App->>Solana: Send signed TX with 'RegisterMcpServer' instruction + accounts
-    Solana->>MCPRegProg: Route instruction & accounts
-    MCPRegProg->>MCPRegProg: Validate inputs & accounts
-    MCPRegProg->>MCPRegProg: Derive/Verify PDA for ServerAcc
-    MCPRegProg->>MCPRegProg: Check if ServerAcc exists (shouldn't)
-    MCPRegProg->>SysProg: Request Create Account for ServerAcc
-    SysProg->>Solana: Create Account at PDA for ServerAcc
-    MCPRegProg->>ServerAcc: Write server data into Account
-    MCPRegProg->>Solana: Emit 'McpServerRegistered' event
-    Solana-->>App: Transaction confirmed
-    App-->>User: Server registered successfully!
+```mermaid:diagrams/ch3-mcp-register-sequence.mmd
 ```
 *This diagram illustrates the steps involved when a server owner registers their service through the MCP Server Registry Program.*
 
