@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mermaid ID Collision Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        .test-success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .test-failure { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .test-warning { background-color: #fff3cd; border-color: #ffeaa7; color: #856404; }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">Mermaid Diagram ID Collision Test</h1>
+        
+        <div id="test-results" class="mb-8"></div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div id="test-diagrams" class="col-span-full"></div>
+        </div>
+        
+        <div class="mt-8">
+            <h2 class="text-2xl font-bold mb-4">Test Log</h2>
+            <div id="test-log" class="bg-white p-4 rounded border max-h-96 overflow-y-auto font-mono text-sm"></div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize mermaid
+        mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
+
+        const testLog = document.getElementById('test-log');
+        const testResults = document.getElementById('test-results');
+        const testDiagrams = document.getElementById('test-diagrams');
+
+        // Test data - simulating multiple diagrams being rendered simultaneously
+        const diagramFiles = [
+            'intro-overview.mmd',
+            'ch1-register-sequence.mmd',
+            'ch2-agent-register-sequence.mmd',
+            'ch3-mcp-register-sequence.mmd',
+            'ch5-rpc-fetch-sequence.mmd',
+            'ch6-wallet-sequence.mmd',
+            'ch7-token-register-sequence.mmd',
+            'ch8-events-sequence.mmd'
+        ];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const colorClass = type === 'error' ? 'text-red-600' : type === 'warning' ? 'text-yellow-600' : 'text-blue-600';
+            testLog.innerHTML += `<div class="${colorClass}">[${timestamp}] ${message}</div>`;
+            testLog.scrollTop = testLog.scrollHeight;
+        }
+
+        function createTestResultCard(title, status, details) {
+            const statusClass = status === 'pass' ? 'test-success' : status === 'fail' ? 'test-failure' : 'test-warning';
+            const icon = status === 'pass' ? '✅' : status === 'fail' ? '❌' : '⚠️';
+            
+            return `
+                <div class="border rounded p-4 ${statusClass}">
+                    <h3 class="font-bold">${icon} ${title}</h3>
+                    <p class="mt-2">${details}</p>
+                </div>
+            `;
+        }
+
+        // Enhanced renderMermaidDiagrams function with collision detection (copied from docs.html)
+        async function renderMermaidDiagrams(testMode = false) {
+            const mermaidElements = document.querySelectorAll('code.language-mermaid');
+            const renderedIds = new Set();
+            const collisions = [];
+            const renderAttempts = [];
+            
+            for (let index = 0; index < mermaidElements.length; index++) {
+                const element = mermaidElements[index];
+                let mermaidCode = element.textContent.trim();
+                
+                // Check if it's an external file reference
+                if (mermaidCode.startsWith('diagrams/') && mermaidCode.endsWith('.mmd')) {
+                    try {
+                        const filePath = `/docs/book/${mermaidCode}`;
+                        const response = await fetch(filePath);
+                        if (!response.ok) {
+                            throw new Error(`Failed to load ${filePath}`);
+                        }
+                        mermaidCode = await response.text();
+                        log(`Loaded external diagram: ${mermaidCode.split('/').pop()}`);
+                    } catch (error) {
+                        log(`Error loading external mermaid file: ${error.message}`, 'error');
+                        if (testMode) {
+                            renderAttempts.push({ success: false, error: error.message, file: mermaidCode });
+                        }
+                        continue;
+                    }
+                }
+                
+                // Generate unique ID with collision detection
+                let mermaidId;
+                let attempt = 0;
+                do {
+                    mermaidId = `mermaid-${Date.now()}-${index}-${attempt}`;
+                    attempt++;
+                } while (renderedIds.has(mermaidId) && attempt < 100);
+                
+                if (renderedIds.has(mermaidId)) {
+                    const collision = { id: mermaidId, index, attempt };
+                    collisions.push(collision);
+                    log(`ID collision detected: ${mermaidId}`, 'error');
+                    continue;
+                }
+                
+                renderedIds.add(mermaidId);
+                log(`Generated ID: ${mermaidId} for diagram ${index}`);
+                
+                const mermaidDiv = document.createElement('div');
+                mermaidDiv.id = mermaidId;
+                mermaidDiv.className = 'mermaid-diagram border rounded p-4 mb-4';
+                mermaidDiv.innerHTML = '<div class="text-gray-500">Rendering...</div>';
+                
+                if (testMode) {
+                    const title = document.createElement('h4');
+                    title.className = 'font-bold mb-2';
+                    title.textContent = `Diagram ${index + 1} (${mermaidId})`;
+                    testDiagrams.appendChild(title);
+                }
+                
+                testDiagrams.appendChild(mermaidDiv);
+                
+                try {
+                    await new Promise((resolve, reject) => {
+                        mermaid.render(mermaidId, mermaidCode, (svgCode) => {
+                            mermaidDiv.innerHTML = svgCode;
+                            log(`Successfully rendered diagram ${index + 1}`);
+                            if (testMode) {
+                                renderAttempts.push({ success: true, id: mermaidId, index });
+                            }
+                            resolve();
+                        }, (error) => {
+                            reject(error);
+                        });
+                    });
+                } catch (error) {
+                    log(`Mermaid rendering error for diagram ${index + 1}: ${error.message}`, 'error');
+                    mermaidDiv.innerHTML = `<div class="bg-yellow-100 p-4 rounded">Diagram rendering failed: ${error.message}</div>`;
+                    if (testMode) {
+                        renderAttempts.push({ success: false, error: error.message, id: mermaidId, index });
+                    }
+                }
+            }
+            
+            return { collisions, renderAttempts, totalIds: renderedIds.size };
+        }
+
+        // Run the collision test
+        async function runCollisionTest() {
+            log('Starting Mermaid ID Collision Test...');
+            
+            // Create test content with multiple mermaid diagrams
+            const testContent = diagramFiles.map((file, index) => 
+                `<h3>Test Diagram ${index + 1}</h3>
+                <pre><code class="language-mermaid">diagrams/${file}</code></pre>`
+            ).join('\n');
+            
+            // Also add some inline diagrams to test mixed content
+            const inlineTestContent = `
+                <h3>Inline Test Diagram 1</h3>
+                <pre><code class="language-mermaid">
+graph TD
+    A[Test Node A] --> B[Test Node B]
+    B --> C[Test Node C]
+                </code></pre>
+                
+                <h3>Inline Test Diagram 2</h3>
+                <pre><code class="language-mermaid">
+sequenceDiagram
+    participant A as Test A
+    participant B as Test B
+    A->>B: Test Message
+    B-->>A: Test Response
+                </code></pre>
+            `;
+            
+            testDiagrams.innerHTML = testContent + inlineTestContent;
+            
+            // Run the rendering with test mode
+            const results = await renderMermaidDiagrams(true);
+            
+            // Evaluate results
+            const tests = [];
+            
+            // Test 1: No ID collisions
+            if (results.collisions.length === 0) {
+                tests.push(createTestResultCard(
+                    'ID Collision Prevention',
+                    'pass',
+                    `No ID collisions detected. Generated ${results.totalIds} unique IDs.`
+                ));
+                log(`✅ No ID collisions detected (${results.totalIds} unique IDs generated)`);
+            } else {
+                tests.push(createTestResultCard(
+                    'ID Collision Prevention',
+                    'fail',
+                    `${results.collisions.length} ID collisions detected: ${results.collisions.map(c => c.id).join(', ')}`
+                ));
+                log(`❌ ${results.collisions.length} ID collisions detected`, 'error');
+            }
+            
+            // Test 2: External file loading
+            const externalFiles = results.renderAttempts.filter(r => r.success);
+            const failedLoads = results.renderAttempts.filter(r => !r.success && r.error);
+            
+            if (failedLoads.length === 0) {
+                tests.push(createTestResultCard(
+                    'External File Loading',
+                    'pass',
+                    `All external diagram files loaded successfully (${externalFiles.length} files).`
+                ));
+                log(`✅ All external files loaded successfully`);
+            } else {
+                tests.push(createTestResultCard(
+                    'External File Loading',
+                    'fail',
+                    `${failedLoads.length} external files failed to load.`
+                ));
+                log(`❌ ${failedLoads.length} external files failed to load`, 'error');
+            }
+            
+            // Test 3: Rendering success rate
+            const totalAttempts = results.renderAttempts.length;
+            const successfulRenders = results.renderAttempts.filter(r => r.success).length;
+            const successRate = totalAttempts > 0 ? (successfulRenders / totalAttempts * 100).toFixed(1) : 0;
+            
+            if (successRate >= 90) {
+                tests.push(createTestResultCard(
+                    'Rendering Success Rate',
+                    'pass',
+                    `${successRate}% success rate (${successfulRenders}/${totalAttempts} diagrams rendered successfully).`
+                ));
+                log(`✅ High rendering success rate: ${successRate}%`);
+            } else if (successRate >= 70) {
+                tests.push(createTestResultCard(
+                    'Rendering Success Rate',
+                    'warning',
+                    `${successRate}% success rate (${successfulRenders}/${totalAttempts} diagrams rendered successfully). Some diagrams failed.`
+                ));
+                log(`⚠️ Moderate rendering success rate: ${successRate}%`, 'warning');
+            } else {
+                tests.push(createTestResultCard(
+                    'Rendering Success Rate',
+                    'fail',
+                    `${successRate}% success rate (${successfulRenders}/${totalAttempts} diagrams rendered successfully). Many diagrams failed.`
+                ));
+                log(`❌ Low rendering success rate: ${successRate}%`, 'error');
+            }
+            
+            // Test 4: Performance check
+            const avgRenderTime = totalAttempts > 0 ? (Date.now() - testStartTime) / totalAttempts : 0;
+            if (avgRenderTime < 1000) {
+                tests.push(createTestResultCard(
+                    'Rendering Performance',
+                    'pass',
+                    `Average rendering time: ${avgRenderTime.toFixed(0)}ms per diagram.`
+                ));
+                log(`✅ Good rendering performance: ${avgRenderTime.toFixed(0)}ms average`);
+            } else {
+                tests.push(createTestResultCard(
+                    'Rendering Performance',
+                    'warning',
+                    `Average rendering time: ${avgRenderTime.toFixed(0)}ms per diagram. Consider optimization.`
+                ));
+                log(`⚠️ Slow rendering performance: ${avgRenderTime.toFixed(0)}ms average`, 'warning');
+            }
+            
+            testResults.innerHTML = tests.join('');
+            log('Test completed!');
+        }
+
+        // Start the test
+        const testStartTime = Date.now();
+        runCollisionTest().catch(error => {
+            log(`Test failed with error: ${error.message}`, 'error');
+            testResults.innerHTML = createTestResultCard(
+                'Test Execution',
+                'fail',
+                `Test failed to complete: ${error.message}`
+            );
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant User as User
+    participant Frontend as Frontend App
+    participant WSManager as WebSocket Manager
+    participant RpcNode as Solana RPC Node
+    participant Solana as Solana Network
+    participant Program as Registry Program
+
+    User->>Frontend: View Agent List Page
+    Frontend->>WSManager: Subscribe to Program Logs (Agent Registry Program ID)
+    WSManager->>RpcNode: Establish WebSocket Connection & Send Log Subscription Request
+    RpcNode-->WSManager: Connection Open
+    User->>Frontend: Register New Agent (via separate TX flow)
+    Frontend->>Solana: Send Signed Register Agent TX
+    Solana->>Program: Execute RegisterAgent Instruction
+    Program->>Solana: Emit AgentRegistered Event (in TX logs)
+    Solana->>RpcNode: Transaction Confirmed, Logs available
+    RpcNode-->WSManager: Push Log Data (via WebSocket)
+    WSManager->>WSManager: Process Logs (Find 'AgentRegistered' line, parse JSON)
+    WSManager->>Frontend: Emit Internal 'update' Event (with parsed data)
+    Frontend->>Frontend: Process 'update' event (Update UI state)
+    Frontend->>User: New Agent Appears Instantly
