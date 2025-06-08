@@ -1,0 +1,291 @@
+body {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #FFFFFF;
+    color: #262626;
+}
+.header {
+    background-color: #171717;
+    padding: 1rem;
+    color: white;
+}
+.nav-link {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    margin: 0.25rem;
+    border: 1px solid #525252;
+    border-radius: 0.25rem;
+    color: #A3A3A3;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    background-color: #262626;
+}
+.nav-link:hover {
+    background-color: #737373;
+    color: #FFFFFF;
+    border-color: #737373;
+}
+.nav-link.active {
+    background-color: #404040;
+    color: #FFFFFF;
+    font-weight: bold;
+    border-color: #404040;
+}
+.main-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+#content {
+    padding: 2rem 0;
+}
+#markdown-content {
+    background-color: #f5f5f5;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    line-height: 1.6;
+}
+#markdown-content h1 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #525252;
+}
+#markdown-content h2 {
+    font-size: 1.5rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid #737373;
+}
+#markdown-content h3 {
+    font-size: 1.25rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+#markdown-content ul, #markdown-content ol {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+#markdown-content ul {
+    list-style-type: disc;
+}
+#markdown-content ol {
+    list-style-type: decimal;
+}
+#markdown-content pre {
+    background-color: #262626;
+    color: #ffffff;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+}
+#markdown-content code {
+    background-color: #d4d4d4;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-family: monospace;
+}
+#markdown-content pre code {
+    background-color: transparent;
+    padding: 0;
+}
+#markdown-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+}
+#markdown-content th, #markdown-content td {
+    border: 1px solid #d4d4d4;
+    padding: 0.5rem 1rem;
+    text-align: left;
+}
+#markdown-content th {
+    background-color: #e5e5e5;
+}
+#markdown-content blockquote {
+    border-left: 4px solid #737373;
+    padding-left: 1rem;
+    margin: 1rem 0;
+    color: #525252;
+}
+#markdown-content a {
+    color: #0ea5e9;
+    text-decoration: none;
+}
+#markdown-content a:hover {
+    text-decoration: underline;
+}
+#sidebar {
+    width: 250px;
+    min-width: 250px;
+    padding-right: 1.5rem;
+}
+
+/* Book-specific styling with grayscale ink effect */
+.book-container {
+    position: relative;
+}
+
+.book-content {
+    /* Apply grayscale ink effect */
+    filter: grayscale(100%) contrast(120%) brightness(0.95);
+    background-color: #fafafa;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+    /* Subtle paper texture effect */
+    background-image: 
+        linear-gradient(45deg, transparent 24%, rgba(64, 64, 64, 0.02) 25%, rgba(64, 64, 64, 0.02) 26%, transparent 27%, transparent 74%, rgba(64, 64, 64, 0.02) 75%, rgba(64, 64, 64, 0.02) 76%, transparent 77%, transparent),
+        linear-gradient(-45deg, transparent 24%, rgba(64, 64, 64, 0.02) 25%, rgba(64, 64, 64, 0.02) 26%, transparent 27%, transparent 74%, rgba(64, 64, 64, 0.02) 75%, rgba(64, 64, 64, 0.02) 76%, transparent 77%, transparent);
+    background-size: 20px 20px;
+}
+
+/* Enhanced typography for book content */
+.book-content h1 {
+    font-size: 2.25rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 3px solid #404040;
+    color: #171717;
+    font-weight: bold;
+}
+
+.book-content h2 {
+    font-size: 1.75rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #525252;
+    color: #262626;
+}
+
+.book-content h3 {
+    font-size: 1.375rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: #404040;
+}
+
+.book-content p {
+    margin-bottom: 1.25rem;
+    line-height: 1.8;
+    text-align: justify;
+    color: #262626;
+}
+
+.book-content ul, .book-content ol {
+    margin-bottom: 1.5rem;
+    padding-left: 2rem;
+}
+
+.book-content li {
+    margin-bottom: 0.5rem;
+    line-height: 1.7;
+}
+
+.book-content code {
+    background-color: #e5e5e5;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-family: 'Courier New', Courier, monospace;
+    color: #171717;
+    font-weight: bold;
+}
+
+.book-content pre {
+    background-color: #171717;
+    color: #f5f5f5;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    border: 1px solid #404040;
+}
+
+.book-content pre code {
+    background-color: transparent;
+    padding: 0;
+    color: #f5f5f5;
+    font-weight: normal;
+}
+
+/* Book navigation styling */
+.book-navigation {
+    margin-top: 2rem;
+}
+
+.book-nav-btn {
+    background-color: #404040;
+    color: #ffffff;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.375rem;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.875rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.book-nav-btn:hover {
+    background-color: #525252;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.book-nav-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.book-nav-btn:focus {
+    outline: 2px solid #525252;
+    outline-offset: 2px;
+}
+
+.book-nav-btn.prev {
+    text-align: left;
+}
+
+.book-nav-btn.next {
+    text-align: right;
+}
+
+/* Book chapter navigation in sidebar */
+.book-chapter {
+    font-size: 0.875rem;
+    color: #525252;
+    padding-left: 1rem;
+    border-left: 2px solid #d4d4d4;
+}
+
+.book-chapter:hover {
+    border-left-color: #737373;
+    background-color: #f5f5f5;
+}
+
+.book-chapter.font-bold {
+    border-left-color: #404040;
+    background-color: #e5e5e5;
+}
+
+/* Mermaid diagram styling */
+.mermaid-diagram {
+    text-align: center;
+    margin: 2rem 0;
+    background-color: #fafafa;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #d4d4d4;
+}
+
+.mermaid-diagram svg {
+    max-width: 100%;
+    height: auto;
+}
