@@ -11,6 +11,7 @@
     <meta property="og:url" content="https://aeamcp.com/docs.html" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <style>
         body {
             font-family: 'Courier New', Courier, monospace;
@@ -137,6 +138,167 @@
             min-width: 250px;
             padding-right: 1.5rem;
         }
+        
+        /* Book-specific styling with grayscale ink effect */
+        .book-container {
+            position: relative;
+        }
+        
+        .book-content {
+            /* Apply grayscale ink effect */
+            filter: grayscale(100%) contrast(120%) brightness(0.95);
+            background-color: #fafafa;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+            /* Subtle paper texture effect */
+            background-image: 
+                linear-gradient(45deg, transparent 24%, rgba(64, 64, 64, 0.02) 25%, rgba(64, 64, 64, 0.02) 26%, transparent 27%, transparent 74%, rgba(64, 64, 64, 0.02) 75%, rgba(64, 64, 64, 0.02) 76%, transparent 77%, transparent),
+                linear-gradient(-45deg, transparent 24%, rgba(64, 64, 64, 0.02) 25%, rgba(64, 64, 64, 0.02) 26%, transparent 27%, transparent 74%, rgba(64, 64, 64, 0.02) 75%, rgba(64, 64, 64, 0.02) 76%, transparent 77%, transparent);
+            background-size: 20px 20px;
+        }
+        
+        /* Enhanced typography for book content */
+        .book-content h1 {
+            font-size: 2.25rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 3px solid #404040;
+            color: #171717;
+            font-weight: bold;
+        }
+        
+        .book-content h2 {
+            font-size: 1.75rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #525252;
+            color: #262626;
+        }
+        
+        .book-content h3 {
+            font-size: 1.375rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: #404040;
+        }
+        
+        .book-content p {
+            margin-bottom: 1.25rem;
+            line-height: 1.8;
+            text-align: justify;
+            color: #262626;
+        }
+        
+        .book-content ul, .book-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+        
+        .book-content li {
+            margin-bottom: 0.5rem;
+            line-height: 1.7;
+        }
+        
+        .book-content code {
+            background-color: #e5e5e5;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', Courier, monospace;
+            color: #171717;
+            font-weight: bold;
+        }
+        
+        .book-content pre {
+            background-color: #171717;
+            color: #f5f5f5;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            border: 1px solid #404040;
+        }
+        
+        .book-content pre code {
+            background-color: transparent;
+            padding: 0;
+            color: #f5f5f5;
+            font-weight: normal;
+        }
+        
+        /* Book navigation styling */
+        .book-navigation {
+            margin-top: 2rem;
+        }
+        
+        .book-nav-btn {
+            background-color: #404040;
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .book-nav-btn:hover {
+            background-color: #525252;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .book-nav-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+        .book-nav-btn.prev {
+            text-align: left;
+        }
+        
+        .book-nav-btn.next {
+            text-align: right;
+        }
+        
+        /* Book chapter navigation in sidebar */
+        .book-chapter {
+            font-size: 0.875rem;
+            color: #525252;
+            padding-left: 1rem;
+            border-left: 2px solid #d4d4d4;
+        }
+        
+        .book-chapter:hover {
+            border-left-color: #737373;
+            background-color: #f5f5f5;
+        }
+        
+        .book-chapter.font-bold {
+            border-left-color: #404040;
+            background-color: #e5e5e5;
+        }
+        
+        /* Mermaid diagram styling */
+        .mermaid-diagram {
+            text-align: center;
+            margin: 2rem 0;
+            background-color: #fafafa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #d4d4d4;
+        }
+        
+        .mermaid-diagram svg {
+            max-width: 100%;
+            height: auto;
+        }
     </style>
 </head>
 <body class="static-html">
@@ -168,6 +330,12 @@
     </footer>
 
     <script>
+        // Initialize mermaid
+        mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
+
+        // Current book chapter tracking for navigation
+        let currentBookChapter = null;
+
         // Available documentation files
         const docFiles = [
             { id: 'readme', name: 'Overview', path: '/docs/README.md' },
@@ -176,9 +344,34 @@
             { id: 'usecases', name: 'Use Cases', path: '/docs/use-cases.md' },
             { id: 'developer', name: 'Developer Guide', path: '/docs/developer-guide.md' }
         ];
+        const docFiles = [
+            { id: 'readme', name: 'Overview', path: '/docs/README.md' },
+            { id: 'protocol', name: 'Protocol Specification', path: '/docs/protocol-specification.md' },
+            { id: 'svmai', name: '$SVMAI Token', path: '/docs/svmai-token.md' },
+            { id: 'usecases', name: 'Use Cases', path: '/docs/use-cases.md' },
+            { id: 'developer', name: 'Developer Guide', path: '/docs/developer-guide.md' }
+        ];
+
+        // Book chapters
+        const bookChapters = [
+            { id: 'book-intro', name: 'Tutorial: Introduction', path: '/docs/book/intro.md', chapter: 0 },
+            { id: 'book-ch1', name: 'Ch 1: Registry Entry Accounts', path: '/docs/book/01_registry_entry_accounts_.md', chapter: 1 },
+            { id: 'book-ch2', name: 'Ch 2: Agent Registry Program', path: '/docs/book/02_agent_registry_program_.md', chapter: 2 },
+            { id: 'book-ch3', name: 'Ch 3: MCP Server Registry Program', path: '/docs/book/03_mcp_server_registry_program_.md', chapter: 3 },
+            { id: 'book-ch4', name: 'Ch 4: Program Derived Addresses (PDAs)', path: '/docs/book/04_program_derived_addresses__pdas__.md', chapter: 4 },
+            { id: 'book-ch5', name: 'Ch 5: Registry RPC Service (Frontend)', path: '/docs/book/05_registry_rpc_service__frontend__.md', chapter: 5 },
+            { id: 'book-ch6', name: 'Ch 6: Solana Wallet Integration', path: '/docs/book/06_solana_wallet_integration_.md', chapter: 6 },
+            { id: 'book-ch7', name: 'Ch 7: A2AMPL (SVMAI) Token', path: '/docs/book/07_a2ampl__svmai__token_.md', chapter: 7 },
+            { id: 'book-ch8', name: 'Ch 8: Program Events', path: '/docs/book/08_program_events_.md', chapter: 8 }
+        ];
+
+        // Current book chapter tracking for navigation
+        let currentBookChapter = null;
 
         // Create navigation sidebar
         const docNav = document.getElementById('doc-nav');
+        
+        // Add main documentation files
         docFiles.forEach(doc => {
             const li = document.createElement('li');
             const a = document.createElement('a');
@@ -189,19 +382,59 @@
             a.addEventListener('click', (e) => {
                 e.preventDefault();
                 loadMarkdown(doc.path);
-                
-                // Update active state in navigation
-                document.querySelectorAll('#doc-nav a').forEach(el => {
-                    el.classList.remove('font-bold', 'bg-neutral-200');
-                });
-                a.classList.add('font-bold', 'bg-neutral-200');
-                
-                // Update URL hash
+                currentBookChapter = null; // Reset book chapter tracking
+                updateNavigationState(a);
                 window.location.hash = doc.id;
             });
             li.appendChild(a);
             docNav.appendChild(li);
         });
+
+        // Add separator for book section
+        const separator = document.createElement('li');
+        separator.innerHTML = '<hr class="my-4 border-neutral-400"><h3 class="text-lg font-bold mb-2 text-neutral-700">📚 Tutorial Book</h3>';
+        docNav.appendChild(separator);
+
+        // Add book chapters
+        bookChapters.forEach(chapter => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = `#${chapter.id}`;
+            a.dataset.path = chapter.path;
+            a.dataset.chapter = chapter.chapter;
+            a.className = 'block p-2 hover:bg-neutral-200 rounded book-chapter';
+            a.innerText = chapter.name;
+            a.addEventListener('click', (e) => {
+                e.preventDefault();
+                loadBookChapter(chapter);
+                updateNavigationState(a);
+                window.location.hash = chapter.id;
+            });
+            li.appendChild(a);
+            docNav.appendChild(li);
+        });
+
+        // Function to render mermaid diagrams
+        function renderMermaidDiagrams() {
+            const mermaidElements = document.querySelectorAll('code.language-mermaid');
+            mermaidElements.forEach((element, index) => {
+                const mermaidCode = element.textContent;
+                const mermaidId = `mermaid-${Date.now()}-${index}`;
+                const mermaidDiv = document.createElement('div');
+                mermaidDiv.id = mermaidId;
+                mermaidDiv.className = 'mermaid-diagram';
+                element.parentNode.replaceWith(mermaidDiv);
+                
+                try {
+                    mermaid.render(mermaidId, mermaidCode, (svgCode) => {
+                        mermaidDiv.innerHTML = svgCode;
+                    });
+                } catch (error) {
+                    console.error('Mermaid rendering error:', error);
+                    mermaidDiv.innerHTML = `<div class="bg-yellow-100 p-4 rounded">Diagram rendering failed</div>`;
+                }
+            });
+        }
 
         // Function to load and render markdown content
         async function loadMarkdown(path) {
@@ -212,6 +445,12 @@
                 }
                 const markdown = await response.text();
                 document.getElementById('markdown-content').innerHTML = marked.parse(markdown);
+                
+                // Render mermaid diagrams
+                renderMermaidDiagrams();
+                
+                // Hide book navigation for regular docs
+                hideBookNavigation();
             } catch (error) {
                 console.error('Error loading markdown:', error);
                 document.getElementById('markdown-content').innerHTML = `
@@ -223,6 +462,105 @@
             }
         }
 
+        // Function to load book chapter with special styling and navigation
+        async function loadBookChapter(chapter) {
+            try {
+                const response = await fetch(chapter.path);
+                if (!response.ok) {
+                    throw new Error(`Failed to load ${chapter.path}: ${response.status} ${response.statusText}`);
+                }
+                const markdown = await response.text();
+                
+                // Apply book styling and navigation
+                const bookContent = `
+                    <div class="book-container">
+                        <div class="book-content">${marked.parse(markdown)}</div>
+                        <div class="book-navigation">
+                            ${generateBookNavigation(chapter)}
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('markdown-content').innerHTML = bookContent;
+                currentBookChapter = chapter;
+                
+                // Render mermaid diagrams
+                renderMermaidDiagrams();
+                
+                // Show book navigation
+                showBookNavigation();
+            } catch (error) {
+                console.error('Error loading book chapter:', error);
+                document.getElementById('markdown-content').innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        <h2 class="font-bold">Error Loading Book Chapter</h2>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Generate book navigation (prev/next buttons)
+        function generateBookNavigation(currentChapter) {
+            const prevChapter = bookChapters.find(ch => ch.chapter === currentChapter.chapter - 1);
+            const nextChapter = bookChapters.find(ch => ch.chapter === currentChapter.chapter + 1);
+            
+            let navigation = '<div class="flex justify-between items-center mt-8 pt-4 border-t border-neutral-300">';
+            
+            if (prevChapter) {
+                navigation += `
+                    <button class="book-nav-btn prev" onclick="navigateToChapter('${prevChapter.id}')">
+                        ← ${prevChapter.name}
+                    </button>
+                `;
+            } else {
+                navigation += '<div></div>';
+            }
+            
+            if (nextChapter) {
+                navigation += `
+                    <button class="book-nav-btn next" onclick="navigateToChapter('${nextChapter.id}')">
+                        ${nextChapter.name} →
+                    </button>
+                `;
+            } else {
+                navigation += '<div></div>';
+            }
+            
+            navigation += '</div>';
+            return navigation;
+        }
+
+        // Navigate to a specific chapter
+        function navigateToChapter(chapterId) {
+            const chapter = bookChapters.find(ch => ch.id === chapterId);
+            if (chapter) {
+                loadBookChapter(chapter);
+                const navItem = document.querySelector(`#doc-nav a[data-path="${chapter.path}"]`);
+                if (navItem) {
+                    updateNavigationState(navItem);
+                }
+                window.location.hash = chapterId;
+            }
+        }
+
+        // Update navigation active state
+        function updateNavigationState(activeElement) {
+            document.querySelectorAll('#doc-nav a').forEach(el => {
+                el.classList.remove('font-bold', 'bg-neutral-200');
+            });
+            activeElement.classList.add('font-bold', 'bg-neutral-200');
+        }
+
+        // Show/hide book navigation helper functions
+        function showBookNavigation() {
+            // Add any specific UI elements for book mode if needed
+        }
+
+        function hideBookNavigation() {
+            // Remove any specific UI elements for book mode if needed
+        }
+
         // Load default document or from hash
         window.addEventListener('DOMContentLoaded', () => {
             const hash = window.location.hash.substring(1);
@@ -230,19 +568,31 @@
             
             let docToLoad = defaultDoc;
             let navItem = document.querySelector(`#doc-nav a[data-path="${defaultDoc}"]`);
+            let isBookChapter = false;
             
             if (hash) {
+                // Check if it's a regular doc
                 const matchingDoc = docFiles.find(doc => doc.id === hash);
                 if (matchingDoc) {
                     docToLoad = matchingDoc.path;
                     navItem = document.querySelector(`#doc-nav a[data-path="${docToLoad}"]`);
+                } else {
+                    // Check if it's a book chapter
+                    const matchingChapter = bookChapters.find(ch => ch.id === hash);
+                    if (matchingChapter) {
+                        loadBookChapter(matchingChapter);
+                        navItem = document.querySelector(`#doc-nav a[data-path="${matchingChapter.path}"]`);
+                        isBookChapter = true;
+                    }
                 }
             }
             
-            // Load the document and mark as active
-            loadMarkdown(docToLoad);
+            // Load the document/chapter and mark as active
+            if (!isBookChapter) {
+                loadMarkdown(docToLoad);
+            }
             if (navItem) {
-                navItem.classList.add('font-bold', 'bg-neutral-200');
+                updateNavigationState(navItem);
             }
         });
     </script>
