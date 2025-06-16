@@ -19,21 +19,27 @@
 //! 
 //! ## Example Usage
 //! 
-//! ```rust
-//! use solana_ai_registries::{SolanaAiRegistriesClient, agent::AgentBuilder};
-//! use solana_sdk::signer::Keypair;
+//! ```rust,no_run
+//! use solana_ai_registries::{SolanaAiRegistriesClient, AgentBuilder};
+//! use solana_sdk::signer::keypair::Keypair;
 //! 
-//! // Create a client
-//! let client = SolanaAiRegistriesClient::new("https://api.devnet.solana.com");
-//! 
-//! // Build and register an agent
-//! let agent = AgentBuilder::new("my-agent", "My AI Agent")
-//!     .description("An AI agent that does useful things")
-//!     .version("1.0.0")
-//!     .build()?;
-//! 
-//! let keypair = Keypair::new();
-//! let signature = client.register_agent(&keypair, agent).await?;
+//! #[tokio::main]
+//! async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     // Create a client
+//!     let client = SolanaAiRegistriesClient::new("https://api.devnet.solana.com");
+//!     
+//!     // Build and register an agent
+//!     let agent = AgentBuilder::new("my-agent", "My AI Agent")
+//!         .description("An AI agent that does useful things")
+//!         .version("1.0.0")
+//!         .build()?;
+//!     
+//!     let keypair = Keypair::new();
+//!     let signature = client.register_agent(&keypair, agent).await?;
+//!     println!("Agent registered with signature: {}", signature);
+//!     
+//!     Ok(())
+//! }
 //! ```
 
 // Core modules

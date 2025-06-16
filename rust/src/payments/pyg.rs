@@ -420,8 +420,9 @@ mod tests {
         let result = estimate_pyg_cost(base_amount, Some(MIN_PRIORITY_MULTIPLIER - 1), None, None);
         assert!(matches!(result, Err(SdkError::InvalidPriorityMultiplier)));
         
-        let result = estimate_pyg_cost(base_amount, Some(MAX_PRIORITY_MULTIPLIER + 1), None, None);
-        assert!(matches!(result, Err(SdkError::InvalidPriorityMultiplier)));
+        // Test at maximum (255 is the max for u8)
+        let result = estimate_pyg_cost(base_amount, Some(MAX_PRIORITY_MULTIPLIER), None, None);
+        assert!(result.is_ok());
     }
     
     #[test]

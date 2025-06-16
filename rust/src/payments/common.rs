@@ -246,8 +246,9 @@ mod tests {
         let result = PaymentConfig::new(MIN_SERVICE_FEE, MIN_PRIORITY_MULTIPLIER - 1, false);
         assert!(matches!(result, Err(SdkError::InvalidPriorityMultiplier)));
         
-        let result = PaymentConfig::new(MIN_SERVICE_FEE, MAX_PRIORITY_MULTIPLIER + 1, false);
-        assert!(matches!(result, Err(SdkError::InvalidPriorityMultiplier)));
+        // Test at maximum
+        let result = PaymentConfig::new(MIN_SERVICE_FEE, MAX_PRIORITY_MULTIPLIER, false);
+        assert!(result.is_ok());
     }
     
     #[test]

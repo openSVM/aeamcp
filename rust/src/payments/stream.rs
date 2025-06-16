@@ -100,11 +100,13 @@ impl StreamingPaymentClient {
             return Err(SdkError::AccountAlreadyExists);
         }
         
+        let total_amount = args.total_amount; // Save value before move
+        
         let instruction = self.create_stream_instruction(
             &payer.pubkey(),
             &stream_pda,
             stream_id,
-            args,
+            &args,
         )?;
         
         let signature = self.send_and_confirm_transaction(payer, vec![instruction]).await?;
@@ -112,7 +114,7 @@ impl StreamingPaymentClient {
         Ok((stream_id, PaymentResult {
             signature,
             amount_paid: 0, // No immediate payment, just stream setup
-            remaining_balance: Some(args.total_amount),
+            remaining_balance: Some(total_amount),
             payment_method: PaymentMethod::Streaming,
         }))
     }
@@ -339,9 +341,10 @@ impl StreamingPaymentClient {
     
     /// Derive stream PDA
     fn derive_stream_pda(&self, stream_id: u64) -> SdkResult<Pubkey> {
+        let stream_id_bytes = stream_id.to_le_bytes();
         let seeds = &[
-            b"streaming_payment",
-            &stream_id.to_le_bytes(),
+            b"streaming_payment".as_ref(),
+            stream_id_bytes.as_ref(),
         ];
         
         let (pda, _) = Pubkey::find_program_address(seeds, &self.program_id);
@@ -370,7 +373,7 @@ impl StreamingPaymentClient {
         payer: &Pubkey,
         stream_pda: &Pubkey,
         stream_id: u64,
-        args: CreateStreamArgs,
+        args: &CreateStreamArgs,
     ) -> SdkResult<Instruction> {
         let accounts = vec![
             AccountMeta::new(*stream_pda, false),

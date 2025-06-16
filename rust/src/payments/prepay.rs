@@ -249,7 +249,7 @@ impl PrepaidPaymentClient {
         token_mint: &Pubkey,
     ) -> SdkResult<PaymentResult> {
         let prepaid_pda = self.derive_prepaid_account_pda(&owner.pubkey())?;
-        let account = self.get_prepaid_account(&prepaid_pda).await?;
+        let _account = self.get_prepaid_account(&prepaid_pda).await?;
         
         let instruction = self.create_close_account_instruction(
             &owner.pubkey(),

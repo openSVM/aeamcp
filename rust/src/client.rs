@@ -16,8 +16,8 @@ use crate::agent::{AgentArgs, AgentPatch, AgentEntry};
 use crate::mcp::{McpServerArgs, McpServerPatch, McpServerEntry};
 
 /// Program IDs for the registries (placeholders for testing)
-pub const AGENT_REGISTRY_PROGRAM_ID: &str = "11111111111111111111111111111111";
-pub const MCP_SERVER_REGISTRY_PROGRAM_ID: &str = "11111111111111111111111111111112";
+pub const AGENT_REGISTRY_PROGRAM_ID: &str = "11111111111111111111111111111112";
+pub const MCP_SERVER_REGISTRY_PROGRAM_ID: &str = "11111111111111111111111111111113";
 
 /// Main client for interacting with Solana AI Registries
 pub struct SolanaAiRegistriesClient {
@@ -312,8 +312,14 @@ mod tests {
     fn test_program_ids() {
         let client = SolanaAiRegistriesClient::default();
         
-        // Verify program IDs are valid
-        assert_ne!(client.agent_registry_program_id(), &Pubkey::default());
-        assert_ne!(client.mcp_server_registry_program_id(), &Pubkey::default());
+        // Verify program IDs are valid and different
+        assert_ne!(client.agent_registry_program_id().to_bytes(), [0u8; 32]);
+        assert_ne!(client.mcp_server_registry_program_id().to_bytes(), [0u8; 32]);
+        
+        // Program IDs should be different
+        assert_ne!(
+            client.agent_registry_program_id(), 
+            client.mcp_server_registry_program_id()
+        );
     }
 }
