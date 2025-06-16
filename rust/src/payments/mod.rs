@@ -1,5 +1,5 @@
 //! Payment system modules for Solana AI Registries
-//! 
+//!
 //! This module provides payment functionality for the registries,
 //! including different payment flows based on feature flags.
 

@@ -229,6 +229,56 @@ This SDK follows the requirements specified in the [SDK Roadmap](../docs/SDK_ROA
 3. Follow the existing error handling patterns
 4. Add comprehensive test coverage for new features
 
+## Publishing to crates.io
+
+This project includes automated GitHub Actions workflows for publishing to crates.io:
+
+### Automatic Publishing
+
+The SDK is automatically published to crates.io when:
+- A new release is created on GitHub
+- A tag matching the pattern `rust-v*` is pushed (e.g., `rust-v0.1.0`, `rust-v1.2.0`)
+
+### Required Setup
+
+To enable automatic publishing, repository maintainers need to:
+
+1. **Create a crates.io API token**:
+   - Go to [crates.io](https://crates.io/me) and generate an API token
+   - The token should have publish permissions for the `solana_ai_registries` crate
+
+2. **Add the token as a GitHub secret**:
+   - Go to repository Settings → Secrets and variables → Actions
+   - Create a new secret named `CRATES_TOKEN`
+   - Paste the crates.io API token as the value
+
+### Manual Publishing
+
+For manual publishing during development:
+
+```bash
+# Navigate to the rust directory
+cd rust
+
+# Test the package
+cargo test --all-features
+
+# Build and package
+cargo package
+
+# Publish to crates.io (requires CRATES_TOKEN environment variable)
+cargo publish
+```
+
+### CI/CD Pipeline
+
+The project includes two workflows:
+
+- **`rust-ci.yml`**: Runs on PRs and pushes to test the SDK
+- **`publish-rust-sdk.yml`**: Publishes to crates.io on releases/tags
+
+Both workflows test all feature flag combinations to ensure reliability.
+
 ## License
 
 This project is licensed under the MIT OR Apache-2.0 license.

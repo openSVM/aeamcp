@@ -1,12 +1,12 @@
 //! Common payment types and utilities
 
+use crate::errors::{SdkError, SdkResult};
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_sdk::{
     instruction::{AccountMeta, Instruction},
     pubkey::Pubkey,
     system_program,
 };
-use crate::errors::{SdkError, SdkResult};
 
 /// Token mint addresses for different networks
 pub const A2AMPL_TOKEN_MINT_MAINNET: &str = "Cpzvdx6pppc9TNArsGsqgShCsKC9NCCjA2gtzHvUpump";
@@ -66,7 +66,7 @@ impl StakingTier {
             StakingTier::Platinum => PLATINUM_TIER_STAKE,
         }
     }
-    
+
     /// Get the lock period for this tier
     pub fn lock_period(&self) -> i64 {
         match self {
@@ -76,7 +76,7 @@ impl StakingTier {
             StakingTier::Platinum => PLATINUM_LOCK_PERIOD,
         }
     }
-    
+
     /// Determine tier from stake amount
     pub fn from_stake_amount(amount: u64) -> Option<Self> {
         if amount >= PLATINUM_TIER_STAKE {
@@ -106,18 +106,20 @@ impl PaymentConfig {
         if base_fee < MIN_SERVICE_FEE {
             return Err(SdkError::FeeTooLow);
         }
-        
-        if priority_multiplier < MIN_PRIORITY_MULTIPLIER || priority_multiplier > MAX_PRIORITY_MULTIPLIER {
+
+        if priority_multiplier < MIN_PRIORITY_MULTIPLIER
+            || priority_multiplier > MAX_PRIORITY_MULTIPLIER
+        {
             return Err(SdkError::InvalidPriorityMultiplier);
         }
-        
+
         Ok(Self {
             base_fee,
             priority_multiplier,
             accepts_escrow,
         })
     }
-    
+
     /// Calculate the effective fee with priority multiplier
     pub fn effective_fee(&self) -> u64 {
         (self.base_fee * self.priority_multiplier as u64) / 100
@@ -160,8 +162,10 @@ pub fn get_token_mint_for_network(is_mainnet: bool) -> SdkResult<Pubkey> {
     } else {
         A2AMPL_TOKEN_MINT_DEVNET
     };
-    
-    mint_str.parse().map_err(|_| SdkError::InvalidConfiguration("Invalid token mint address".to_string()))
+
+    mint_str
+        .parse()
+        .map_err(|_| SdkError::InvalidConfiguration("Invalid token mint address".to_string()))
 }
 
 /// Validate stake amount and lock period
@@ -169,15 +173,15 @@ pub fn validate_staking_params(amount: u64, lock_period: i64) -> SdkResult<()> {
     if amount < MIN_STAKE_AMOUNT {
         return Err(SdkError::InsufficientStake);
     }
-    
+
     if lock_period < MIN_LOCK_PERIOD {
         return Err(SdkError::LockPeriodTooShort);
     }
-    
+
     if lock_period > MAX_LOCK_PERIOD {
         return Err(SdkError::LockPeriodTooLong);
     }
-    
+
     Ok(())
 }
 
@@ -213,97 +217,130 @@ mod tests {
 
     #[test]
     fn test_staking_tier_from_amount() {
-        assert_eq!(StakingTier::from_stake_amount(BRONZE_TIER_STAKE), Some(StakingTier::Bronze));
-        assert_eq!(StakingTier::from_stake_amount(SILVER_TIER_STAKE), Some(StakingTier::Silver));
-        assert_eq!(StakingTier::from_stake_amount(GOLD_TIER_STAKE), Some(StakingTier::Gold));
-        assert_eq!(StakingTier::from_stake_amount(PLATINUM_TIER_STAKE), Some(StakingTier::Platinum));
-        
+        assert_eq!(
+            StakingTier::from_stake_amount(BRONZE_TIER_STAKE),
+            Some(StakingTier::Bronze)
+        );
+        assert_eq!(
+            StakingTier::from_stake_amount(SILVER_TIER_STAKE),
+            Some(StakingTier::Silver)
+        );
+        assert_eq!(
+            StakingTier::from_stake_amount(GOLD_TIER_STAKE),
+            Some(StakingTier::Gold)
+        );
+        assert_eq!(
+            StakingTier::from_stake_amount(PLATINUM_TIER_STAKE),
+            Some(StakingTier::Platinum)
+        );
+
         // Test borderline cases
         assert_eq!(StakingTier::from_stake_amount(BRONZE_TIER_STAKE - 1), None);
-        assert_eq!(StakingTier::from_stake_amount(SILVER_TIER_STAKE - 1), Some(StakingTier::Bronze));
-        assert_eq!(StakingTier::from_stake_amount(GOLD_TIER_STAKE - 1), Some(StakingTier::Silver));
-        assert_eq!(StakingTier::from_stake_amount(PLATINUM_TIER_STAKE - 1), Some(StakingTier::Gold));
+        assert_eq!(
+            StakingTier::from_stake_amount(SILVER_TIER_STAKE - 1),
+            Some(StakingTier::Bronze)
+        );
+        assert_eq!(
+            StakingTier::from_stake_amount(GOLD_TIER_STAKE - 1),
+            Some(StakingTier::Silver)
+        );
+        assert_eq!(
+            StakingTier::from_stake_amount(PLATINUM_TIER_STAKE - 1),
+            Some(StakingTier::Gold)
+        );
     }
-    
+
     #[test]
     fn test_payment_config() {
         let config = PaymentConfig::new(MIN_SERVICE_FEE, 150, true).unwrap();
         assert_eq!(config.base_fee, MIN_SERVICE_FEE);
         assert_eq!(config.priority_multiplier, 150);
         assert!(config.accepts_escrow);
-        
+
         // Test effective fee calculation
         assert_eq!(config.effective_fee(), (MIN_SERVICE_FEE * 150) / 100);
     }
-    
+
     #[test]
     fn test_payment_config_validation() {
         // Test fee too low
         let result = PaymentConfig::new(MIN_SERVICE_FEE - 1, 100, false);
         assert!(matches!(result, Err(SdkError::FeeTooLow)));
-        
+
         // Test invalid priority multiplier
         let result = PaymentConfig::new(MIN_SERVICE_FEE, MIN_PRIORITY_MULTIPLIER - 1, false);
         assert!(matches!(result, Err(SdkError::InvalidPriorityMultiplier)));
-        
+
         // Test at maximum
         let result = PaymentConfig::new(MIN_SERVICE_FEE, MAX_PRIORITY_MULTIPLIER, false);
         assert!(result.is_ok());
     }
-    
+
     #[test]
     fn test_token_conversion() {
         assert_eq!(convert_a2ampl_to_base_units(1.0), A2AMPL_BASE_UNIT);
         assert_eq!(convert_a2ampl_to_base_units(100.0), 100 * A2AMPL_BASE_UNIT);
-        
+
         assert_eq!(convert_base_units_to_a2ampl(A2AMPL_BASE_UNIT), 1.0);
         assert_eq!(convert_base_units_to_a2ampl(100 * A2AMPL_BASE_UNIT), 100.0);
     }
-    
+
     #[test]
     fn test_staking_validation() {
         // Valid params
         assert!(validate_staking_params(MIN_STAKE_AMOUNT, MIN_LOCK_PERIOD).is_ok());
-        
+
         // Insufficient stake
         assert!(matches!(
             validate_staking_params(MIN_STAKE_AMOUNT - 1, MIN_LOCK_PERIOD),
             Err(SdkError::InsufficientStake)
         ));
-        
+
         // Lock period too short
         assert!(matches!(
             validate_staking_params(MIN_STAKE_AMOUNT, MIN_LOCK_PERIOD - 1),
             Err(SdkError::LockPeriodTooShort)
         ));
-        
+
         // Lock period too long
         assert!(matches!(
             validate_staking_params(MIN_STAKE_AMOUNT, MAX_LOCK_PERIOD + 1),
             Err(SdkError::LockPeriodTooLong)
         ));
     }
-    
+
     #[test]
     fn test_stake_unlocked() {
         let stake_time = 1000;
         let lock_period = 500;
-        
+
         // Still locked
-        assert!(!is_stake_unlocked(stake_time, lock_period, stake_time + lock_period - 1));
-        
+        assert!(!is_stake_unlocked(
+            stake_time,
+            lock_period,
+            stake_time + lock_period - 1
+        ));
+
         // Just unlocked
-        assert!(is_stake_unlocked(stake_time, lock_period, stake_time + lock_period));
-        
+        assert!(is_stake_unlocked(
+            stake_time,
+            lock_period,
+            stake_time + lock_period
+        ));
+
         // Unlocked for a while
-        assert!(is_stake_unlocked(stake_time, lock_period, stake_time + lock_period + 100));
+        assert!(is_stake_unlocked(
+            stake_time,
+            lock_period,
+            stake_time + lock_period + 100
+        ));
     }
-    
+
     #[test]
     fn test_get_token_mint() {
         let mainnet_mint = get_token_mint_for_network(true).unwrap();
         let devnet_mint = get_token_mint_for_network(false).unwrap();
-        
+
         assert_ne!(mainnet_mint, devnet_mint);
         assert_ne!(mainnet_mint, Pubkey::default());
         assert_ne!(devnet_mint, Pubkey::default());

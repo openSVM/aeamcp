@@ -1,28 +1,28 @@
 //! # Solana AI Registries SDK
-//! 
+//!
 //! This crate provides a Rust SDK for interacting with the Solana AI Registries,
 //! which includes both Agent Registry and MCP Server Registry protocols.
-//! 
+//!
 //! ## Features
-//! 
+//!
 //! - **Agent Registry**: Register, update, and manage autonomous agents
 //! - **MCP Server Registry**: Register, update, and manage Model Context Protocol servers
 //! - **Payment Systems**: Support for prepay, pay-as-you-go, and streaming payments
 //! - **Type Safety**: Fully typed requests and responses
 //! - **Error Handling**: Comprehensive error types matching on-chain program errors
-//! 
+//!
 //! ## Feature Flags
-//! 
+//!
 //! - `stream`: Enable streaming payment functionality
 //! - `pyg`: Enable pay-as-you-go payment functionality  
 //! - `prepay`: Enable prepaid payment functionality
-//! 
+//!
 //! ## Example Usage
-//! 
+//!
 //! ```rust,no_run
 //! use solana_ai_registries::{SolanaAiRegistriesClient, AgentBuilder};
 //! use solana_sdk::signer::keypair::Keypair;
-//! 
+//!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
 //!     // Create a client
@@ -61,14 +61,14 @@ pub use errors::{SdkError, SdkResult};
 
 // Re-export agent types
 pub use agent::{
-    AgentBuilder, AgentRegistry, AgentArgs, AgentPatch, AgentStatus,
-    ServiceEndpoint, AgentSkill, AgentEntry
+    AgentArgs, AgentBuilder, AgentEntry, AgentPatch, AgentRegistry, AgentSkill, AgentStatus,
+    ServiceEndpoint,
 };
 
-// Re-export MCP types  
+// Re-export MCP types
 pub use mcp::{
-    McpServerBuilder, McpServerRegistry, McpServerArgs, McpServerPatch, McpServerStatus,
-    McpToolDefinition, McpResourceDefinition, McpPromptDefinition, McpServerEntry
+    McpPromptDefinition, McpResourceDefinition, McpServerArgs, McpServerBuilder, McpServerEntry,
+    McpServerPatch, McpServerRegistry, McpServerStatus, McpToolDefinition,
 };
 
 // Re-export payment types conditionally

@@ -1,15 +1,15 @@
 //! MCP Server Registry SDK module
-//! 
+//!
 //! This module provides high-level functions for interacting with the MCP Server Registry,
 //! including registration, updates, and queries for Model Context Protocol servers.
 
+use crate::errors::{SdkError, SdkResult};
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_sdk::{
     instruction::{AccountMeta, Instruction},
     pubkey::Pubkey,
     system_program,
 };
-use crate::errors::{SdkError, SdkResult};
 
 /// Maximum length constants (from the on-chain program)
 pub const MAX_SERVER_ID_LEN: usize = 64;
@@ -82,7 +82,7 @@ impl McpToolDefinition {
                 return Err(SdkError::InvalidToolTagLength);
             }
         }
-        
+
         Ok(Self { name, tags })
     }
 }
@@ -107,7 +107,7 @@ impl McpResourceDefinition {
                 return Err(SdkError::InvalidResourceTagLength);
             }
         }
-        
+
         Ok(Self { uri_pattern, tags })
     }
 }
@@ -132,7 +132,7 @@ impl McpPromptDefinition {
                 return Err(SdkError::InvalidPromptTagLength);
             }
         }
-        
+
         Ok(Self { name, tags })
     }
 }
@@ -210,10 +210,11 @@ impl McpServerEntry {
         if data.len() < 8 {
             return Err(SdkError::InvalidAccountData);
         }
-        
+
         let account_data = &data[8..];
-        Self::try_from_slice(account_data)
-            .map_err(|e| SdkError::DeserializationError(format!("Failed to deserialize MCP server entry: {}", e)))
+        Self::try_from_slice(account_data).map_err(|e| {
+            SdkError::DeserializationError(format!("Failed to deserialize MCP server entry: {}", e))
+        })
     }
 }
 
@@ -224,7 +225,11 @@ pub struct McpServerBuilder {
 
 impl McpServerBuilder {
     /// Create a new MCP server builder with required fields
-    pub fn new(server_id: impl Into<String>, name: impl Into<String>, service_endpoint: impl Into<String>) -> Self {
+    pub fn new(
+        server_id: impl Into<String>,
+        name: impl Into<String>,
+        service_endpoint: impl Into<String>,
+    ) -> Self {
         Self {
             args: McpServerArgs {
                 server_id: server_id.into(),
@@ -244,55 +249,61 @@ impl McpServerBuilder {
             },
         }
     }
-    
+
     /// Set the server version
     pub fn version(mut self, version: impl Into<String>) -> Self {
         self.args.server_version = version.into();
         self
     }
-    
+
     /// Set the documentation URL
     pub fn documentation_url(mut self, url: impl Into<String>) -> Self {
         self.args.documentation_url = Some(url.into());
         self
     }
-    
+
     /// Set the server capabilities summary
     pub fn capabilities_summary(mut self, summary: impl Into<String>) -> Self {
         self.args.server_capabilities_summary = Some(summary.into());
         self
     }
-    
+
     /// Enable resource support
     pub fn supports_resources(mut self, supports: bool) -> Self {
         self.args.supports_resources = supports;
         self
     }
-    
+
     /// Enable tool support
     pub fn supports_tools(mut self, supports: bool) -> Self {
         self.args.supports_tools = supports;
         self
     }
-    
+
     /// Enable prompt support
     pub fn supports_prompts(mut self, supports: bool) -> Self {
         self.args.supports_prompts = supports;
         self
     }
-    
+
     /// Add a tool definition
-    pub fn add_tool(mut self, name: impl Into<String>, tags: Vec<impl Into<String>>) -> SdkResult<Self> {
-        let tool = McpToolDefinition::new(
-            name.into(),
-            tags.into_iter().map(|t| t.into()).collect(),
-        )?;
+    pub fn add_tool(
+        mut self,
+        name: impl Into<String>,
+        tags: Vec<impl Into<String>>,
+    ) -> SdkResult<Self> {
+        let tool =
+            McpToolDefinition::new(name.into(), tags.into_iter().map(|t| t.into()).collect())?;
         self.args.onchain_tool_definitions.push(tool);
         Ok(self)
     }
-    
+
     /// Add a resource definition
-    pub fn add_resource(mut self, uri_pattern: impl Into<String>, tags: Vec<impl Into<String>>) -> SdkResult<Self> {
+    pub fn add_resource(
+        mut self,
+        uri_pattern: impl Into<String>,
+        tags: Vec<impl Into<String>>,
+    ) -> SdkResult<Self> {
         let resource = McpResourceDefinition::new(
             uri_pattern.into(),
             tags.into_iter().map(|t| t.into()).collect(),
@@ -300,107 +311,115 @@ impl McpServerBuilder {
         self.args.onchain_resource_definitions.push(resource);
         Ok(self)
     }
-    
+
     /// Add a prompt definition
-    pub fn add_prompt(mut self, name: impl Into<String>, tags: Vec<impl Into<String>>) -> SdkResult<Self> {
-        let prompt = McpPromptDefinition::new(
-            name.into(),
-            tags.into_iter().map(|t| t.into()).collect(),
-        )?;
+    pub fn add_prompt(
+        mut self,
+        name: impl Into<String>,
+        tags: Vec<impl Into<String>>,
+    ) -> SdkResult<Self> {
+        let prompt =
+            McpPromptDefinition::new(name.into(), tags.into_iter().map(|t| t.into()).collect())?;
         self.args.onchain_prompt_definitions.push(prompt);
         Ok(self)
     }
-    
+
     /// Set the full capabilities URI
     pub fn full_capabilities_uri(mut self, uri: impl Into<String>) -> Self {
         self.args.full_capabilities_uri = Some(uri.into());
         self
     }
-    
+
     /// Add tags
     pub fn tags(mut self, tags: Vec<impl Into<String>>) -> Self {
         self.args.tags = tags.into_iter().map(|t| t.into()).collect();
         self
     }
-    
+
     /// Build and validate the MCP server arguments
     pub fn build(self) -> SdkResult<McpServerArgs> {
         self.validate()?;
         Ok(self.args)
     }
-    
+
     /// Validate the current arguments
     fn validate(&self) -> SdkResult<()> {
         let args = &self.args;
-        
+
         // Validate required fields
         if args.server_id.is_empty() || args.server_id.len() > MAX_SERVER_ID_LEN {
             return Err(SdkError::InvalidServerIdLength);
         }
-        
+
         // Validate server ID format (alphanumeric, hyphens, underscores only)
-        if !args.server_id.chars().all(|c| c.is_alphanumeric() || c == '-' || c == '_') {
+        if !args
+            .server_id
+            .chars()
+            .all(|c| c.is_alphanumeric() || c == '-' || c == '_')
+        {
             return Err(SdkError::InvalidServerIdFormat);
         }
-        
+
         if args.name.is_empty() || args.name.len() > MAX_SERVER_NAME_LEN {
             return Err(SdkError::InvalidServerNameLength);
         }
-        
+
         if args.server_version.len() > MAX_SERVER_VERSION_LEN {
             return Err(SdkError::InvalidServerVersionLength);
         }
-        
-        if args.service_endpoint.is_empty() || args.service_endpoint.len() > MAX_SERVICE_ENDPOINT_URL_LEN {
+
+        if args.service_endpoint.is_empty()
+            || args.service_endpoint.len() > MAX_SERVICE_ENDPOINT_URL_LEN
+        {
             return Err(SdkError::InvalidServiceEndpointUrlLength);
         }
-        
+
         // Validate optional fields
         if let Some(ref doc_url) = args.documentation_url {
             if doc_url.len() > MAX_DOCUMENTATION_URL_LEN {
                 return Err(SdkError::InvalidDocumentationUrlLength);
             }
         }
-        
+
         if let Some(ref summary) = args.server_capabilities_summary {
             if summary.len() > MAX_SERVER_CAPABILITIES_SUMMARY_LEN {
                 return Err(SdkError::InvalidServerCapabilitiesSummaryLength);
             }
         }
-        
+
         // Validate tool definitions
         if args.onchain_tool_definitions.len() > MAX_ONCHAIN_TOOL_DEFINITIONS {
             return Err(SdkError::TooManyOnChainToolDefinitions);
         }
-        
+
         // Validate resource definitions
         if args.onchain_resource_definitions.len() > MAX_ONCHAIN_RESOURCE_DEFINITIONS {
             return Err(SdkError::TooManyOnChainResourceDefinitions);
         }
-        
+
         // Validate prompt definitions
         if args.onchain_prompt_definitions.len() > MAX_ONCHAIN_PROMPT_DEFINITIONS {
             return Err(SdkError::TooManyOnChainPromptDefinitions);
         }
-        
+
         // Validate full capabilities URI
         if let Some(ref uri) = args.full_capabilities_uri {
             if uri.len() > MAX_FULL_CAPABILITIES_URI_LEN {
                 return Err(SdkError::InvalidFullCapabilitiesUriLength);
             }
         }
-        
+
         // Validate tags
         if args.tags.len() > MAX_SERVER_TAGS {
             return Err(SdkError::TooManyTags);
         }
-        
+
         for tag in &args.tags {
             if tag.len() > MAX_SERVER_TAG_LEN {
                 return Err(SdkError::InvalidTagLength);
             }
         }
-        
+
         Ok(())
     }
 }
@@ -417,7 +436,7 @@ impl McpServerRegistry {
     ) -> SdkResult<Instruction> {
         create_register_mcp_server_instruction(program_id, owner, args)
     }
-    
+
     /// Create an update MCP server instruction
     pub fn update(
         program_id: &Pubkey,
@@ -427,7 +446,7 @@ impl McpServerRegistry {
     ) -> SdkResult<Instruction> {
         create_update_mcp_server_instruction(program_id, owner, server_id, patch)
     }
-    
+
     /// Create an update MCP server status instruction
     pub fn update_status(
         program_id: &Pubkey,
@@ -437,7 +456,7 @@ impl McpServerRegistry {
     ) -> SdkResult<Instruction> {
         create_update_mcp_server_status_instruction(program_id, owner, server_id, status)
     }
-    
+
     /// Create a deregister MCP server instruction
     pub fn deregister(
         program_id: &Pubkey,
@@ -446,7 +465,7 @@ impl McpServerRegistry {
     ) -> SdkResult<Instruction> {
         create_deregister_mcp_server_instruction(program_id, owner, server_id)
     }
-    
+
     /// Derive the PDA for an MCP server
     pub fn derive_pda(
         program_id: &Pubkey,
@@ -458,19 +477,23 @@ impl McpServerRegistry {
 }
 
 /// Derive MCP server PDA
-pub fn derive_mcp_server_pda(program_id: &Pubkey, owner: &Pubkey, server_id: &str) -> SdkResult<Pubkey> {
+pub fn derive_mcp_server_pda(
+    program_id: &Pubkey,
+    owner: &Pubkey,
+    server_id: &str,
+) -> SdkResult<Pubkey> {
     let (pda, _) = derive_mcp_server_pda_with_bump(program_id, owner, server_id)?;
     Ok(pda)
 }
 
 /// Derive MCP server PDA with bump
-pub fn derive_mcp_server_pda_with_bump(program_id: &Pubkey, owner: &Pubkey, server_id: &str) -> SdkResult<(Pubkey, u8)> {
-    let seeds = &[
-        b"mcp_srv_reg_v1",
-        server_id.as_bytes(),
-        owner.as_ref(),
-    ];
-    
+pub fn derive_mcp_server_pda_with_bump(
+    program_id: &Pubkey,
+    owner: &Pubkey,
+    server_id: &str,
+) -> SdkResult<(Pubkey, u8)> {
+    let seeds = &[b"mcp_srv_reg_v1", server_id.as_bytes(), owner.as_ref()];
+
     let (pda, bump) = Pubkey::find_program_address(seeds, program_id);
     Ok((pda, bump))
 }
@@ -482,18 +505,18 @@ pub fn create_register_mcp_server_instruction(
     args: McpServerArgs,
 ) -> SdkResult<Instruction> {
     let server_pda = derive_mcp_server_pda(program_id, owner, &args.server_id)?;
-    
+
     let accounts = vec![
         AccountMeta::new(server_pda, false),
         AccountMeta::new_readonly(*owner, true),
         AccountMeta::new(*owner, true), // payer
         AccountMeta::new_readonly(system_program::id(), false),
     ];
-    
+
     // Create instruction data (simplified - would need proper serialization)
     let mut data = vec![0u8]; // instruction discriminator
     data.extend_from_slice(&args.server_id.as_bytes());
-    
+
     Ok(Instruction {
         program_id: *program_id,
         accounts,
@@ -509,15 +532,15 @@ pub fn create_update_mcp_server_instruction(
     _patch: McpServerPatch,
 ) -> SdkResult<Instruction> {
     let server_pda = derive_mcp_server_pda(program_id, owner, server_id)?;
-    
+
     let accounts = vec![
         AccountMeta::new(server_pda, false),
         AccountMeta::new_readonly(*owner, true),
     ];
-    
+
     let mut data = vec![1u8]; // instruction discriminator
     data.extend_from_slice(server_id.as_bytes());
-    
+
     Ok(Instruction {
         program_id: *program_id,
         accounts,
@@ -533,14 +556,14 @@ pub fn create_update_mcp_server_status_instruction(
     status: u8,
 ) -> SdkResult<Instruction> {
     let server_pda = derive_mcp_server_pda(program_id, owner, server_id)?;
-    
+
     let accounts = vec![
         AccountMeta::new(server_pda, false),
         AccountMeta::new_readonly(*owner, true),
     ];
-    
+
     let data = vec![2u8, status]; // instruction discriminator + status
-    
+
     Ok(Instruction {
         program_id: *program_id,
         accounts,
@@ -555,14 +578,14 @@ pub fn create_deregister_mcp_server_instruction(
     server_id: &str,
 ) -> SdkResult<Instruction> {
     let server_pda = derive_mcp_server_pda(program_id, owner, server_id)?;
-    
+
     let accounts = vec![
         AccountMeta::new(server_pda, false),
         AccountMeta::new_readonly(*owner, true),
     ];
-    
+
     let data = vec![3u8]; // instruction discriminator
-    
+
     Ok(Instruction {
         program_id: *program_id,
         accounts,
@@ -573,8 +596,8 @@ pub fn create_deregister_mcp_server_instruction(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use solana_sdk::signer::keypair::Keypair;
     use solana_sdk::signature::Signer;
+    use solana_sdk::signer::keypair::Keypair;
 
     #[test]
     fn test_mcp_server_builder() {
@@ -583,7 +606,7 @@ mod tests {
             .supports_tools(true)
             .build()
             .unwrap();
-        
+
         assert_eq!(server.server_id, "test-server");
         assert_eq!(server.name, "Test Server");
         assert_eq!(server.service_endpoint, "http://localhost:8080");
@@ -592,7 +615,7 @@ mod tests {
         assert!(!server.supports_resources);
         assert!(!server.supports_prompts);
     }
-    
+
     #[test]
     fn test_mcp_server_builder_with_tools() {
         let server = McpServerBuilder::new("test-server", "Test Server", "http://localhost:8080")
@@ -600,119 +623,134 @@ mod tests {
             .unwrap()
             .build()
             .unwrap();
-        
+
         assert_eq!(server.onchain_tool_definitions.len(), 1);
         assert_eq!(server.onchain_tool_definitions[0].name, "search");
-        assert_eq!(server.onchain_tool_definitions[0].tags, vec!["query", "search"]);
+        assert_eq!(
+            server.onchain_tool_definitions[0].tags,
+            vec!["query", "search"]
+        );
     }
-    
+
     #[test]
     fn test_mcp_server_builder_validation() {
         // Test empty server ID
         let result = McpServerBuilder::new("", "Test Server", "http://localhost:8080").build();
         assert!(matches!(result, Err(SdkError::InvalidServerIdLength)));
-        
+
         // Test empty name
         let result = McpServerBuilder::new("test-server", "", "http://localhost:8080").build();
         assert!(matches!(result, Err(SdkError::InvalidServerNameLength)));
-        
+
         // Test empty service endpoint
         let result = McpServerBuilder::new("test-server", "Test Server", "").build();
-        assert!(matches!(result, Err(SdkError::InvalidServiceEndpointUrlLength)));
-        
+        assert!(matches!(
+            result,
+            Err(SdkError::InvalidServiceEndpointUrlLength)
+        ));
+
         // Test invalid server ID format
-        let result = McpServerBuilder::new("test server!", "Test Server", "http://localhost:8080").build();
+        let result =
+            McpServerBuilder::new("test server!", "Test Server", "http://localhost:8080").build();
         assert!(matches!(result, Err(SdkError::InvalidServerIdFormat)));
-        
+
         // Test too long server ID
         let long_id = "a".repeat(MAX_SERVER_ID_LEN + 1);
         let result = McpServerBuilder::new(long_id, "Test Server", "http://localhost:8080").build();
         assert!(matches!(result, Err(SdkError::InvalidServerIdLength)));
     }
-    
+
     #[test]
     fn test_derive_mcp_server_pda() {
         let program_id = Pubkey::new_unique();
         let owner = Keypair::new().pubkey();
         let server_id = "test-server";
-        
+
         let pda = derive_mcp_server_pda(&program_id, &owner, server_id).unwrap();
         assert_ne!(pda, Pubkey::default());
-        
+
         // Should be deterministic
         let pda2 = derive_mcp_server_pda(&program_id, &owner, server_id).unwrap();
         assert_eq!(pda, pda2);
     }
-    
+
     #[test]
     fn test_mcp_server_status() {
         assert_eq!(McpServerStatus::from_u8(0), Some(McpServerStatus::Pending));
         assert_eq!(McpServerStatus::from_u8(1), Some(McpServerStatus::Active));
         assert_eq!(McpServerStatus::from_u8(2), Some(McpServerStatus::Inactive));
-        assert_eq!(McpServerStatus::from_u8(3), Some(McpServerStatus::Deregistered));
+        assert_eq!(
+            McpServerStatus::from_u8(3),
+            Some(McpServerStatus::Deregistered)
+        );
         assert_eq!(McpServerStatus::from_u8(4), None);
-        
+
         assert_eq!(McpServerStatus::default(), McpServerStatus::Pending);
     }
-    
+
     #[test]
     fn test_mcp_tool_definition_validation() {
         // Valid tool
         let tool = McpToolDefinition::new("search".to_string(), vec!["query".to_string()]);
         assert!(tool.is_ok());
-        
+
         // Empty name
         let tool = McpToolDefinition::new("".to_string(), vec![]);
         assert!(matches!(tool, Err(SdkError::InvalidToolNameLength)));
-        
+
         // Too long name
         let long_name = "a".repeat(MAX_TOOL_NAME_LEN + 1);
         let tool = McpToolDefinition::new(long_name, vec![]);
         assert!(matches!(tool, Err(SdkError::InvalidToolNameLength)));
-        
+
         // Too many tags
         let too_many_tags = vec!["tag".to_string(); MAX_TOOL_TAGS + 1];
         let tool = McpToolDefinition::new("search".to_string(), too_many_tags);
         assert!(matches!(tool, Err(SdkError::TooManyToolTags)));
-        
+
         // Too long tag
         let long_tag = "a".repeat(MAX_TOOL_TAG_LEN + 1);
         let tool = McpToolDefinition::new("search".to_string(), vec![long_tag]);
         assert!(matches!(tool, Err(SdkError::InvalidToolTagLength)));
     }
-    
+
     #[test]
     fn test_mcp_resource_definition_validation() {
         // Valid resource
-        let resource = McpResourceDefinition::new("file:///*".to_string(), vec!["filesystem".to_string()]);
+        let resource =
+            McpResourceDefinition::new("file:///*".to_string(), vec!["filesystem".to_string()]);
         assert!(resource.is_ok());
-        
+
         // Too long URI pattern
         let long_pattern = "a".repeat(MAX_RESOURCE_URI_PATTERN_LEN + 1);
         let resource = McpResourceDefinition::new(long_pattern, vec![]);
-        assert!(matches!(resource, Err(SdkError::InvalidResourceUriPatternLength)));
-        
+        assert!(matches!(
+            resource,
+            Err(SdkError::InvalidResourceUriPatternLength)
+        ));
+
         // Too many tags
         let too_many_tags = vec!["tag".to_string(); MAX_RESOURCE_TAGS + 1];
         let resource = McpResourceDefinition::new("file:///*".to_string(), too_many_tags);
         assert!(matches!(resource, Err(SdkError::TooManyResourceTags)));
     }
-    
+
     #[test]
     fn test_mcp_prompt_definition_validation() {
         // Valid prompt
-        let prompt = McpPromptDefinition::new("code-review".to_string(), vec!["review".to_string()]);
+        let prompt =
+            McpPromptDefinition::new("code-review".to_string(), vec!["review".to_string()]);
         assert!(prompt.is_ok());
-        
+
         // Empty name
         let prompt = McpPromptDefinition::new("".to_string(), vec![]);
         assert!(matches!(prompt, Err(SdkError::InvalidPromptNameLength)));
-        
+
         // Too long name
         let long_name = "a".repeat(MAX_PROMPT_NAME_LEN + 1);
         let prompt = McpPromptDefinition::new(long_name, vec![]);
         assert!(matches!(prompt, Err(SdkError::InvalidPromptNameLength)));
-        
+
         // Too many tags
         let too_many_tags = vec!["tag".to_string(); MAX_PROMPT_TAGS + 1];
         let prompt = McpPromptDefinition::new("code-review".to_string(), too_many_tags);
