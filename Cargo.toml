@@ -4,7 +4,8 @@ members = [
     "programs/svmai-token",
     "programs/agent-registry",
     "programs/mcp-server-registry",
-    "programs/common"
+    "programs/common",
+    "rust"
 ]
 
 [workspace.dependencies]
