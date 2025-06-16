@@ -11,6 +11,84 @@ use solana_sdk::{
     system_program,
 };
 
+/// Hash size constant
+pub const HASH_SIZE: usize = 32;
+
+/// MCP Tool Definition for instruction serialization (matches on-chain format)
+#[derive(Debug, Clone, BorshSerialize, BorshDeserialize, PartialEq)]
+pub struct McpToolDefinitionOnChainInput {
+    pub name: String,
+    pub description_hash: [u8; HASH_SIZE],
+    pub input_schema_hash: [u8; HASH_SIZE],
+    pub output_schema_hash: [u8; HASH_SIZE],
+    pub tags: Vec<String>,
+}
+
+/// MCP Resource Definition for instruction serialization (matches on-chain format)
+#[derive(Debug, Clone, BorshSerialize, BorshDeserialize, PartialEq)]
+pub struct McpResourceDefinitionOnChainInput {
+    pub uri_pattern: String,
+    pub description_hash: [u8; HASH_SIZE],
+    pub tags: Vec<String>,
+}
+
+/// MCP Prompt Definition for instruction serialization (matches on-chain format)
+#[derive(Debug, Clone, BorshSerialize, BorshDeserialize, PartialEq)]
+pub struct McpPromptDefinitionOnChainInput {
+    pub name: String,
+    pub description_hash: [u8; HASH_SIZE],
+    pub tags: Vec<String>,
+}
+
+/// MCP Server update details input for instruction serialization (matches on-chain format)
+#[derive(Debug, Clone, BorshSerialize, BorshDeserialize, PartialEq, Default)]
+pub struct McpServerUpdateDetailsInput {
+    pub name: Option<String>,
+    pub server_version: Option<String>,
+    pub service_endpoint: Option<String>,
+    pub documentation_url: Option<String>,
+    pub clear_documentation_url: Option<bool>,
+    pub server_capabilities_summary: Option<String>,
+    pub clear_server_capabilities_summary: Option<bool>,
+    pub supports_resources: Option<bool>,
+    pub supports_tools: Option<bool>,
+    pub supports_prompts: Option<bool>,
+    pub onchain_tool_definitions: Option<Vec<McpToolDefinitionOnChainInput>>,
+    pub onchain_resource_definitions: Option<Vec<McpResourceDefinitionOnChainInput>>,
+    pub onchain_prompt_definitions: Option<Vec<McpPromptDefinitionOnChainInput>>,
+    pub full_capabilities_uri: Option<String>,
+    pub clear_full_capabilities_uri: Option<bool>,
+    pub tags: Option<Vec<String>>,
+}
+
+/// MCP Server Registry instruction enum (matches on-chain format exactly)
+#[derive(Debug, Clone, BorshSerialize, BorshDeserialize, PartialEq)]
+pub enum McpServerRegistryInstruction {
+    RegisterMcpServer {
+        server_id: String,
+        name: String,
+        server_version: String,
+        service_endpoint: String,
+        documentation_url: Option<String>,
+        server_capabilities_summary: Option<String>,
+        supports_resources: bool,
+        supports_tools: bool,
+        supports_prompts: bool,
+        onchain_tool_definitions: Vec<McpToolDefinitionOnChainInput>,
+        onchain_resource_definitions: Vec<McpResourceDefinitionOnChainInput>,
+        onchain_prompt_definitions: Vec<McpPromptDefinitionOnChainInput>,
+        full_capabilities_uri: Option<String>,
+        tags: Vec<String>,
+    },
+    UpdateMcpServerDetails {
+        details: McpServerUpdateDetailsInput,
+    },
+    UpdateMcpServerStatus {
+        new_status: u8,
+    },
+    DeregisterMcpServer,
+}
+
 /// Maximum length constants (from the on-chain program)
 pub const MAX_SERVER_ID_LEN: usize = 64;
 pub const MAX_SERVER_NAME_LEN: usize = 128;
@@ -134,6 +212,68 @@ impl McpPromptDefinition {
         }
 
         Ok(Self { name, tags })
+    }
+}
+
+/// Conversion functions for instruction serialization
+impl From<McpToolDefinition> for McpToolDefinitionOnChainInput {
+    fn from(tool: McpToolDefinition) -> Self {
+        Self {
+            name: tool.name,
+            description_hash: [0u8; HASH_SIZE], // SDK doesn't support description hashes yet
+            input_schema_hash: [0u8; HASH_SIZE], // SDK doesn't support schema hashes yet
+            output_schema_hash: [0u8; HASH_SIZE], // SDK doesn't support schema hashes yet
+            tags: tool.tags,
+        }
+    }
+}
+
+impl From<McpResourceDefinition> for McpResourceDefinitionOnChainInput {
+    fn from(resource: McpResourceDefinition) -> Self {
+        Self {
+            uri_pattern: resource.uri_pattern,
+            description_hash: [0u8; HASH_SIZE], // SDK doesn't support description hashes yet
+            tags: resource.tags,
+        }
+    }
+}
+
+impl From<McpPromptDefinition> for McpPromptDefinitionOnChainInput {
+    fn from(prompt: McpPromptDefinition) -> Self {
+        Self {
+            name: prompt.name,
+            description_hash: [0u8; HASH_SIZE], // SDK doesn't support description hashes yet
+            tags: prompt.tags,
+        }
+    }
+}
+
+impl From<McpServerPatch> for McpServerUpdateDetailsInput {
+    fn from(patch: McpServerPatch) -> Self {
+        Self {
+            name: patch.name,
+            server_version: patch.server_version,
+            service_endpoint: patch.service_endpoint,
+            documentation_url: patch.documentation_url,
+            clear_documentation_url: patch.clear_documentation_url,
+            server_capabilities_summary: patch.server_capabilities_summary,
+            clear_server_capabilities_summary: patch.clear_server_capabilities_summary,
+            supports_resources: patch.supports_resources,
+            supports_tools: patch.supports_tools,
+            supports_prompts: patch.supports_prompts,
+            onchain_tool_definitions: patch.onchain_tool_definitions.map(|tools| {
+                tools.into_iter().map(|t| t.into()).collect()
+            }),
+            onchain_resource_definitions: patch.onchain_resource_definitions.map(|resources| {
+                resources.into_iter().map(|r| r.into()).collect()
+            }),
+            onchain_prompt_definitions: patch.onchain_prompt_definitions.map(|prompts| {
+                prompts.into_iter().map(|p| p.into()).collect()
+            }),
+            full_capabilities_uri: patch.full_capabilities_uri,
+            clear_full_capabilities_uri: patch.clear_full_capabilities_uri,
+            tags: patch.tags,
+        }
     }
 }
 
@@ -513,9 +653,26 @@ pub fn create_register_mcp_server_instruction(
         AccountMeta::new_readonly(system_program::id(), false),
     ];
 
-    // Create instruction data (simplified - would need proper serialization)
-    let mut data = vec![0u8]; // instruction discriminator
-    data.extend_from_slice(&args.server_id.as_bytes());
+    // Create proper instruction with Borsh serialization
+    let instruction = McpServerRegistryInstruction::RegisterMcpServer {
+        server_id: args.server_id,
+        name: args.name,
+        server_version: args.server_version,
+        service_endpoint: args.service_endpoint,
+        documentation_url: args.documentation_url,
+        server_capabilities_summary: args.server_capabilities_summary,
+        supports_resources: args.supports_resources,
+        supports_tools: args.supports_tools,
+        supports_prompts: args.supports_prompts,
+        onchain_tool_definitions: args.onchain_tool_definitions.into_iter().map(|t| t.into()).collect(),
+        onchain_resource_definitions: args.onchain_resource_definitions.into_iter().map(|r| r.into()).collect(),
+        onchain_prompt_definitions: args.onchain_prompt_definitions.into_iter().map(|p| p.into()).collect(),
+        full_capabilities_uri: args.full_capabilities_uri,
+        tags: args.tags,
+    };
+
+    let data = instruction.try_to_vec()
+        .map_err(|e| SdkError::SerializationError(format!("Failed to serialize instruction: {}", e)))?;
 
     Ok(Instruction {
         program_id: *program_id,
@@ -529,7 +686,7 @@ pub fn create_update_mcp_server_instruction(
     program_id: &Pubkey,
     owner: &Pubkey,
     server_id: &str,
-    _patch: McpServerPatch,
+    patch: McpServerPatch,
 ) -> SdkResult<Instruction> {
     let server_pda = derive_mcp_server_pda(program_id, owner, server_id)?;
 
@@ -538,8 +695,12 @@ pub fn create_update_mcp_server_instruction(
         AccountMeta::new_readonly(*owner, true),
     ];
 
-    let mut data = vec![1u8]; // instruction discriminator
-    data.extend_from_slice(server_id.as_bytes());
+    let instruction = McpServerRegistryInstruction::UpdateMcpServerDetails {
+        details: patch.into(),
+    };
+
+    let data = instruction.try_to_vec()
+        .map_err(|e| SdkError::SerializationError(format!("Failed to serialize instruction: {}", e)))?;
 
     Ok(Instruction {
         program_id: *program_id,
@@ -562,7 +723,12 @@ pub fn create_update_mcp_server_status_instruction(
         AccountMeta::new_readonly(*owner, true),
     ];
 
-    let data = vec![2u8, status]; // instruction discriminator + status
+    let instruction = McpServerRegistryInstruction::UpdateMcpServerStatus {
+        new_status: status,
+    };
+
+    let data = instruction.try_to_vec()
+        .map_err(|e| SdkError::SerializationError(format!("Failed to serialize instruction: {}", e)))?;
 
     Ok(Instruction {
         program_id: *program_id,
@@ -584,7 +750,10 @@ pub fn create_deregister_mcp_server_instruction(
         AccountMeta::new_readonly(*owner, true),
     ];
 
-    let data = vec![3u8]; // instruction discriminator
+    let instruction = McpServerRegistryInstruction::DeregisterMcpServer;
+
+    let data = instruction.try_to_vec()
+        .map_err(|e| SdkError::SerializationError(format!("Failed to serialize instruction: {}", e)))?;
 
     Ok(Instruction {
         program_id: *program_id,

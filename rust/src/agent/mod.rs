@@ -11,6 +11,85 @@ use solana_sdk::{
     system_program,
 };
 
+/// Service endpoint input for instruction serialization (matches on-chain format)
+#[derive(Debug, Clone, BorshSerialize, BorshDeserialize, PartialEq)]
+pub struct ServiceEndpointInput {
+    pub protocol: String,
+    pub url: String,
+    pub is_default: bool,
+}
+
+/// Agent skill input for instruction serialization (matches on-chain format)  
+#[derive(Debug, Clone, BorshSerialize, BorshDeserialize, PartialEq)]
+pub struct AgentSkillInput {
+    pub skill_id: String,
+    pub name: String,
+    pub description_hash: Option<[u8; HASH_SIZE]>,
+    pub tags: Vec<String>,
+}
+
+/// Agent update details input for instruction serialization (matches on-chain format)
+#[derive(Debug, Clone, BorshSerialize, BorshDeserialize, PartialEq, Default)]
+pub struct AgentUpdateDetailsInput {
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub agent_version: Option<String>,
+    pub provider_name: Option<String>,
+    pub clear_provider_name: Option<bool>,
+    pub provider_url: Option<String>,
+    pub clear_provider_url: Option<bool>,
+    pub documentation_url: Option<String>,
+    pub clear_documentation_url: Option<bool>,
+    pub service_endpoints: Option<Vec<ServiceEndpointInput>>,
+    pub capabilities_flags: Option<u64>,
+    pub supported_input_modes: Option<Vec<String>>,
+    pub supported_output_modes: Option<Vec<String>>,
+    pub skills: Option<Vec<AgentSkillInput>>,
+    pub security_info_uri: Option<String>,
+    pub clear_security_info_uri: Option<bool>,
+    pub aea_address: Option<String>,
+    pub clear_aea_address: Option<bool>,
+    pub economic_intent_summary: Option<String>,
+    pub clear_economic_intent_summary: Option<bool>,
+    pub supported_aea_protocols_hash: Option<[u8; HASH_SIZE]>,
+    pub clear_supported_aea_protocols_hash: Option<bool>,
+    pub extended_metadata_uri: Option<String>,
+    pub clear_extended_metadata_uri: Option<bool>,
+    pub tags: Option<Vec<String>>,
+}
+
+/// Agent registry instruction enum (matches on-chain format exactly)
+#[derive(Debug, Clone, BorshSerialize, BorshDeserialize, PartialEq)]
+pub enum AgentRegistryInstruction {
+    RegisterAgent {
+        agent_id: String,
+        name: String,
+        description: String,
+        agent_version: String,
+        provider_name: Option<String>,
+        provider_url: Option<String>,
+        documentation_url: Option<String>,
+        service_endpoints: Vec<ServiceEndpointInput>,
+        capabilities_flags: u64,
+        supported_input_modes: Vec<String>,
+        supported_output_modes: Vec<String>,
+        skills: Vec<AgentSkillInput>,
+        security_info_uri: Option<String>,
+        aea_address: Option<String>,
+        economic_intent_summary: Option<String>,
+        supported_aea_protocols_hash: Option<[u8; HASH_SIZE]>,
+        extended_metadata_uri: Option<String>,
+        tags: Vec<String>,
+    },
+    UpdateAgentDetails {
+        details: AgentUpdateDetailsInput,
+    },
+    UpdateAgentStatus {
+        new_status: u8,
+    },
+    DeregisterAgent,
+}
+
 /// Maximum length constants (from the on-chain program)
 pub const MAX_AGENT_ID_LEN: usize = 64;
 pub const MAX_AGENT_NAME_LEN: usize = 128;
@@ -90,6 +169,27 @@ impl ServiceEndpoint {
     }
 }
 
+impl From<ServiceEndpoint> for ServiceEndpointInput {
+    fn from(endpoint: ServiceEndpoint) -> Self {
+        Self {
+            protocol: endpoint.protocol,
+            url: endpoint.url,
+            is_default: endpoint.is_default,
+        }
+    }
+}
+
+impl From<AgentSkill> for AgentSkillInput {
+    fn from(skill: AgentSkill) -> Self {
+        Self {
+            skill_id: skill.skill_id,
+            name: skill.name,
+            description_hash: None, // SDK doesn't support description hashes yet
+            tags: skill.tags,
+        }
+    }
+}
+
 /// Agent skill definition
 #[derive(Debug, Clone, PartialEq, Eq, BorshSerialize, BorshDeserialize)]
 pub struct AgentSkill {
@@ -144,6 +244,42 @@ pub struct AgentArgs {
     pub supported_aea_protocols_hash: Option<[u8; HASH_SIZE]>,
     pub extended_metadata_uri: Option<String>,
     pub tags: Vec<String>,
+}
+
+impl From<AgentPatch> for AgentUpdateDetailsInput {
+    fn from(patch: AgentPatch) -> Self {
+        Self {
+            name: patch.name,
+            description: patch.description,
+            agent_version: patch.agent_version,
+            provider_name: patch.provider_name,
+            clear_provider_name: patch.clear_provider_name,
+            provider_url: patch.provider_url,
+            clear_provider_url: patch.clear_provider_url,
+            documentation_url: patch.documentation_url,
+            clear_documentation_url: patch.clear_documentation_url,
+            service_endpoints: patch.service_endpoints.map(|endpoints| {
+                endpoints.into_iter().map(|e| e.into()).collect()
+            }),
+            capabilities_flags: patch.capabilities_flags,
+            supported_input_modes: patch.supported_input_modes,
+            supported_output_modes: patch.supported_output_modes,
+            skills: patch.skills.map(|skills| {
+                skills.into_iter().map(|s| s.into()).collect()
+            }),
+            security_info_uri: patch.security_info_uri,
+            clear_security_info_uri: patch.clear_security_info_uri,
+            aea_address: patch.aea_address,
+            clear_aea_address: patch.clear_aea_address,
+            economic_intent_summary: patch.economic_intent_summary,
+            clear_economic_intent_summary: patch.clear_economic_intent_summary,
+            supported_aea_protocols_hash: patch.supported_aea_protocols_hash,
+            clear_supported_aea_protocols_hash: patch.clear_supported_aea_protocols_hash,
+            extended_metadata_uri: patch.extended_metadata_uri,
+            clear_extended_metadata_uri: patch.clear_extended_metadata_uri,
+            tags: patch.tags,
+        }
+    }
 }
 
 /// Patch for updating agent details
@@ -546,9 +682,30 @@ pub fn create_register_agent_instruction(
         AccountMeta::new_readonly(system_program::id(), false),
     ];
 
-    // Create instruction data (simplified - would need proper serialization)
-    let mut data = vec![0u8]; // instruction discriminator
-    data.extend_from_slice(&args.agent_id.as_bytes());
+    // Create proper instruction with Borsh serialization
+    let instruction = AgentRegistryInstruction::RegisterAgent {
+        agent_id: args.agent_id,
+        name: args.name,
+        description: args.description,
+        agent_version: args.agent_version,
+        provider_name: args.provider_name,
+        provider_url: args.provider_url,
+        documentation_url: args.documentation_url,
+        service_endpoints: args.service_endpoints.into_iter().map(|e| e.into()).collect(),
+        capabilities_flags: args.capabilities_flags,
+        supported_input_modes: args.supported_input_modes,
+        supported_output_modes: args.supported_output_modes,
+        skills: args.skills.into_iter().map(|s| s.into()).collect(),
+        security_info_uri: args.security_info_uri,
+        aea_address: args.aea_address,
+        economic_intent_summary: args.economic_intent_summary,
+        supported_aea_protocols_hash: args.supported_aea_protocols_hash,
+        extended_metadata_uri: args.extended_metadata_uri,
+        tags: args.tags,
+    };
+
+    let data = instruction.try_to_vec()
+        .map_err(|e| SdkError::SerializationError(format!("Failed to serialize instruction: {}", e)))?;
 
     Ok(Instruction {
         program_id: *program_id,
@@ -562,7 +719,7 @@ pub fn create_update_agent_instruction(
     program_id: &Pubkey,
     owner: &Pubkey,
     agent_id: &str,
-    _patch: AgentPatch,
+    patch: AgentPatch,
 ) -> SdkResult<Instruction> {
     let agent_pda = derive_agent_pda(program_id, owner, agent_id)?;
 
@@ -571,8 +728,12 @@ pub fn create_update_agent_instruction(
         AccountMeta::new_readonly(*owner, true),
     ];
 
-    let mut data = vec![1u8]; // instruction discriminator
-    data.extend_from_slice(agent_id.as_bytes());
+    let instruction = AgentRegistryInstruction::UpdateAgentDetails {
+        details: patch.into(),
+    };
+
+    let data = instruction.try_to_vec()
+        .map_err(|e| SdkError::SerializationError(format!("Failed to serialize instruction: {}", e)))?;
 
     Ok(Instruction {
         program_id: *program_id,
@@ -595,7 +756,12 @@ pub fn create_update_agent_status_instruction(
         AccountMeta::new_readonly(*owner, true),
     ];
 
-    let data = vec![2u8, status]; // instruction discriminator + status
+    let instruction = AgentRegistryInstruction::UpdateAgentStatus {
+        new_status: status,
+    };
+
+    let data = instruction.try_to_vec()
+        .map_err(|e| SdkError::SerializationError(format!("Failed to serialize instruction: {}", e)))?;
 
     Ok(Instruction {
         program_id: *program_id,
@@ -617,7 +783,10 @@ pub fn create_deregister_agent_instruction(
         AccountMeta::new_readonly(*owner, true),
     ];
 
-    let data = vec![3u8]; // instruction discriminator
+    let instruction = AgentRegistryInstruction::DeregisterAgent;
+
+    let data = instruction.try_to_vec()
+        .map_err(|e| SdkError::SerializationError(format!("Failed to serialize instruction: {}", e)))?;
 
     Ok(Instruction {
         program_id: *program_id,
