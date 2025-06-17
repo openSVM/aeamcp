@@ -91,29 +91,108 @@ pub enum AgentRegistryInstruction {
 }
 
 /// Maximum length constants (from the on-chain program)
+/// These limits are enforced by the Solana AI Registries program to ensure
+/// efficient storage and consistent behavior across the network.
+/// 
+/// **References:**
+/// - On-chain program constraints: [Agent Registry Program Documentation](https://docs.solana-ai-registries.org/program/agent-registry)
+/// - Program source: `programs/agent-registry/src/lib.rs`
+
+/// Maximum length for agent ID field (64 bytes)
+/// This allows for reasonably descriptive identifiers while keeping storage efficient.
+/// Must be unique within the owner's namespace.
 pub const MAX_AGENT_ID_LEN: usize = 64;
+
+/// Maximum length for agent name field (128 bytes)  
+/// Provides space for human-readable agent names and titles.
 pub const MAX_AGENT_NAME_LEN: usize = 128;
+
+/// Maximum length for agent description field (512 bytes)
+/// Allows for detailed descriptions while preventing excessive storage costs.
 pub const MAX_AGENT_DESCRIPTION_LEN: usize = 512;
+
+/// Maximum length for agent version string (32 bytes)
+/// Follows semantic versioning conventions (e.g., "1.2.3-beta").
 pub const MAX_AGENT_VERSION_LEN: usize = 32;
+
+/// Maximum length for provider name field (128 bytes)
+/// Name of the organization or individual providing the agent.
 pub const MAX_PROVIDER_NAME_LEN: usize = 128;
+
+/// Maximum length for provider URL field (256 bytes)
+/// URL to the provider's website or profile page.
 pub const MAX_PROVIDER_URL_LEN: usize = 256;
+
+/// Maximum length for documentation URL field (256 bytes)
+/// URL pointing to the agent's documentation or API reference.
 pub const MAX_DOCUMENTATION_URL_LEN: usize = 256;
+
+/// Maximum number of service endpoints per agent (3 endpoints)
+/// Supports primary, fallback, and development endpoints without excessive complexity.
 pub const MAX_SERVICE_ENDPOINTS: usize = 3;
+
+/// Maximum length for service endpoint protocol field (64 bytes)
+/// e.g., "http", "https", "websocket", "grpc"
 pub const MAX_ENDPOINT_PROTOCOL_LEN: usize = 64;
+
+/// Maximum length for service endpoint URL field (256 bytes)
+/// Full URL including protocol, domain, port, and path.
 pub const MAX_ENDPOINT_URL_LEN: usize = 256;
+
+/// Maximum number of supported input/output modes per agent (5 modes)
+/// Balances flexibility with storage efficiency.
 pub const MAX_SUPPORTED_MODES: usize = 5;
+
+/// Maximum length for input/output mode strings (64 bytes)
+/// e.g., "text", "json", "image", "audio"
 pub const MAX_MODE_LEN: usize = 64;
+
+/// Maximum number of skills per agent (10 skills)
+/// Allows comprehensive skill representation while preventing abuse.
 pub const MAX_SKILLS: usize = 10;
+
+/// Maximum length for skill ID field (64 bytes)
+/// Unique identifier for the skill within the agent.
 pub const MAX_SKILL_ID_LEN: usize = 64;
+
+/// Maximum length for skill name field (128 bytes)
+/// Human-readable name for the skill.
 pub const MAX_SKILL_NAME_LEN: usize = 128;
+
+/// Maximum number of tags per skill (5 tags)
+/// Enables categorization and discovery without overwhelming metadata.
 pub const MAX_SKILL_TAGS: usize = 5;
+
+/// Maximum length for skill tag strings (32 bytes)
+/// e.g., "nlp", "vision", "reasoning"
 pub const MAX_SKILL_TAG_LEN: usize = 32;
+
+/// Maximum length for security info URI field (256 bytes)
+/// URL pointing to security audit reports or vulnerability disclosures.
 pub const MAX_SECURITY_INFO_URI_LEN: usize = 256;
+
+/// Maximum length for AEA (Autonomous Economic Agent) address field (128 bytes)
+/// Address format specific to the AEA framework.
 pub const MAX_AEA_ADDRESS_LEN: usize = 128;
+
+/// Maximum length for economic intent summary field (256 bytes)
+/// Brief description of the agent's economic model and objectives.
 pub const MAX_ECONOMIC_INTENT_LEN: usize = 256;
+
+/// Maximum length for extended metadata URI field (256 bytes)
+/// URL pointing to additional metadata stored off-chain.
 pub const MAX_EXTENDED_METADATA_URI_LEN: usize = 256;
+
+/// Maximum number of tags per agent (10 tags)
+/// Enables rich categorization for discovery and filtering.
 pub const MAX_AGENT_TAGS: usize = 10;
+
+/// Maximum length for agent tag strings (32 bytes)
+/// e.g., "chatbot", "trading", "analytics"
 pub const MAX_AGENT_TAG_LEN: usize = 32;
+
+/// Hash size for content addressing (32 bytes)
+/// SHA-256 hash size used for content verification.
 pub const HASH_SIZE: usize = 32;
 
 /// Agent status values
@@ -345,15 +424,7 @@ pub struct AgentEntry {
 impl AgentEntry {
     /// Try to deserialize from account data
     pub fn try_from_account_data(data: &[u8]) -> SdkResult<Self> {
-        // Skip the 8-byte discriminator used by Anchor
-        if data.len() < 8 {
-            return Err(SdkError::InvalidAccountData);
-        }
-
-        let account_data = &data[8..];
-        Self::try_from_slice(account_data).map_err(|e| {
-            SdkError::DeserializationError(format!("Failed to deserialize agent entry: {}", e))
-        })
+        crate::client::deserialize_account_data(data, "agent entry")
     }
 }
 

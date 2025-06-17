@@ -264,14 +264,7 @@ impl StreamingPaymentClient {
             .get_account(stream_pda)
             .map_err(SdkError::ClientError)?;
 
-        // Skip discriminator (8 bytes)
-        if account.data.len() < 8 {
-            return Err(SdkError::InvalidAccountData);
-        }
-
-        StreamingPayment::try_from_slice(&account.data[8..]).map_err(|e| {
-            SdkError::DeserializationError(format!("Failed to deserialize stream: {}", e))
-        })
+        crate::client::deserialize_account_data(&account.data, "streaming payment")
     }
 
     /// Get stream status with current calculations

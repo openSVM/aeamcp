@@ -6,6 +6,7 @@
 use crate::agent::{AgentArgs, AgentEntry, AgentPatch};
 use crate::errors::{SdkError, SdkResult};
 use crate::mcp::{McpServerArgs, McpServerEntry, McpServerPatch};
+use borsh::BorshDeserialize;
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::{
     commitment_config::CommitmentConfig,
@@ -346,4 +347,29 @@ mod tests {
             client.mcp_server_registry_program_id()
         );
     }
+}
+
+/// Centralized helper for deserializing account data with Anchor discriminator handling
+/// 
+/// This function abstracts the common pattern of:
+/// 1. Validating minimum data length (8 bytes for discriminator)
+/// 2. Skipping the 8-byte Anchor discriminator  
+/// 3. Deserializing the remaining data using Borsh
+/// 4. Providing consistent error handling and wrapping
+pub fn deserialize_account_data<T>(data: &[u8], type_name: &str) -> SdkResult<T>
+where
+    T: borsh::BorshDeserialize,
+{
+    // Validate minimum length for Anchor discriminator
+    if data.len() < 8 {
+        return Err(SdkError::InvalidAccountData);
+    }
+
+    // Skip the 8-byte discriminator used by Anchor
+    let account_data = &data[8..];
+    
+    // Deserialize with type-specific error message
+    T::try_from_slice(account_data).map_err(|e| {
+        SdkError::DeserializationError(format!("Failed to deserialize {}: {}", type_name, e))
+    })
 }

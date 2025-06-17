@@ -265,6 +265,10 @@ pub enum SdkError {
 
     #[error("Validation error: {0}")]
     ValidationError(String),
+
+    /// Unknown program error code - used for safe error catching
+    #[error("Unknown program error code: {0}")]
+    UnknownError(u32),
 }
 
 impl SdkError {
@@ -323,7 +327,7 @@ impl SdkError {
             49 => SdkError::InvalidStakingTier,
             50 => SdkError::LockPeriodTooShort,
             51 => SdkError::LockPeriodTooLong,
-            _ => SdkError::InvalidAccountData,
+            _ => SdkError::UnknownError(code),
         }
     }
 }

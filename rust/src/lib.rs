@@ -56,7 +56,7 @@ pub mod mcp;
 pub mod payments;
 
 // Re-export commonly used types
-pub use client::SolanaAiRegistriesClient;
+pub use client::{deserialize_account_data, SolanaAiRegistriesClient};
 pub use errors::{SdkError, SdkResult};
 
 // Re-export agent types

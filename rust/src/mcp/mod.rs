@@ -90,26 +90,96 @@ pub enum McpServerRegistryInstruction {
 }
 
 /// Maximum length constants (from the on-chain program)
+/// These limits are enforced by the Solana AI Registries program to ensure
+/// efficient storage and consistent behavior across the network.
+/// 
+/// **References:**
+/// - On-chain program constraints: [MCP Server Registry Program Documentation](https://docs.solana-ai-registries.org/program/mcp-registry)
+/// - Program source: `programs/mcp-server-registry/src/lib.rs`
+/// - MCP Protocol Specification: [Model Context Protocol](https://modelcontextprotocol.io/docs)
+
+/// Maximum length for MCP server ID field (64 bytes)
+/// Must be unique within the owner's namespace and follow MCP naming conventions.
 pub const MAX_SERVER_ID_LEN: usize = 64;
+
+/// Maximum length for MCP server name field (128 bytes)
+/// Human-readable name for the MCP server.
 pub const MAX_SERVER_NAME_LEN: usize = 128;
+
+/// Maximum length for server version string (32 bytes)
+/// Follows semantic versioning conventions (e.g., "1.2.3-beta").
 pub const MAX_SERVER_VERSION_LEN: usize = 32;
+
+/// Maximum length for service endpoint URL field (256 bytes)
+/// Full URL where the MCP server can be accessed.
 pub const MAX_SERVICE_ENDPOINT_URL_LEN: usize = 256;
+
+/// Maximum length for documentation URL field (256 bytes)
+/// URL pointing to the MCP server's documentation or API reference.
 pub const MAX_DOCUMENTATION_URL_LEN: usize = 256;
+
+/// Maximum length for server capabilities summary field (256 bytes)
+/// Brief description of the server's capabilities and features.
 pub const MAX_SERVER_CAPABILITIES_SUMMARY_LEN: usize = 256;
+
+/// Maximum number of on-chain tool definitions per server (5 tools)
+/// Balances discoverability with storage efficiency. Additional tools can be defined off-chain.
 pub const MAX_ONCHAIN_TOOL_DEFINITIONS: usize = 5;
+
+/// Maximum length for tool name field (64 bytes)
+/// Name of the tool as defined in the MCP protocol.
 pub const MAX_TOOL_NAME_LEN: usize = 64;
+
+/// Maximum number of tags per tool (3 tags)
+/// Enables categorization while keeping metadata concise.
 pub const MAX_TOOL_TAGS: usize = 3;
+
+/// Maximum length for tool tag strings (32 bytes)
+/// e.g., "search", "analysis", "generation"
 pub const MAX_TOOL_TAG_LEN: usize = 32;
+
+/// Maximum number of on-chain resource definitions per server (5 resources)
+/// Balances discoverability with storage efficiency. Additional resources can be defined off-chain.
 pub const MAX_ONCHAIN_RESOURCE_DEFINITIONS: usize = 5;
+
+/// Maximum length for resource URI pattern field (128 bytes)
+/// Pattern matching resources provided by the server (e.g., "files://*", "docs/**/*.md").
 pub const MAX_RESOURCE_URI_PATTERN_LEN: usize = 128;
+
+/// Maximum number of tags per resource definition (3 tags)
+/// Enables categorization while keeping metadata concise.
 pub const MAX_RESOURCE_TAGS: usize = 3;
+
+/// Maximum length for resource tag strings (32 bytes)
+/// e.g., "document", "image", "data"
 pub const MAX_RESOURCE_TAG_LEN: usize = 32;
+
+/// Maximum number of on-chain prompt definitions per server (5 prompts)
+/// Balances discoverability with storage efficiency. Additional prompts can be defined off-chain.
 pub const MAX_ONCHAIN_PROMPT_DEFINITIONS: usize = 5;
+
+/// Maximum length for prompt name field (64 bytes)
+/// Name of the prompt template as defined in the MCP protocol.
 pub const MAX_PROMPT_NAME_LEN: usize = 64;
+
+/// Maximum number of tags per prompt definition (3 tags)
+/// Enables categorization while keeping metadata concise.
 pub const MAX_PROMPT_TAGS: usize = 3;
+
+/// Maximum length for prompt tag strings (32 bytes)
+/// e.g., "template", "assistant", "system"
 pub const MAX_PROMPT_TAG_LEN: usize = 32;
+
+/// Maximum length for full capabilities URI field (256 bytes)
+/// URL pointing to complete MCP server capabilities document (JSON schema).
 pub const MAX_FULL_CAPABILITIES_URI_LEN: usize = 256;
+
+/// Maximum number of tags per MCP server (10 tags)
+/// Enables rich categorization for discovery and filtering.
 pub const MAX_SERVER_TAGS: usize = 10;
+
+/// Maximum length for server tag strings (32 bytes)
+/// e.g., "nlp", "database", "api", "workflow"
 pub const MAX_SERVER_TAG_LEN: usize = 32;
 
 /// MCP Server status values
@@ -346,15 +416,7 @@ pub struct McpServerEntry {
 impl McpServerEntry {
     /// Try to deserialize from account data
     pub fn try_from_account_data(data: &[u8]) -> SdkResult<Self> {
-        // Skip the 8-byte discriminator used by Anchor
-        if data.len() < 8 {
-            return Err(SdkError::InvalidAccountData);
-        }
-
-        let account_data = &data[8..];
-        Self::try_from_slice(account_data).map_err(|e| {
-            SdkError::DeserializationError(format!("Failed to deserialize MCP server entry: {}", e))
-        })
+        crate::client::deserialize_account_data(data, "MCP server entry")
     }
 }
 

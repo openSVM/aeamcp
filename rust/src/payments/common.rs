@@ -8,43 +8,104 @@ use solana_sdk::{
     system_program,
 };
 
-/// Token mint addresses for different networks
+/// Payment system constants and configuration
+/// These values define the economic parameters of the Solana AI Registries payment system.
+/// 
+/// **References:**
+/// - Payment program constraints: [Payment System Documentation](https://docs.solana-ai-registries.org/payment-system)
+/// - Program source: `programs/payment-system/src/lib.rs`
+/// - Tokenomics: [A2AMPL Token Economics](https://docs.solana-ai-registries.org/tokenomics)
+
+/// A2AMPL token mint address on Solana mainnet
+/// The native utility token for the Solana AI Registries ecosystem.
 pub const A2AMPL_TOKEN_MINT_MAINNET: &str = "Cpzvdx6pppc9TNArsGsqgShCsKC9NCCjA2gtzHvUpump";
+
+/// A2AMPL token mint address on Solana devnet  
+/// Used for development and testing purposes.
 pub const A2AMPL_TOKEN_MINT_DEVNET: &str = "A2AMPLyncKHwfSnwRNsJ2qsjsetgo9fGkP8YZPsDZ9mE";
 
-/// Token decimals
+/// A2AMPL token decimals (9 decimal places)
+/// Following SPL token standard for precision.
 pub const A2AMPL_DECIMALS: u8 = 9;
+
+/// A2AMPL base unit (1 billion = 1 A2AMPL)
+/// Used for converting between human-readable and base unit amounts.
 pub const A2AMPL_BASE_UNIT: u64 = 1_000_000_000; // 10^9
 
-/// Fee constants (in base units)
+/// Registration fee for agents (100 A2AMPL in base units)
+/// One-time fee required to register an agent in the registry.
 pub const AGENT_REGISTRATION_FEE: u64 = 100_000_000_000; // 100 A2AMPL
+
+/// Registration fee for MCP servers (50 A2AMPL in base units)  
+/// One-time fee required to register an MCP server in the registry.
 pub const MCP_REGISTRATION_FEE: u64 = 50_000_000_000; // 50 A2AMPL
 
-/// Service fee constants (in base units)
+/// Minimum fee for general service usage (1.0 A2AMPL in base units)
+/// Base fee for standard agent interactions and services.
 pub const MIN_SERVICE_FEE: u64 = 1_000_000_000; // 1.0 A2AMPL
+
+/// Minimum fee for tool execution (1.0 A2AMPL in base units)
+/// Fee for executing MCP tools through registered servers.
 pub const MIN_TOOL_FEE: u64 = 1_000_000_000; // 1.0 A2AMPL
+
+/// Minimum fee for resource access (0.5 A2AMPL in base units)
+/// Fee for accessing MCP resources (files, data, etc.).
 pub const MIN_RESOURCE_FEE: u64 = 500_000_000; // 0.5 A2AMPL
+
+/// Minimum fee for prompt template usage (2.0 A2AMPL in base units)
+/// Fee for using MCP prompt templates and complex interactions.
 pub const MIN_PROMPT_FEE: u64 = 2_000_000_000; // 2.0 A2AMPL
 
-/// Staking tier amounts (in base units)
+/// Bronze tier staking requirement (1,000 A2AMPL in base units)
+/// Entry-level staking tier with basic benefits and reduced fees.
 pub const BRONZE_TIER_STAKE: u64 = 1_000_000_000_000; // 1,000 A2AMPL
+
+/// Silver tier staking requirement (10,000 A2AMPL in base units)
+/// Mid-level staking tier with enhanced benefits and priority access.
 pub const SILVER_TIER_STAKE: u64 = 10_000_000_000_000; // 10,000 A2AMPL
+
+/// Gold tier staking requirement (50,000 A2AMPL in base units)
+/// High-level staking tier with premium benefits and significant fee reductions.
 pub const GOLD_TIER_STAKE: u64 = 50_000_000_000_000; // 50,000 A2AMPL
+
+/// Platinum tier staking requirement (100,000 A2AMPL in base units)
+/// Highest staking tier with maximum benefits and governance participation.
 pub const PLATINUM_TIER_STAKE: u64 = 100_000_000_000_000; // 100,000 A2AMPL
 
-/// Lock periods (in seconds)
+/// Bronze tier lock period (30 days in seconds)
+/// Minimum commitment period for bronze tier staking.
 pub const BRONZE_LOCK_PERIOD: i64 = 2_592_000; // 30 days
+
+/// Silver tier lock period (90 days in seconds)
+/// Minimum commitment period for silver tier staking.
 pub const SILVER_LOCK_PERIOD: i64 = 7_776_000; // 90 days
+
+/// Gold tier lock period (180 days in seconds)
+/// Minimum commitment period for gold tier staking.
 pub const GOLD_LOCK_PERIOD: i64 = 15_552_000; // 180 days
+
+/// Platinum tier lock period (365 days in seconds)
+/// Minimum commitment period for platinum tier staking.
 pub const PLATINUM_LOCK_PERIOD: i64 = 31_536_000; // 365 days
 
-/// Minimum and maximum limits
+/// Minimum stake amount (500 A2AMPL in base units)
+/// Absolute minimum amount required for any staking participation.
 pub const MIN_STAKE_AMOUNT: u64 = 500_000_000_000; // 500 A2AMPL
+
+/// Minimum lock period (7 days in seconds)
+/// Shortest allowable commitment period for staking.
 pub const MIN_LOCK_PERIOD: i64 = 604_800; // 7 days
+
+/// Maximum lock period (2 years in seconds)
+/// Longest allowable commitment period for staking.
 pub const MAX_LOCK_PERIOD: i64 = 63_072_000; // 2 years
 
-/// Priority multipliers (percentage, 100 = 1.0x)
+/// Minimum priority multiplier (100 = 1.0x)
+/// Base priority level with no fee increase.
 pub const MIN_PRIORITY_MULTIPLIER: u8 = 100; // 1.0x
+
+/// Maximum priority multiplier (255 = 2.55x)
+/// Highest priority level with maximum fee multiplier (limited by u8 range).
 pub const MAX_PRIORITY_MULTIPLIER: u8 = 255; // 2.55x (maximum for u8)
 
 /// Staking tiers
