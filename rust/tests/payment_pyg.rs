@@ -357,7 +357,9 @@ fn test_pyg_feature_disabled() {
 }
 
 #[cfg(any(feature = "stream", feature = "pyg", feature = "prepay"))]
-use solana_ai_registries::payments::common::{convert_a2ampl_to_base_units, convert_base_units_to_a2ampl};
+use solana_ai_registries::payments::common::{
+    convert_a2ampl_to_base_units, convert_base_units_to_a2ampl,
+};
 
 #[cfg(any(feature = "stream", feature = "pyg", feature = "prepay"))]
 #[test]
