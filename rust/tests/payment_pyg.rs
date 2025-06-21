@@ -6,7 +6,7 @@
 #[cfg(feature = "pyg")]
 use solana_ai_registries::{
     payments::{
-        common::{convert_a2ampl_to_base_units, A2AMPL_BASE_UNIT, MIN_SERVICE_FEE, MIN_TOOL_FEE},
+        common::{A2AMPL_BASE_UNIT, MIN_SERVICE_FEE, MIN_TOOL_FEE},
         pyg::{estimate_pyg_cost, PygPaymentArgs, PygPaymentClient, PygServiceType},
     },
     SolanaAiRegistriesClient,
@@ -357,7 +357,7 @@ fn test_pyg_feature_disabled() {
 }
 
 #[cfg(any(feature = "stream", feature = "pyg", feature = "prepay"))]
-use solana_ai_registries::payments::common::convert_base_units_to_a2ampl;
+use solana_ai_registries::payments::common::{convert_a2ampl_to_base_units, convert_base_units_to_a2ampl};
 
 #[cfg(any(feature = "stream", feature = "pyg", feature = "prepay"))]
 #[test]
