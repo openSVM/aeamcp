@@ -185,6 +185,7 @@ struct MockStruct {
     data: u64,
 }
 
+#[cfg(any(feature = "stream", feature = "pyg", feature = "prepay"))]
 #[test]
 fn test_priority_multiplier_validation() {
     use solana_ai_registries::payments::common::{
@@ -224,7 +225,6 @@ fn test_constant_documentation_exists() {
     // by checking they compile and have expected values
     use solana_ai_registries::agent::*;
     use solana_ai_registries::mcp::*;
-    use solana_ai_registries::payments::common::*;
 
     // Agent constants
     assert_eq!(MAX_AGENT_ID_LEN, 64);
@@ -234,6 +234,14 @@ fn test_constant_documentation_exists() {
     // MCP constants
     assert_eq!(MAX_SERVER_ID_LEN, 64);
     assert_eq!(MAX_ONCHAIN_TOOL_DEFINITIONS, 5);
+}
+
+#[cfg(any(feature = "stream", feature = "pyg", feature = "prepay"))]
+#[test]
+fn test_payment_constant_documentation_exists() {
+    // This test ensures our payment constants are properly documented
+    // by checking they compile and have expected values
+    use solana_ai_registries::payments::common::*;
 
     // Payment constants
     assert_eq!(A2AMPL_DECIMALS, 9);
