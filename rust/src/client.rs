@@ -350,7 +350,7 @@ mod tests {
 }
 
 /// Centralized helper for deserializing account data with Anchor discriminator handling
-/// 
+///
 /// This function abstracts the common pattern of:
 /// 1. Validating minimum data length (8 bytes for discriminator)
 /// 2. Skipping the 8-byte Anchor discriminator  
@@ -367,7 +367,7 @@ where
 
     // Skip the 8-byte discriminator used by Anchor
     let account_data = &data[8..];
-    
+
     // Deserialize with type-specific error message
     T::try_from_slice(account_data).map_err(|e| {
         SdkError::DeserializationError(format!("Failed to deserialize {}: {}", type_name, e))

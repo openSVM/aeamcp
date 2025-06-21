@@ -92,7 +92,7 @@ pub enum McpServerRegistryInstruction {
 /// Maximum length constants (from the on-chain program)
 /// These limits are enforced by the Solana AI Registries program to ensure
 /// efficient storage and consistent behavior across the network.
-/// 
+///
 /// **References:**
 /// - On-chain program constraints: [MCP Server Registry Program Documentation](https://docs.solana-ai-registries.org/program/mcp-registry)
 /// - Program source: `programs/mcp-server-registry/src/lib.rs`
@@ -331,15 +331,15 @@ impl From<McpServerPatch> for McpServerUpdateDetailsInput {
             supports_resources: patch.supports_resources,
             supports_tools: patch.supports_tools,
             supports_prompts: patch.supports_prompts,
-            onchain_tool_definitions: patch.onchain_tool_definitions.map(|tools| {
-                tools.into_iter().map(|t| t.into()).collect()
-            }),
-            onchain_resource_definitions: patch.onchain_resource_definitions.map(|resources| {
-                resources.into_iter().map(|r| r.into()).collect()
-            }),
-            onchain_prompt_definitions: patch.onchain_prompt_definitions.map(|prompts| {
-                prompts.into_iter().map(|p| p.into()).collect()
-            }),
+            onchain_tool_definitions: patch
+                .onchain_tool_definitions
+                .map(|tools| tools.into_iter().map(|t| t.into()).collect()),
+            onchain_resource_definitions: patch
+                .onchain_resource_definitions
+                .map(|resources| resources.into_iter().map(|r| r.into()).collect()),
+            onchain_prompt_definitions: patch
+                .onchain_prompt_definitions
+                .map(|prompts| prompts.into_iter().map(|p| p.into()).collect()),
             full_capabilities_uri: patch.full_capabilities_uri,
             clear_full_capabilities_uri: patch.clear_full_capabilities_uri,
             tags: patch.tags,
@@ -726,15 +726,28 @@ pub fn create_register_mcp_server_instruction(
         supports_resources: args.supports_resources,
         supports_tools: args.supports_tools,
         supports_prompts: args.supports_prompts,
-        onchain_tool_definitions: args.onchain_tool_definitions.into_iter().map(|t| t.into()).collect(),
-        onchain_resource_definitions: args.onchain_resource_definitions.into_iter().map(|r| r.into()).collect(),
-        onchain_prompt_definitions: args.onchain_prompt_definitions.into_iter().map(|p| p.into()).collect(),
+        onchain_tool_definitions: args
+            .onchain_tool_definitions
+            .into_iter()
+            .map(|t| t.into())
+            .collect(),
+        onchain_resource_definitions: args
+            .onchain_resource_definitions
+            .into_iter()
+            .map(|r| r.into())
+            .collect(),
+        onchain_prompt_definitions: args
+            .onchain_prompt_definitions
+            .into_iter()
+            .map(|p| p.into())
+            .collect(),
         full_capabilities_uri: args.full_capabilities_uri,
         tags: args.tags,
     };
 
-    let data = instruction.try_to_vec()
-        .map_err(|e| SdkError::SerializationError(format!("Failed to serialize instruction: {}", e)))?;
+    let data = instruction.try_to_vec().map_err(|e| {
+        SdkError::SerializationError(format!("Failed to serialize instruction: {}", e))
+    })?;
 
     Ok(Instruction {
         program_id: *program_id,
@@ -761,8 +774,9 @@ pub fn create_update_mcp_server_instruction(
         details: patch.into(),
     };
 
-    let data = instruction.try_to_vec()
-        .map_err(|e| SdkError::SerializationError(format!("Failed to serialize instruction: {}", e)))?;
+    let data = instruction.try_to_vec().map_err(|e| {
+        SdkError::SerializationError(format!("Failed to serialize instruction: {}", e))
+    })?;
 
     Ok(Instruction {
         program_id: *program_id,
@@ -785,12 +799,11 @@ pub fn create_update_mcp_server_status_instruction(
         AccountMeta::new_readonly(*owner, true),
     ];
 
-    let instruction = McpServerRegistryInstruction::UpdateMcpServerStatus {
-        new_status: status,
-    };
+    let instruction = McpServerRegistryInstruction::UpdateMcpServerStatus { new_status: status };
 
-    let data = instruction.try_to_vec()
-        .map_err(|e| SdkError::SerializationError(format!("Failed to serialize instruction: {}", e)))?;
+    let data = instruction.try_to_vec().map_err(|e| {
+        SdkError::SerializationError(format!("Failed to serialize instruction: {}", e))
+    })?;
 
     Ok(Instruction {
         program_id: *program_id,
@@ -814,8 +827,9 @@ pub fn create_deregister_mcp_server_instruction(
 
     let instruction = McpServerRegistryInstruction::DeregisterMcpServer;
 
-    let data = instruction.try_to_vec()
-        .map_err(|e| SdkError::SerializationError(format!("Failed to serialize instruction: {}", e)))?;
+    let data = instruction.try_to_vec().map_err(|e| {
+        SdkError::SerializationError(format!("Failed to serialize instruction: {}", e))
+    })?;
 
     Ok(Instruction {
         program_id: *program_id,

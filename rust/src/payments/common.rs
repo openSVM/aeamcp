@@ -10,7 +10,7 @@ use solana_sdk::{
 
 /// Payment system constants and configuration
 /// These values define the economic parameters of the Solana AI Registries payment system.
-/// 
+///
 /// **References:**
 /// - Payment program constraints: [Payment System Documentation](https://docs.solana-ai-registries.org/payment-system)
 /// - Program source: `programs/payment-system/src/lib.rs`

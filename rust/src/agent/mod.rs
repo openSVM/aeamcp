@@ -93,7 +93,7 @@ pub enum AgentRegistryInstruction {
 /// Maximum length constants (from the on-chain program)
 /// These limits are enforced by the Solana AI Registries program to ensure
 /// efficient storage and consistent behavior across the network.
-/// 
+///
 /// **References:**
 /// - On-chain program constraints: [Agent Registry Program Documentation](https://docs.solana-ai-registries.org/program/agent-registry)
 /// - Program source: `programs/agent-registry/src/lib.rs`
@@ -337,15 +337,15 @@ impl From<AgentPatch> for AgentUpdateDetailsInput {
             clear_provider_url: patch.clear_provider_url,
             documentation_url: patch.documentation_url,
             clear_documentation_url: patch.clear_documentation_url,
-            service_endpoints: patch.service_endpoints.map(|endpoints| {
-                endpoints.into_iter().map(|e| e.into()).collect()
-            }),
+            service_endpoints: patch
+                .service_endpoints
+                .map(|endpoints| endpoints.into_iter().map(|e| e.into()).collect()),
             capabilities_flags: patch.capabilities_flags,
             supported_input_modes: patch.supported_input_modes,
             supported_output_modes: patch.supported_output_modes,
-            skills: patch.skills.map(|skills| {
-                skills.into_iter().map(|s| s.into()).collect()
-            }),
+            skills: patch
+                .skills
+                .map(|skills| skills.into_iter().map(|s| s.into()).collect()),
             security_info_uri: patch.security_info_uri,
             clear_security_info_uri: patch.clear_security_info_uri,
             aea_address: patch.aea_address,
@@ -762,7 +762,11 @@ pub fn create_register_agent_instruction(
         provider_name: args.provider_name,
         provider_url: args.provider_url,
         documentation_url: args.documentation_url,
-        service_endpoints: args.service_endpoints.into_iter().map(|e| e.into()).collect(),
+        service_endpoints: args
+            .service_endpoints
+            .into_iter()
+            .map(|e| e.into())
+            .collect(),
         capabilities_flags: args.capabilities_flags,
         supported_input_modes: args.supported_input_modes,
         supported_output_modes: args.supported_output_modes,
@@ -775,8 +779,9 @@ pub fn create_register_agent_instruction(
         tags: args.tags,
     };
 
-    let data = instruction.try_to_vec()
-        .map_err(|e| SdkError::SerializationError(format!("Failed to serialize instruction: {}", e)))?;
+    let data = instruction.try_to_vec().map_err(|e| {
+        SdkError::SerializationError(format!("Failed to serialize instruction: {}", e))
+    })?;
 
     Ok(Instruction {
         program_id: *program_id,
@@ -803,8 +808,9 @@ pub fn create_update_agent_instruction(
         details: patch.into(),
     };
 
-    let data = instruction.try_to_vec()
-        .map_err(|e| SdkError::SerializationError(format!("Failed to serialize instruction: {}", e)))?;
+    let data = instruction.try_to_vec().map_err(|e| {
+        SdkError::SerializationError(format!("Failed to serialize instruction: {}", e))
+    })?;
 
     Ok(Instruction {
         program_id: *program_id,
@@ -827,12 +833,11 @@ pub fn create_update_agent_status_instruction(
         AccountMeta::new_readonly(*owner, true),
     ];
 
-    let instruction = AgentRegistryInstruction::UpdateAgentStatus {
-        new_status: status,
-    };
+    let instruction = AgentRegistryInstruction::UpdateAgentStatus { new_status: status };
 
-    let data = instruction.try_to_vec()
-        .map_err(|e| SdkError::SerializationError(format!("Failed to serialize instruction: {}", e)))?;
+    let data = instruction.try_to_vec().map_err(|e| {
+        SdkError::SerializationError(format!("Failed to serialize instruction: {}", e))
+    })?;
 
     Ok(Instruction {
         program_id: *program_id,
@@ -856,8 +861,9 @@ pub fn create_deregister_agent_instruction(
 
     let instruction = AgentRegistryInstruction::DeregisterAgent;
 
-    let data = instruction.try_to_vec()
-        .map_err(|e| SdkError::SerializationError(format!("Failed to serialize instruction: {}", e)))?;
+    let data = instruction.try_to_vec().map_err(|e| {
+        SdkError::SerializationError(format!("Failed to serialize instruction: {}", e))
+    })?;
 
     Ok(Instruction {
         program_id: *program_id,

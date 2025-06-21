@@ -79,7 +79,8 @@ fn test_deserialize_helper_with_valid_data() {
     data_with_discriminator.extend_from_slice(&serialized);
 
     // Test deserialization
-    let result: SdkResult<TestData> = deserialize_account_data(&data_with_discriminator, "test data");
+    let result: SdkResult<TestData> =
+        deserialize_account_data(&data_with_discriminator, "test data");
     assert!(result.is_ok());
     let deserialized = result.unwrap();
     assert_eq!(deserialized.value, 12345);
@@ -127,15 +128,18 @@ fn test_service_endpoint_validation() {
     let builder = AgentBuilder::new("test-agent", "Test Agent");
 
     // Test valid endpoint
-    let result = builder
-        .add_service_endpoint("https", "https://example.com/api", true);
+    let result = builder.add_service_endpoint("https", "https://example.com/api", true);
     assert!(result.is_ok());
 
     // Test multiple default endpoints (should fail on build)
     let builder = AgentBuilder::new("test-agent", "Test Agent");
-    let builder = builder.add_service_endpoint("https", "https://example.com/api", true).unwrap();
-    let builder = builder.add_service_endpoint("http", "http://example.com/api", true).unwrap();
-    
+    let builder = builder
+        .add_service_endpoint("https", "https://example.com/api", true)
+        .unwrap();
+    let builder = builder
+        .add_service_endpoint("http", "http://example.com/api", true)
+        .unwrap();
+
     // The error should occur when we try to build, not when adding endpoints
     let result = builder.build();
     assert!(result.is_err());
@@ -163,7 +167,7 @@ fn test_skill_validation() {
         assert!(result.is_ok());
         builder = result.unwrap();
     }
-    
+
     // The error should occur when we try to build, not when adding skills
     let result = builder.build();
     assert!(result.is_err());
@@ -183,7 +187,9 @@ struct MockStruct {
 
 #[test]
 fn test_priority_multiplier_validation() {
-    use solana_ai_registries::payments::common::{MAX_PRIORITY_MULTIPLIER, MIN_PRIORITY_MULTIPLIER};
+    use solana_ai_registries::payments::common::{
+        MAX_PRIORITY_MULTIPLIER, MIN_PRIORITY_MULTIPLIER,
+    };
 
     // Test valid range
     assert!(MIN_PRIORITY_MULTIPLIER <= MAX_PRIORITY_MULTIPLIER);
