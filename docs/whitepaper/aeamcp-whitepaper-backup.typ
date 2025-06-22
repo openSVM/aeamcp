@@ -1,3 +1,4 @@
+#let per = 1 + 4 
 // AEAMCP Comprehensive Whitepaper - Academic Format
 #set page(margin: (x: 1in, y: 1in))
 #set text(font: "Libertinus Serif", size: 11pt)
@@ -6,7 +7,8 @@
 
 #align(center)[
   #text(size: 16pt, weight: "bold")[
-    AEAMCP: A Comprehensive Decentralized Registry System for \
+    AEAMCP: A Comp#set text(font: "Buenard")
+rehensive Decentralized Registry System for \
     Autonomous Economic Agents and Model Context Protocol Servers on Solana
   ]
   
@@ -14,6 +16,7 @@
   
   #text(size: 14pt, style: "italic")[
     Foundational Infrastructure for the Autonomous Agent Economy
+#let byte = "byte"
   ]
   
   #v(1em)
@@ -420,7 +423,7 @@ The AEAMCP system implements a sophisticated hybrid storage model that optimizes
 - Real-time update capabilities
 
 *Limitations*:
-- Storage costs ($0.00000348 per byte per epoch)
+- Storage costs (\$0.00000348 per byte per epoch)
 - Size constraints (maximum 10MB per account)
 - Network bandwidth considerations
 
@@ -1565,22 +1568,22 @@ const queryBenchmarks = {
 - Resource utilization at peak load: 67% CPU, 45% Memory
 
 ```yaml
-# k6 load testing configuration
+\# k6 load testing configuration
 stages:
   - duration: 2m
-    target: 1000    # Ramp up to 1000 users
+    target: 1000    \# Ramp up to 1000 users
   - duration: 5m
-    target: 1000    # Stay at 1000 users
+    target: 1000    \# Stay at 1000 users
   - duration: 2m
-    target: 5000    # Ramp up to 5000 users
+    target: 5000    \# Ramp up to 5000 users
   - duration: 5m
-    target: 5000    # Stay at 5000 users
+    target: 5000    \# Stay at 5000 users
   - duration: 2m
-    target: 10000   # Ramp up to 10000 users
+    target: 10000   \# Ramp up to 10000 users
   - duration: 10m
-    target: 10000   # Stay at 10000 users
+    target: 10000   \# Stay at 10000 users
   - duration: 2m
-    target: 0       # Ramp down
+    target: 0       \# Ramp down
 
 thresholds:
   http_req_duration: ["p(95)<200"]
@@ -1854,7 +1857,7 @@ sequenceDiagram
 - Base fee: 0.1% of transfer amount
 - Network congestion multiplier: 1x-3x based on pending transfers
 - Fast track option: 2x fee for priority processing
-- Bulk transfer discounts: Up to 50% reduction for transfers >$10,000
+- Bulk transfer discounts: Up to 50% reduction for transfers >\$10,000
 
 *Fee Distribution*:
 ```
@@ -1923,9 +1926,9 @@ Enterprise Deployment Architecture:
 ```
 
 *Economic Impact*:
-- Total value locked in staking: 2.3M SVMAI (\\$11.5M USD)
-- Monthly transaction volume: \\$450,000 in service payments
-- Platform fees generated: \\$13,500/month
+- Total value locked in staking: 2.3M SVMAI (\$11.5M USD)
+- Monthly transaction volume: \$450,000 in service payments
+- Platform fees generated: \$13,500/month
 - ROI for TechCorp: 340% over 18 months
 
 === Decentralized Content Creation Network
@@ -1996,7 +1999,7 @@ graph TD
 - Average project completion time: 4.7 hours
 - Client satisfaction rate: 91.2%
 - Agent retention rate: 87.4%
-- Revenue per project: \\$847 average
+- Revenue per project: \$847 average
 - Platform utilization: 89.3% of registered agents active monthly
 
 === DeFi Integration: Automated Trading Agents
@@ -2040,7 +2043,7 @@ Algorithmic Trading Ecosystem:
 - Correlation monitoring: Dynamic exposure adjustment
 
 *Financial Performance*:
-- Total assets under management: \\$47.3M
+- Total assets under management: \$47.3M
 - Average annual return: 23.7%
 - Sharpe ratio: 1.84
 - Maximum drawdown: 8.2%
@@ -2215,8 +2218,8 @@ Publication Agents → Impact Assessment Agents
 ```rust
 // Advanced indexing architecture
 pub struct AdvancedAgentIndex {
-    capability_index: HashMap<String, BTreeSet<AgentId>>,
-    reputation_index: BTreeMap<u32, Vec<AgentId>>,
+    capability_index: HashMap<String>, BTreeSet<AgentId>>,
+    reputation_index: BTreeMap<u32>, Vec<AgentId>>,
     location_index: GeospatialIndex<AgentId>,
     semantic_index: VectorIndex<AgentId>,
 }
@@ -2227,11 +2230,11 @@ impl AdvancedAgentIndex {
         query: &str,
         filters: &SearchFilters,
         limit: usize,
-    ) -> Result<Vec<AgentSearchResult>, SearchError> {
+    ) -> Result<Vec><AgentSearchResult>, SearchError> {
         // Implementation of semantic search using vector embeddings
         let query_embedding = self.generate_embedding(query).await?;
         let candidate_agents = self.semantic_index
-            .similarity_search(&query_embedding, limit * 10)?;
+            .similarity_search(&query_embedding, limit ** 10)?;
         
         // Apply additional filters and ranking
         let filtered_results = self.apply_filters(candidate_agents, filters)?;
@@ -2272,7 +2275,7 @@ impl AdvancedAgentIndex {
 interface UniversalAgentInterface {
     // Core agent metadata
     getMetadata(): Promise<AgentMetadata>;
-    getCapabilities(): Promise<AgentCapability[]>;
+    getCapabilities(): Promise<AgentCapability>[]>;
     
     // Cross-chain service invocation
     invokeService(
@@ -2581,31 +2584,29 @@ We are committed to continuing the development, research, and advocacy necessary
 
 The following references provide comprehensive background and supporting research for the concepts, technologies, and methodologies presented in this whitepaper:
 
-#bibliography("references.bib")
-
 = Background and Related Work
 
 == Autonomous Economic Agents
 
-Autonomous Economic Agents (AEAs) represent a paradigm shift in AI system design, combining artificial intelligence with economic reasoning capabilities @fetch-aea-framework. The Agent-to-Agent (A2A) protocol framework provides standardized communication mechanisms enabling autonomous agents to discover, negotiate, and transact with one another @agent-to-agent-protocol.
+Autonomous Economic Agents (AEAs) represent a paradigm shift in AI system design, combining artificial intelligence with economic reasoning capabilities \@fetch-aea-framework. The Agent-to-Agent (A2A) protocol framework provides standardized communication mechanisms enabling autonomous agents to discover, negotiate, and transact with one another \@agent-to-agent-protocol.
 
 Current implementations of autonomous agents primarily rely on centralized coordination mechanisms, creating bottlenecks and single points of failure. Our work extends this foundation by providing decentralized infrastructure specifically designed for agent discovery and economic coordination.
 
 == Model Context Protocol
 
-The Model Context Protocol (MCP) standardizes how AI applications connect to external data sources and tools @mcp-specification. MCP servers provide resources, tools, and prompts that enhance AI capabilities, but existing discovery mechanisms are fragmented and lack standardization.
+The Model Context Protocol (MCP) standardizes how AI applications connect to external data sources and tools \@mcp-specification. MCP servers provide resources, tools, and prompts that enhance AI capabilities, but existing discovery mechanisms are fragmented and lack standardization.
 
 Previous attempts at MCP server registries have been limited to centralized catalogs without economic incentives or verification mechanisms. AEAMCP introduces the first blockchain-based MCP server registry with comprehensive verification and economic coordination.
 
 == Blockchain Infrastructure for AI
 
-Blockchain platforms have been explored for AI coordination, with most work focusing on Ethereum-based solutions @blockchain-ai-survey. However, Ethereum's high transaction costs and limited throughput make it unsuitable for high-frequency agent discovery operations.
+Blockchain platforms have been explored for AI coordination, with most work focusing on Ethereum-based solutions \@blockchain-ai-survey. However, Ethereum's high transaction costs and limited throughput make it unsuitable for high-frequency agent discovery operations.
 
-Solana's unique architecture, featuring parallel transaction processing and low fees, provides an ideal foundation for AI agent infrastructure @solana-whitepaper. Our system leverages Solana's Program Derived Addresses (PDAs) and event-driven architecture to create efficient, secure agent registries.
+Solana's unique architecture, featuring parallel transaction processing and low fees, provides an ideal foundation for AI agent infrastructure \@solana-whitepaper. Our system leverages Solana's Program Derived Addresses (PDAs) and event-driven architecture to create efficient, secure agent registries.
 
 == Decentralized Identity and Reputation
 
-Existing decentralized identity solutions @did-specification often lack domain-specific reputation mechanisms required for AI agent ecosystems. Our approach integrates reputation tracking with economic staking, creating incentive-aligned verification systems.
+Existing decentralized identity solutions \@did-specification often lack domain-specific reputation mechanisms required for AI agent ecosystems. Our approach integrates reputation tracking with economic staking, creating incentive-aligned verification systems.
 
 = System Architecture
 
@@ -2760,7 +2761,7 @@ pub fn process_register_agent(
         program_id,
     );
     
-    if *agent_entry_info.key != expected_pda {
+    if *agent*_entry_\_info_.key != expected_pda {
         return Err(RegistryError::InvalidPDA);
     }
     
@@ -2786,7 +2787,7 @@ pub fn process_register_agent(
     // Data serialization
     let agent_entry = AgentRegistryEntryV1::new(
         bump,
-        *owner_authority_info.key,
+        *owner*_authority_\_info_.key,
         agent_data,
         get_current_timestamp()?,
     );
@@ -2858,8 +2859,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <ConnectionProvider endpoint={endpoint}>
-      <SolanaWalletProvider wallets={wallets} autoConnect>
+    <ConnectionProvider> endpoint={endpoint}>
+      <SolanaWalletProvider> wallets={wallets} autoConnect>
         <WalletModalProvider>
           {children}
         </WalletModalProvider>
@@ -3399,5 +3400,3 @@ We thank the Solana Foundation for providing robust blockchain infrastructure, t
 The AEAMCP project represents a collaborative effort across the blockchain and AI communities, and its success depends on continued collaboration and innovation from diverse contributors worldwide.
 
 == Bibliography
-
-#bibliography("references.bib")
