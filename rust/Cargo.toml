@@ -1,0 +1,49 @@
+[package]
+name = "solana_ai_registries"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.74.0"
+description = "Rust SDK for Solana AI Registries - Agent and MCP Server registries"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/openSVM/aeamcp"
+documentation = "https://docs.rs/solana_ai_registries"
+homepage = "https://github.com/openSVM/aeamcp"
+authors = ["openSVM Team"]
+keywords = ["solana", "blockchain", "ai", "mcp", "agents"]
+categories = ["api-bindings", "cryptography::cryptocurrencies"]
+
+[dependencies]
+# Solana dependencies
+solana-client = "1.18"
+solana-sdk = "1.18"
+solana-program = "1.18"
+
+# SPL dependencies
+spl-token = "4.0"
+spl-associated-token-account = "2.0"
+
+# Serialization
+borsh = "0.10"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Utility
+bs58 = "0.5"
+
+# Development dependencies
+[dev-dependencies]
+tokio = { version = "1.0", features = ["full"] }
+insta = "1.0"
+
+[features]
+default = []
+# Payment flow features
+stream = []
+pyg = []
+prepay = []
+
+[build-dependencies]

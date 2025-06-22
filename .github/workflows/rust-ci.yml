@@ -1,0 +1,75 @@
+name: Rust SDK CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths: 
+      - 'rust/**'
+      - '.github/workflows/rust-ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'rust/**'
+      - '.github/workflows/rust-ci.yml'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Test Rust SDK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./rust
+    
+    strategy:
+      matrix:
+        rust: [stable, beta]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ matrix.rust }}
+        profile: minimal
+        override: true
+        components: rustfmt, clippy
+        
+    - name: Cache cargo registry
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-${{ matrix.rust }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.rust }}-cargo-
+          
+    - name: Check formatting
+      run: cargo fmt -- --check
+      
+    - name: Build with no features
+      run: cargo build --no-default-features
+      
+    - name: Build with all features
+      run: cargo build --all-features
+      
+    - name: Test with no features
+      run: cargo test --no-default-features
+      
+    - name: Test with all features
+      run: cargo test --all-features
+      
+    - name: Test individual features
+      run: |
+        cargo test --features pyg
+        cargo test --features prepay
+        cargo test --features stream
+        
+    - name: Check package can be built
+      run: cargo package --allow-dirty
