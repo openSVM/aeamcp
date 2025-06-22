@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEAMCP Interactive Simulation</title>
+    <style>
+        /* General Body and Font Styling */
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #FFFFFF;
+            color: #262626;
+            margin: 0;
+            padding: 1rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            filter: grayscale(100%) contrast(120%) brightness(0.95);
+        }
+
+        /* Header Styling */
+        header {
+            text-align: center;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #262626;
+            padding-bottom: 1rem;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            margin: 0;
+            font-weight: bold;
+            color: #171717;
+        }
+
+        header p {
+            color: #525252;
+            margin-top: 0.5rem;
+        }
+        
+        /* Main Layout */
+        .container {
+            display: flex;
+            flex-direction: column;
+            md:flex-row;
+            flex-grow: 1;
+            gap: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            .container {
+                flex-direction: row;
+            }
+        }
+
+        /* Simulation Canvas */
+        main {
+            width: 100%;
+            background-color: #f5f5f5;
+            border: 1px solid #737373;
+            border-radius: 0;
+            padding: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        @media (min-width: 768px) {
+            main {
+                width: 66.66%;
+            }
+        }
+        
+        /* Sidebar/Control Panel */
+        aside {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            aside {
+                width: 33.33%;
+            }
+        }
+
+        /* Control Buttons */
+        .controls {
+            background-color: #171717;
+            border-radius: 0;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .control-btn {
+            background-color: #404040;
+            color: #ffffff;
+            border: none;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .control-btn:hover {
+            background-color: #525252;
+        }
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #737373;
+        }
+        .control-btn svg {
+             width: 24px;
+             height: 24px;
+        }
+
+        /* Info Panel */
+        .info-panel {
+            flex-grow: 1;
+            background-color: #f5f5f5;
+            border: 1px solid #737373;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+        }
+        .info-panel-content {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        
+        .info-header {
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #525252;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .info-header h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0;
+            color: #171717;
+        }
+        .info-header svg {
+            width: 24px;
+            height: 24px;
+        }
+        .info-description {
+            font-size: 0.875rem;
+            color: #525252;
+            text-align: justify;
+            margin-top: 0.5rem;
+        }
+        .info-panel h3 {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            color: #262626;
+        }
+        .info-panel ul {
+            padding-left: 1.5rem;
+            margin: 0;
+            list-style: none;
+        }
+        .info-panel ul li {
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: flex-start;
+        }
+        .info-panel ul li::before {
+            content: '✔';
+            margin-right: 0.75rem;
+            color: #262626;
+        }
+        .info-panel .formula {
+            background-color: #e5e5e5;
+            padding: 0.5rem;
+            border-radius: 0;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            border: 1px solid #d4d4d4;
+        }
+        .kpi-grid {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #d4d4d4;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+        .kpi-item {
+            display: flex;
+            justify-content: space-between;
+        }
+        .kpi-label {
+            color: #525252;
+        }
+        .kpi-value {
+            font-weight: bold;
+            color: #171717;
+        }
+
+        /* Simulation Elements */
+        .stage-node {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: transform 0.2s ease;
+        }
+        .stage-node:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        .stage-icon {
+            background-color: #e5e5e5;
+            border: 1px solid #737373;
+            padding: 0.75rem;
+            border-radius: 50%;
+            margin-bottom: 0.25rem;
+        }
+        .stage-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+        .stage-title {
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-align: center;
+        }
+        .agent {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: #171717;
+            border-radius: 50%;
+            transition: all 0.1s linear;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #737373;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>AEAMCP Interactive Simulation</h1>
+        <p>An Agent-Based Economic Model Dashboard</p>
+    </header>
+
+    <div class="container">
+        <main id="simulation-canvas">
+            <svg width="100%" height="100%" style="position:absolute; top:0; left:0; opacity: 0.6;">
+                <!-- Lines will be drawn here by JS -->
+            </svg>
+        </main>
+        <aside>
+            <div class="controls">
+                <button id="start-btn" class="control-btn"></button>
+                <button id="pause-btn" class="control-btn"></button>
+                <button id="reset-btn" class="control-btn"></button>
+            </div>
+            <div id="info-panel" class="info-panel">
+                <!-- Info will be dynamically inserted here -->
+            </div>
+        </aside>
+    </div>
+
+    <footer>
+        <p>Simulating the future of the decentralized AI economy with OpenSVM.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- SVG Icon Functions --- //
+            const getIcon = (name) => {
+                const icons = {
+                    BrainIcon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 0-5.997.142M9 8h7a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2z"/><path d="M12 16a3 3 0 1 1 5.997-.142"/><path d="M12 5a3 3 0 1 1-5.997.142"/><path d="M12 5a3 3 0 1 0 5.997.142"/><path d="M15 8h-3a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h3"/><path d="M9 8a2.12 2.12 0 0 1 2.12-2.12V5a3 3 0 0 0-3 3v4a3 3 0 0 0 3 3v-2.88A2.12 2.12 0 0 1 9 12.01V8Z"/><path d="M15 16a2.12 2.12 0 0 1-2.12 2.12V19a3 3 0 0 0 3-3v-4a3 3 0 0 0-3-3v2.88A2.12 2.12 0 0 1 15 11.99V16Z"/><circle cx="12" cy="12" r="2" /><path d="M4.5 9.5h-1"/><path d="M19.5 9.5h2"/><path d="M4.5 14.5h-1"/><path d="M19.5 14.5h2"/></svg>`,
+                    NetworkIcon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="16" y="16" width="6" height="6" rx="1" /><rect x="2" y="16" width="6" height="6" rx="1" /><rect x="9" y="2" width="6" height="6" rx="1" /><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3" /><path d="M12 12V8" /></svg>`,
+                    ChartIcon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>`,
+                    TargetIcon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
+                    SettingsIcon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>`,
+                    DatabaseIcon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>`,
+                    PlayIcon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>`,
+                    PauseIcon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>`,
+                    RefreshCwIcon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>`
+                };
+                return icons[name] || '';
+            }
+
+            // --- Constants and State Variables --- //
+            const SIMULATION_DATA = [
+                { id: 0, title: "Environment Setup", icon: "SettingsIcon", description: "Initialize the simulation with predefined parameters based on the AEAMCP framework.", details: ["Define N autonomous agents with unique utility functions.", "Set initial token distribution (A²AMPL and SVMAI).", "Configure blockchain environment (e.g., Solana transaction costs).", "Establish starting market prices and reputation scores."], formulas: ["Agent Utility: U_i(a) = π_i(a) - C_i(a)", "Initial State: S_0 = {Agents, Tokens, Prices}"] },
+                { id: 1, title: "Agent Decision Making", icon: "BrainIcon", description: "In each time step, every agent evaluates the market and makes a rational decision to maximize its utility.", details: ["Perceive current state: token prices, available MCP servers, reputation scores.", "Calculate expected utility for actions: Register, Transact, Stake, or Query.", "Select the action with the highest expected payoff.", "Commit decision to the network."], formulas: ["Optimal Action: a*_i = argmax_a U_i(a | S_t)", "Expected Payoff: E[π(a)] = P(success) * Reward"] },
+                { id: 2, title: "Protocol Interaction", icon: "NetworkIcon", description: "Agent decisions are executed as transactions processed by the AEAMCP smart contracts on the simulated blockchain.", details: ["Agent registration fees are paid and state is recorded on-chain.", "MCP server interactions are validated and logged.", "Staking actions lock tokens and calculate future rewards.", "Reputation scores are updated based on successful/failed interactions."], formulas: ["Reputation Update: R_t+1 = R_t + ΔR", "Staking Rewards: R_i(t) = β_i * S_i(t) * T_protocol"] },
+                { id: 3, title: "Economic Update", icon: "ChartIcon", description: "The aggregate effects of agent actions dynamically alter the economic landscape of the ecosystem.", details: ["Token prices adjust based on supply/demand shifts from agent actions.", "Total transaction volume (T) is calculated.", "Token velocities (V_A, V_S) are updated.", "System-wide revenue from fees is calculated."], formulas: ["Equation of Exchange: MV = PT", "Price Update: P_t+1 = f(Demand_t, Supply_t)"] },
+                { id: 4, title: "Data Logging", icon: "DatabaseIcon", description: "Key performance indicators (KPIs) and state variables are recorded at the end of each time step for analysis.", details: ["Log individual agent wealth and token holdings.", "Record global variables: prices, volume, velocity.", "Track protocol health metrics like staking ratios and revenue.", "Store data for visualization and equilibrium checks."], formulas: ["State Log: L_t = {P_t, V_t, T_t, Wealth_i...}", "KPI Tracking: KPI_j,t = g_j(S_t)"] },
+                { id: 5, title: "Equilibrium Analysis", icon: "TargetIcon", description: "The simulation runs until it reaches a terminal state, such as a stable equilibrium or a set number of iterations.", details: ["Analyze logged data to identify trends.", "Check for Nash Equilibrium: Has the system stabilized?", "Verify Economic Sustainability: Is cumulative protocol revenue greater than costs?", "Assess system stability using mathematical models (e.g., Lyapunov functions)."], formulas: ["Nash Equilibrium: U_i(a*_i, a*_-i) >= U_i(a_i, a*_-i)", "Lyapunov Stability: dV/dt <= 0"] }
+            ];
+            const STAGE_POSITIONS = [{ x: '50%', y: '10%' }, { x: '85%', y: '35%' }, { x: '85%', y: '65%' }, { x: '50%', y: '90%' }, { x: '15%', y: '65%' }, { x: '15%', y: '35%' }];
+            const AGENT_COUNT = 20;
+
+            let simulationStatus = 'stopped';
+            let agents = [];
+            let kpis = {};
+            let activeStage = null;
+            let simulationInterval = null;
+
+            // --- DOM Elements --- //
+            const canvas = document.getElementById('simulation-canvas');
+            const infoPanel = document.getElementById('info-panel');
+            const startBtn = document.getElementById('start-btn');
+            const pauseBtn = document.getElementById('pause-btn');
+            const resetBtn = document.getElementById('reset-btn');
+
+            // --- Rendering and Update Functions --- //
+            
+            function updateInfoPanel() {
+                if (!activeStage) {
+                    infoPanel.innerHTML = '<p>Select a stage to view details</p>';
+                    return;
+                }
+                
+                let detailsHtml = activeStage.details.map(d => `<li>${d.replace(/A\^2/g, 'A²')}</li>`).join('');
+                let formulasHtml = activeStage.formulas.map(f => `<div class="formula">${f.replace(/_i/g, 'ᵢ').replace(/_t/g, 'ₜ').replace(/\*/g, '∗').replace(/>=/g, '≥').replace(/<=/g, '≤')}</div>`).join('');
+
+                infoPanel.innerHTML = `
+                    <div class="info-panel-content">
+                        <div class="info-header">
+                            ${getIcon(activeStage.icon)}
+                            <h2>${activeStage.title}</h2>
+                        </div>
+                        <p class="info-description">${activeStage.description}</p>
+                        <h3>Details:</h3>
+                        <ul>${detailsHtml}</ul>
+                        <h3>Key Formulas:</h3>
+                        <div>${formulasHtml}</div>
+                    </div>
+                    <div id="kpi-grid" class="kpi-grid"></div>
+                `;
+                updateKpiDisplay();
+            }
+            
+            function updateKpiDisplay() {
+                const kpiGrid = document.getElementById('kpi-grid');
+                if(!kpiGrid) return;
+                
+                kpiGrid.innerHTML = `
+                    <div class="kpi-item"><span class="kpi-label">Total Transactions:</span><span class="kpi-value">${Math.floor(kpis.transactions)}</span></div>
+                    <div class="kpi-item"><span class="kpi-label">Total Volume:</span><span class="kpi-value">$${kpis.volume.toFixed(2)}</span></div>
+                    <div class="kpi-item"><span class="kpi-label">Staked Value:</span><span class="kpi-value">$${kpis.staked.toFixed(2)}</span></div>
+                    <div class="kpi-item"><span class="kpi-label">Total Revenue:</span><span class="kpi-value">$${kpis.revenueReceived.toFixed(2)}</span></div>
+                    <div class="kpi-item"><span class="kpi-label">Revenue Shared:</span><span class="kpi-value">$${kpis.revenueShared.toFixed(2)}</span></div>
+                    <div class="kpi-item"><span class="kpi-label">Total Profit:</span><span class="kpi-value">$${kpis.profit.toFixed(2)}</span></div>
+                `;
+            }
+
+            function drawStageNodes() {
+                SIMULATION_DATA.forEach(stage => {
+                    const node = document.createElement('div');
+                    node.className = 'stage-node';
+                    node.style.left = STAGE_POSITIONS[stage.id].x;
+                    node.style.top = STAGE_POSITIONS[stage.id].y;
+                    node.innerHTML = `
+                        <div class="stage-icon">${getIcon(stage.icon)}</div>
+                        <div class="stage-title">${stage.title}</div>
+                    `;
+                    node.addEventListener('click', () => {
+                        activeStage = stage;
+                        updateInfoPanel();
+                    });
+                    canvas.appendChild(node);
+                });
+                
+                const svg = canvas.querySelector('svg');
+                let linesHtml = '';
+                STAGE_POSITIONS.forEach((_, index) => {
+                    const start = STAGE_POSITIONS[index];
+                    const end = STAGE_POSITIONS[(index + 1) % STAGE_POSITIONS.length];
+                    linesHtml += `<line x1="${start.x}" y1="${start.y}" x2="${end.x}" y2="${end.y}" stroke="#525252" stroke-width="2" stroke-dasharray="4" />`;
+                });
+                svg.innerHTML = linesHtml;
+            }
+            
+            function drawAgents() {
+                // Clear existing agents
+                canvas.querySelectorAll('.agent').forEach(el => el.remove());
+
+                if (simulationStatus === 'stopped') return;
+                
+                // Draw new agents
+                agents.forEach(agent => {
+                    const agentEl = document.createElement('div');
+                    agentEl.className = 'agent';
+                    const pos = getAgentPosition(agent);
+                    agentEl.style.left = pos.left;
+                    agentEl.style.top = pos.top;
+                    canvas.appendChild(agentEl);
+                });
+            }
+
+            // --- Simulation Logic --- //
+            
+            function initializeSimulation() {
+                simulationStatus = 'stopped';
+                if(simulationInterval) clearInterval(simulationInterval);
+                
+                kpis = {
+                    transactions: 0,
+                    staked: 0,
+                    volume: 0,
+                    revenueReceived: 0,
+                    revenueShared: 0,
+                    profit: 0,
+                    agentsActive: 0,
+                };
+                agents = Array.from({ length: AGENT_COUNT }).map(() => ({
+                    id: Math.random(),
+                    stage: 0,
+                    progress: Math.random(),
+                    speed: 0.005 + Math.random() * 0.005,
+                }));
+                activeStage = SIMULATION_DATA[0];
+                
+                updateButtonStates();
+                updateInfoPanel();
+                drawAgents();
+            }
+
+            function runSimulationStep() {
+                agents = agents.map(agent => {
+                    let newProgress = agent.progress + agent.speed;
+                    let newStage = agent.stage;
+                    if (newProgress >= 1) {
+                        newProgress = 0;
+                        newStage = (agent.stage + 1) % SIMULATION_DATA.length;
+                    }
+                    return { ...agent, progress: newProgress, stage: newStage };
+                });
+                
+                const transactionsThisStep = Math.floor(Math.random() * 3);
+                kpis.transactions += transactionsThisStep;
+                kpis.volume += transactionsThisStep * (100 + Math.random() * 20);
+                const revenueThisStep = transactionsThisStep * (0.1 + Math.random() * 0.15);
+                kpis.revenueReceived += revenueThisStep;
+                kpis.revenueShared = kpis.revenueReceived * 0.70;
+                kpis.profit = kpis.revenueReceived - kpis.revenueShared;
+                kpis.staked += (transactionsThisStep * (1.5 + Math.random()));
+                kpis.agentsActive = AGENT_COUNT;
+                
+                drawAgents();
+                updateKpiDisplay();
+            }
+            
+            function getAgentPosition(agent) {
+                const startPos = STAGE_POSITIONS[agent.stage];
+                const endPos = STAGE_POSITIONS[(agent.stage + 1) % SIMULATION_DATA.length];
+
+                const startX = parseFloat(startPos.x);
+                const startY = parseFloat(startPos.y);
+                const endX = parseFloat(endPos.x);
+                const endY = parseFloat(endPos.y);
+
+                const currentX = startX + (endX - startX) * agent.progress;
+                const currentY = startY + (endY - startY) * agent.progress;
+
+                return { left: `${currentX}%`, top: `${currentY}%` };
+            };
+
+            function updateButtonStates() {
+                startBtn.disabled = simulationStatus === 'running';
+                pauseBtn.disabled = simulationStatus !== 'running';
+            }
+
+            // --- Event Listeners --- //
+            
+            startBtn.addEventListener('click', () => {
+                if (simulationStatus === 'running') return;
+                simulationStatus = 'running';
+                simulationInterval = setInterval(runSimulationStep, 50);
+                updateButtonStates();
+            });
+
+            pauseBtn.addEventListener('click', () => {
+                if (simulationStatus !== 'running') return;
+                simulationStatus = 'paused';
+                clearInterval(simulationInterval);
+                updateButtonStates();
+            });
+
+            resetBtn.addEventListener('click', () => {
+                initializeSimulation();
+            });
+            
+            // --- Initial Setup Call --- //
+            startBtn.innerHTML = getIcon('PlayIcon');
+            pauseBtn.innerHTML = getIcon('PauseIcon');
+            resetBtn.innerHTML = getIcon('RefreshCwIcon');
+            
+            drawStageNodes();
+            initializeSimulation();
+
+        });
+    </script>
+</body>
+</html>
