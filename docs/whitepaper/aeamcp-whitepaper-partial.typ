@@ -1,3 +1,4 @@
+#let per = "Hello" 
 // AEAMCP Comprehensive Whitepaper - Academic Format
 #set page(margin: (x: 1in, y: 1in))
 #set text(font: "Libertinus Serif", size: 11pt)
@@ -420,7 +421,7 @@ The AEAMCP system implements a sophisticated hybrid storage model that optimizes
 - Real-time update capabilities
 
 *Limitations*:
-- Storage costs ($0.00000348 per byte per epoch)
+- Storage costs (\$0.00000348 per byte per epoch)
 - Size constraints (maximum 10MB per account)
 - Network bandwidth considerations
 
@@ -1013,10 +1014,11 @@ Therefore: $"Cost"(S_"attack") = S_"attack" dot (1 + rho dot t)$
 This linear relationship proves Sybil attacks cost proportionally to impact, eliminating economic incentives.
 
 *Slashing Conditions*:
-- Service violations: $"penalty" = min(stake, "damage"_"claimed")$
-- Fraudulent behavior: $"slash"_"rate" = 0.1$ to $0.5$ of stake
-- Reputation degradation: $"reward"_"reduction" = (1 - "reputation"_"score")$
-- Recovery mechanism: $"recovery"_"time" = 30$ to $180$ days based on violation severity
+- Service violations: 
+$S_"penalty"$ = min(stake, "damage"__"claimed")
+- Fraudulent behavior: $S_"slash"_"rate" = 0.1$ to $0.5$ of stake
+- Reputation degradation: $S_"reward"_"reduction" = (1 - "reputation"_"score")$
+- Recovery mechanism: $S_"recovery"_"time" = 30$ to $180$ days based on violation severity
 
 ==== Fee Structure and Revenue Model
 
@@ -1029,14 +1031,15 @@ The optimal fee structure solves the optimization problem:
 $ max_f "Revenue"(f) dot "Adoption"(f) - "Cost"(f) $
 
 Where:
-- $"Revenue"(f) = f dot "Volume"(f)$
-- $"Adoption"(f) = A_0 dot e^(-alpha f)$ (exponential decay with fees)
-- $"Cost"(f) = C_"fixed" + C_"variable" dot f$
+- $S_"Revenue"(f) = f dot "Volume"(f)$
+- $S_"Adoption"(f) = A_0 dot e^(-alpha f)$ (exponential decay with fees)
+- $S_"Cost"(f) = C_"fixed" + C_"variable" dot f$
 
 *First-Order Condition*:
-$ (partial)/(partial f) [f dot A_0 dot e^(-alpha f) - C_"fixed" - C_"variable" dot f] = 0 $
+$ (partial)/(partial f) [f dot A_0 dot e^(-alpha f) - C_"fixed" - "variable" dot f = 0 $
 
-*Optimal Fee*: $f^* = (1 slash alpha) - C_v slash (A_0 dot e^(-alpha f^*))$
+*Optimal Fee*: 
+$f^* = (1 slash alpha) - C_v slash (A_0 dot e^(-alpha f^*))$
 
 ==== Dynamic Fee Adjustment Mechanism
 
@@ -1060,10 +1063,14 @@ Revenue allocation optimizes for sustainability using weighted distribution:
 $ "Allocation"_i = R_"total" dot w_i dot "adjustment"_i $
 
 *Revenue Distribution*:
-- 40% to SVMAI stakers: $R_"stakers" = 0.4 dot R_"total" dot "stake"_"weight"$
-- 30% to platform development: $R_"dev" = 0.3 dot R_"total" dot "priority"_"factor"$ 
-- 20% to ecosystem fund: $R_"eco" = 0.2 dot R_"total" dot "growth"_"multiplier"$
-- 10% to community grants: $R_"grants" = 0.1 dot R_"total" dot A_"score"$
+- 40% to SVMAI stakers: 
+$R_"stakers" = 0.4 dot R_"total" dot "stake"_"weight"$
+- 30% to platform development: 
+$R_"dev" = 0.3 dot R_"total" dot "priority"_"factor"$ 
+- 20% to ecosystem fund: $
+R_"eco" = 0.2 dot R_"total" dot "growth"_"multiplier"$
+- 10% to community grants: 
+$R_"grants" = 0.1 dot R_"total" dot A_"score"$
 
 ==== Proof of Economic Sustainability
 
@@ -1675,22 +1682,22 @@ const queryBenchmarks = {
 - Resource utilization at peak load: 67% CPU, 45% Memory
 
 ```yaml
-# k6 load testing configuration
+\# k6 load testing configuration
 stages:
   - duration: 2m
-    target: 1000    # Ramp up to 1000 users
+    target: 1000    \# Ramp up to 1000 users
   - duration: 5m
-    target: 1000    # Stay at 1000 users
+    target: 1000    \# Stay at 1000 users
   - duration: 2m
-    target: 5000    # Ramp up to 5000 users
+    target: 5000    \# Ramp up to 5000 users
   - duration: 5m
-    target: 5000    # Stay at 5000 users
+    target: 5000    \# Stay at 5000 users
   - duration: 2m
-    target: 10000   # Ramp up to 10000 users
+    target: 10000   \# Ramp up to 10000 users
   - duration: 10m
-    target: 10000   # Stay at 10000 users
+    target: 10000   \# Stay at 10000 users
   - duration: 2m
-    target: 0       # Ramp down
+    target: 0       \# Ramp down
 
 thresholds:
   http_req_duration: ["p(95)<200"]
@@ -1964,7 +1971,7 @@ sequenceDiagram
 - Base fee: 0.1% of transfer amount
 - Network congestion multiplier: 1x-3x based on pending transfers
 - Fast track option: 2x fee for priority processing
-- Bulk transfer discounts: Up to 50% reduction for transfers >$10,000
+- Bulk transfer discounts: Up to 50% reduction for transfers >\$10,000
 
 *Fee Distribution*:
 ```
@@ -2033,9 +2040,9 @@ Enterprise Deployment Architecture:
 ```
 
 *Economic Impact*:
-- Total value locked in staking: 2.3M SVMAI (\\$11.5M USD)
-- Monthly transaction volume: \\$450,000 in service payments
-- Platform fees generated: \\$13,500/month
+- Total value locked in staking: 2.3M SVMAI (\$11.5M USD)
+- Monthly transaction volume: \$450,000 in service payments
+- Platform fees generated: \$13,500/month
 - ROI for TechCorp: 340% over 18 months
 
 === Decentralized Content Creation Network
@@ -2106,7 +2113,7 @@ graph TD
 - Average project completion time: 4.7 hours
 - Client satisfaction rate: 91.2%
 - Agent retention rate: 87.4%
-- Revenue per project: \\$847 average
+- Revenue per project: \$847 average
 - Platform utilization: 89.3% of registered agents active monthly
 
 === DeFi Integration: Automated Trading Agents
@@ -2150,7 +2157,7 @@ Algorithmic Trading Ecosystem:
 - Correlation monitoring: Dynamic exposure adjustment
 
 *Financial Performance*:
-- Total assets under management: \\$47.3M
+- Total assets under management: \$47.3M
 - Average annual return: 23.7%
 - Sharpe ratio: 1.84
 - Maximum drawdown: 8.2%
@@ -2325,8 +2332,8 @@ Publication Agents → Impact Assessment Agents
 ```rust
 // Advanced indexing architecture
 pub struct AdvancedAgentIndex {
-    capability_index: HashMap<String, BTreeSet<AgentId>>,
-    reputation_index: BTreeMap<u32, Vec<AgentId>>,
+    capability_index: HashMap<String>, BTreeSet<AgentId>>,
+    reputation_index: BTreeMap<u32>, Vec<AgentId>>,
     location_index: GeospatialIndex<AgentId>,
     semantic_index: VectorIndex<AgentId>,
 }
@@ -2337,11 +2344,11 @@ impl AdvancedAgentIndex {
         query: &str,
         filters: &SearchFilters,
         limit: usize,
-    ) -> Result<Vec<AgentSearchResult>, SearchError> {
+    ) -> Result<Vec><AgentSearchResult>, SearchError> {
         // Implementation of semantic search using vector embeddings
         let query_embedding = self.generate_embedding(query).await?;
         let candidate_agents = self.semantic_index
-            .similarity_search(&query_embedding, limit * 10)?;
+            .similarity_search(&query_embedding, limit ** 10)?;
         
         // Apply additional filters and ranking
         let filtered_results = self.apply_filters(candidate_agents, filters)?;
@@ -2382,7 +2389,7 @@ impl AdvancedAgentIndex {
 interface UniversalAgentInterface {
     // Core agent metadata
     getMetadata(): Promise<AgentMetadata>;
-    getCapabilities(): Promise<AgentCapability[]>;
+    getCapabilities(): Promise<AgentCapability>[]>;
     
     // Cross-chain service invocation
     invokeService(
@@ -2691,7 +2698,7 @@ We are committed to continuing the development, research, and advocacy necessary
 
 The following references provide comprehensive background and supporting research for the concepts, technologies, and methodologies presented in this whitepaper:
 
-#bibliography("references.bib")
+//#bibliography("references.bib")
 
 = Background and Related Work
 
@@ -2870,7 +2877,7 @@ pub fn process_register_agent(
         program_id,
     );
     
-    if *agent_entry_info.key != expected_pda {
+    if *agent*_entry__info_.key != expected_pda {
         return Err(RegistryError::InvalidPDA);
     }
     
@@ -2896,7 +2903,7 @@ pub fn process_register_agent(
     // Data serialization
     let agent_entry = AgentRegistryEntryV1::new(
         bump,
-        *owner_authority_info.key,
+        *owner*_authority__info_.key,
         agent_data,
         get_current_timestamp()?,
     );
@@ -2968,8 +2975,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <ConnectionProvider endpoint={endpoint}>
-      <SolanaWalletProvider wallets={wallets} autoConnect>
+    <ConnectionProvider> endpoint={endpoint}>
+      <SolanaWalletProvider> wallets={wallets} autoConnect>
         <WalletModalProvider>
           {children}
         </WalletModalProvider>
