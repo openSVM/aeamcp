@@ -1,21 +1,37 @@
-#import "@preview/ieee:0.1.0": ieee
+// AEAMCP Whitepaper - Academic Format
+#set page(margin: (x: 1in, y: 1in))
+#set text(font: "Libertinus Serif", size: 11pt)
+#set par(justify: true, leading: 0.65em)
+#set heading(numbering: "1.")
 
-#show: ieee.with(
-  title: [AEAMCP: A Comprehensive Decentralized Registry System for Autonomous Economic Agents and Model Context Protocol Servers on Solana],
-  abstract: [
-    The emergence of autonomous economic agents and large language model (LLM) applications has created an urgent need for decentralized discovery and verification infrastructure. This paper presents the Autonomous Economic Agent Model Context Protocol (AEAMCP), a comprehensive on-chain registry system built on the Solana blockchain that enables secure, scalable, and economically incentivized registration of AI agents and Model Context Protocol (MCP) servers. Our system introduces novel mechanisms for agent verification, reputation tracking, and economic interactions through a native utility token (A2AMPL/SVMAI). The implementation features hybrid data storage, event-driven architecture, and comprehensive security measures with 100% protocol compliance. Performance evaluation demonstrates the system's ability to handle high-throughput discovery operations while maintaining security and decentralization. We present detailed technical specifications, security analysis, and economic modeling that establishes AEAMCP as a foundational infrastructure for the emerging autonomous agent economy.
-  ],
-  authors: (
-    (
-      name: "OpenSVM Research Team",
-      organization: [OpenSVM],
-      location: [Worldwide],
-      email: "rin@opensvm.com"
-    ),
-  ),
-  index-terms: ("Autonomous Economic Agents", "Blockchain", "Solana", "Model Context Protocol", "Decentralized Registry", "AI Infrastructure"),
-  bibliography: bibliography("references.bib"),
-)
+#align(center)[
+  #text(size: 16pt, weight: "bold")[
+    AEAMCP: A Comprehensive Decentralized Registry System for \
+    Autonomous Economic Agents and Model Context Protocol Servers on Solana
+  ]
+  
+  #v(1em)
+  
+  #text(size: 12pt)[
+    OpenSVM Research Team \
+    OpenSVM \
+    rin\@opensvm.com
+  ]
+  
+  #v(1em)
+  
+  #text(size: 10pt, style: "italic")[
+    Keywords: Autonomous Economic Agents, Blockchain, Solana, Model Context Protocol, Decentralized Registry, AI Infrastructure
+  ]
+]
+
+#v(2em)
+
+== Abstract
+
+The emergence of autonomous economic agents and large language model (LLM) applications has created an urgent need for decentralized discovery and verification infrastructure. This paper presents the Autonomous Economic Agent Model Context Protocol (AEAMCP), a comprehensive on-chain registry system built on the Solana blockchain that enables secure, scalable, and economically incentivized registration of AI agents and Model Context Protocol (MCP) servers. Our system introduces novel mechanisms for agent verification, reputation tracking, and economic interactions through a native utility token (A2AMPL/SVMAI). The implementation features hybrid data storage, event-driven architecture, and comprehensive security measures with 100% protocol compliance. Performance evaluation demonstrates the system's ability to handle high-throughput discovery operations while maintaining security and decentralization. We present detailed technical specifications, security analysis, and economic modeling that establishes AEAMCP as a foundational infrastructure for the emerging autonomous agent economy.
+
+#v(1em)
 
 = Introduction
 
@@ -568,9 +584,9 @@ AEAMCP leverages Solana's high-performance architecture to achieve industry-lead
 - Status Updates: ~0.001 SOL cost, 200ms confirmation time
 
 *Query Operations*:
-- Single Agent Lookup: <50ms average response time
-- Filtered Agent Search: <200ms for 1000+ results
-- Event Stream Processing: Real-time (<100ms latency)
+- Single Agent Lookup: Less than 50ms average response time
+- Filtered Agent Search: Less than 200ms for 1000+ results
+- Event Stream Processing: Real-time (less than 100ms latency)
 
 === Scalability Metrics
 
@@ -583,7 +599,7 @@ The system demonstrates linear scalability with the Solana network:
 
 *Actual Performance* (Devnet Testing):
 - Sustained Registration Rate: 100 TPS
-- Query Response Time: 95th percentile <500ms
+- Query Response Time: 95th percentile less than 500ms
 - Event Processing Latency: Average 150ms
 
 === Resource Utilization
@@ -613,10 +629,10 @@ The system demonstrates linear scalability with the Solana network:
 
 | Platform | TPS | Cost/Tx | Confirmation Time | Agent Registry |
 |----------|-----|---------|-------------------|----------------|
-| AEAMCP/Solana | 65K | $0.001 | 400ms | Native |
-| Ethereum | 15 | $20+ | 15s | None |
-| Polygon | 7K | $0.01 | 2s | None |
-| BSC | 100 | $0.05 | 3s | None |
+| AEAMCP/Solana | 65K | \$0.001 | 400"ms" | Native |
+| Ethereum | 15 | \$20+ | 15"s" | None |
+| Polygon | 7K | \$0.01 | 2"s" | None |
+| BSC | 100 | \$0.05 | 3"s" | None |
 
 The comparison demonstrates AEAMCP's significant advantages in cost, speed, and specialized functionality for AI agent ecosystems.
 
@@ -846,3 +862,7 @@ We invite researchers, developers, and industry practitioners to engage with the
 We thank the Solana Foundation for providing robust blockchain infrastructure, the open source community for tools and libraries that made this work possible, and the early adopters and testers who provided valuable feedback during development. Special recognition goes to the security auditors who identified critical improvements and helped ensure production readiness.
 
 The AEAMCP project represents a collaborative effort across the blockchain and AI communities, and its success depends on continued collaboration and innovation from diverse contributors worldwide.
+
+== Bibliography
+
+#bibliography("references.bib", style: "ieee")
