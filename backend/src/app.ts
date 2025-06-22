@@ -6,8 +6,10 @@ import { GitHubAuthService } from './services/github-auth.service';
 import { GitCloneService } from './services/git-clone.service';
 import { CacheService } from './services/cache.service';
 import { DatabaseService } from './services/database.service';
+import { SolanaAuthService } from './services/solana-auth.service';
 import { AnalysisController } from './controllers/analysis.controller';
 import { createAnalysisRoutes } from './routes/analysis.routes';
+import { optionalSolanaAuth } from './middleware/solana-auth.middleware';
 import { Logger } from './utils/logger';
 
 export class App {
@@ -18,6 +20,7 @@ export class App {
   private cache: CacheService;
   private db: DatabaseService;
   private githubAuth: GitHubAuthService;
+  private solanaAuth: SolanaAuthService;
   private gitClone: GitCloneService;
   private analysisController: AnalysisController;
 
@@ -43,6 +46,18 @@ export class App {
       },
       this.cache,
       this.db
+    );
+
+    // Initialize Solana authentication service
+    this.solanaAuth = new SolanaAuthService(
+      {
+        rpcEndpoint: process.env.SOLANA_RPC_ENDPOINT || 'https://api.devnet.solana.com',
+        registryProgramId: process.env.SOLANA_REGISTRY_PROGRAM_ID || '2CyuaQMyxJNg637bYSR1ZhwfDFd3ssCvTJHMBTbCH8D4',
+        maxSignatureAge: parseInt(process.env.SOLANA_MAX_SIGNATURE_AGE || '300'),
+        accessCacheTtl: parseInt(process.env.SOLANA_ACCESS_CACHE_TTL || '60'),
+        enableSignatureVerification: process.env.NODE_ENV !== 'development' || process.env.SOLANA_ENABLE_SIGNATURE_VERIFICATION === 'true'
+      },
+      this.cache
     );
 
     // Initialize Git cloning service
@@ -83,7 +98,16 @@ export class App {
       origin: process.env.FRONTEND_URL || 'http://localhost:3000',
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'x-user-id'],
+      allowedHeaders: [
+        'Content-Type', 
+        'Authorization', 
+        'x-user-id',
+        // Solana authentication headers
+        'x-solana-signature',
+        'x-solana-pubkey',
+        'x-solana-timestamp',
+        'x-solana-nonce'
+      ],
     }));
 
     // Rate limiting
@@ -133,6 +157,7 @@ export class App {
           services: {
             database: dbHealth ? 'healthy' : 'unhealthy',
             cache: cacheStats.keys >= 0 ? 'healthy' : 'unhealthy',
+            solana: 'healthy', // Basic check - could be enhanced
           },
           cache: {
             keys: cacheStats.keys,
@@ -152,16 +177,44 @@ export class App {
       res.json({
         name: 'AEAMCP Git Registration API',
         version: '1.0.0',
-        description: 'Intelligent Git-based MCP server registration system',
+        description: 'Intelligent Git-based MCP server registration system with Solana wallet authentication',
         endpoints: {
           analysis: '/api/v1/git',
+          protected: '/api/v1/protected',
           health: '/health',
         },
+        authentication: {
+          solana: {
+            enabled: true,
+            headers: ['x-solana-signature', 'x-solana-pubkey', 'x-solana-timestamp', 'x-solana-nonce'],
+            description: 'Solana wallet signature-based authentication'
+          }
+        }
       });
     });
 
-    // Analysis routes
-    this.app.use('/api/v1/git', createAnalysisRoutes(this.analysisController));
+    // Analysis routes with optional Solana authentication
+    this.app.use('/api/v1/git', optionalSolanaAuth(this.solanaAuth), createAnalysisRoutes(this.analysisController));
+
+    // Protected routes that require Solana authentication
+    this.app.use('/api/v1/protected', optionalSolanaAuth(this.solanaAuth));
+    
+    // Example protected endpoint
+    this.app.get('/api/v1/protected/profile', (req, res) => {
+      if (!req.solanaAuth) {
+        return res.status(401).json({
+          error: 'Solana wallet authentication required',
+          code: 'AUTHENTICATION_REQUIRED'
+        });
+      }
+
+      res.json({
+        message: 'Access granted to protected resource',
+        wallet: req.solanaAuth.walletAddress,
+        accessLevel: req.solanaAuth.accessResult.metadata?.accessType || 'basic',
+        verifiedAt: req.solanaAuth.verifiedAt
+      });
+    });
 
     // GitHub webhook endpoint (for future implementation)
     this.app.post('/webhooks/github', (req, res) => {
