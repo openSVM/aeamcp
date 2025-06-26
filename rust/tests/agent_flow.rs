@@ -3,7 +3,7 @@
 //! This module contains comprehensive tests for agent registry operations,
 //! covering all CRUD operations and edge cases as specified in the requirements.
 
-use solana_ai_registries::{
+use aeamcp-sdk::{
     agent::{
         AgentPatch, AgentRegistry, MAX_AGENT_DESCRIPTION_LEN, MAX_AGENT_ID_LEN, MAX_AGENT_NAME_LEN,
     },
