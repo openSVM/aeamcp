@@ -195,7 +195,7 @@ export const SVMAI_TOKEN_PROGRAM_ID = new PublicKey(
 
 // A2AMPL Token Configuration (network-specific)
 const A2AMPL_TOKEN_MINT_MAINNET = 'Cpzvdx6pppc9TNArsGsqgShCsKC9NCCjA2gtzHvUpump';
-const A2AMPL_TOKEN_MINT_DEVNET = 'A2AMPLyncKHwfSnwRNsJ2qsjsetgo9fGkP8YZPsDZ9mE';
+const A2AMPL_TOKEN_MINT_DEVNET = 'Cpzvdx6pppc9TNArsGsqgShCsKC9NCCjA2gtzHvUpump'; //'A2AMPLyncKHwfSnwRNsJ2qsjsetgo9fGkP8YZPsDZ9mE';
 
 // Get the appropriate token mint based on network
 function getA2amplTokenMint(): string {
@@ -293,8 +293,7 @@ export const SEARCH_DEBOUNCE_MS = 300;
 export const EXTERNAL_LINKS = {
   SOLANA_DOCS: 'https://docs.solana.com',
   GITHUB: 'https://github.com/openSVM/aeamcp',
-  DISCORD: 'https://discord.gg/aeamcp',
-  TWITTER: 'https://twitter.com/aeamcp',
+  TWITTER: 'https://twitter.com/sola2a_mcp',
   SOLSCAN_TOKEN: `https://solscan.io/token/Cpzvdx6pppc9TNArsGsqgShCsKC9NCCjA2gtzHvUpump`,
   JUPITER_SWAP: `https://jup.ag/swap/SOL-Cpzvdx6pppc9TNArsGsqgShCsKC9NCCjA2gtzHvUpump`,
   RAYDIUM_POOL: `https://raydium.io/swap/?inputCurrency=sol&outputCurrency=Cpzvdx6pppc9TNArsGsqgShCsKC9NCCjA2gtzHvUpump`,
