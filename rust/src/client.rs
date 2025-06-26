@@ -6,7 +6,6 @@
 use crate::agent::{AgentArgs, AgentEntry, AgentPatch};
 use crate::errors::{SdkError, SdkResult};
 use crate::mcp::{McpServerArgs, McpServerEntry, McpServerPatch};
-use borsh::BorshDeserialize;
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::{
     commitment_config::CommitmentConfig,
