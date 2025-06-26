@@ -8,10 +8,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 /// Agent Registry IDL
-pub const AGENT_REGISTRY_IDL: &str = include_str!("../../idl/agent_registry.json");
+pub const AGENT_REGISTRY_IDL: &str = include_str!("../idl/agent_registry.json");
 
 /// MCP Server Registry IDL  
-pub const MCP_SERVER_REGISTRY_IDL: &str = include_str!("../../idl/mcp_server_registry.json");
+pub const MCP_SERVER_REGISTRY_IDL: &str = include_str!("../idl/mcp_server_registry.json");
 
 /// Parsed IDL structure
 #[derive(Debug, Clone, Serialize, Deserialize)]
