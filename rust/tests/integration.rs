@@ -3,7 +3,7 @@
 //! These tests demonstrate edge case handling with stubbed RPC responses
 //! to validate SDK behavior without requiring a live Solana cluster.
 
-use solana_ai_registries::{
+use aeamcp-sdk::{
     deserialize_account_data, AgentBuilder, SdkError, SdkResult, SolanaAiRegistriesClient,
 };
 
