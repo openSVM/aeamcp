@@ -5,7 +5,7 @@ on:
     types: [published]
   push:
     tags:
-      - 'rust-v*'  # Triggers on tags like rust-v0.1.0, rust-v1.0.0, etc.
+      - 'sdk/rust/v*'  # Triggers on tags like sdk/rust/v0.1.0, sdk/rust/v1.0.0, etc.
 
 env:
   CARGO_TERM_COLOR: always
@@ -63,6 +63,6 @@ jobs:
       run: cargo package
       
     - name: Publish to crates.io
-      run: cargo publish --token ${{ secrets.CRATES_TOKEN }}
+      run: cargo publish --token ${{ secrets.CARGO_API_KEY }}
       env:
-        CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_TOKEN }}
+        CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_API_KEY }}

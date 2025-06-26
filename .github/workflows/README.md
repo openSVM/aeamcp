@@ -26,7 +26,7 @@ This repository includes automated GitHub Actions workflows for the Rust SDK loc
 
 **Triggers:**
 - New GitHub releases
-- Tags matching pattern `rust-v*` (e.g., `rust-v0.1.0`, `rust-v1.2.0`)
+- Tags matching pattern `sdk/rust/v*` (e.g., `sdk/rust/v0.1.0`, `sdk/rust/v1.2.0`)
 
 **What it does:**
 - Validates code quality (formatting, building, testing)
@@ -40,7 +40,7 @@ This repository includes automated GitHub Actions workflows for the Rust SDK loc
 
 To enable automatic publishing, you need to configure:
 
-1. **`CRATES_TOKEN`** - Your crates.io API token
+1. **`CARGO_API_KEY`** - Your crates.io API token
    - Go to [crates.io/me](https://crates.io/me)
    - Generate a new token with publish permissions
    - Add as repository secret in GitHub Settings → Secrets and variables → Actions
@@ -52,10 +52,10 @@ To enable automatic publishing, you need to configure:
 1. **For releases:**
    ```bash
    # Create and push a new tag
-   git tag rust-v0.1.1
-   git push origin rust-v0.1.1
+   git tag sdk/rust/v0.1.1
+   git push origin sdk/rust/v0.1.1
    
-   # Or create a GitHub release with tag rust-v0.1.1
+   # Or create a GitHub release with tag sdk/rust/v0.1.1
    ```
 
 2. **For GitHub releases:**
@@ -68,7 +68,7 @@ For development or testing:
 
 ```bash
 cd rust
-export CRATES_TOKEN=your_token_here
+export CARGO_API_KEY=your_token_here
 cargo publish
 ```
 
@@ -136,7 +136,7 @@ cargo package --allow-dirty
    - Ensure dependencies are properly feature-gated
 
 3. **Publishing failures:**
-   - Verify `CRATES_TOKEN` secret is configured
+   - Verify `CARGO_API_KEY` secret is configured
    - Check that version in `Cargo.toml` hasn't been published before
    - Ensure all required metadata is present in `Cargo.toml`
 
@@ -156,5 +156,5 @@ The SDK uses semantic versioning:
 When publishing:
 1. Update version in `rust/Cargo.toml`
 2. Update documentation if needed
-3. Create tag with format `rust-vX.Y.Z`
+3. Create tag with format `sdk/rust/vX.Y.Z`
 4. Push tag to trigger publishing workflow
