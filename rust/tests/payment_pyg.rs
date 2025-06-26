@@ -4,7 +4,7 @@
 //! including compute unit budgets and balance assertions.
 
 #[cfg(feature = "pyg")]
-use solana_ai_registries::{
+use aeamcp-sdk::{
     payments::{
         common::{A2AMPL_BASE_UNIT, MIN_SERVICE_FEE, MIN_TOOL_FEE},
         pyg::{estimate_pyg_cost, PygPaymentArgs, PygPaymentClient, PygServiceType},
