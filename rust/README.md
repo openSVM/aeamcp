@@ -237,7 +237,7 @@ This project includes automated GitHub Actions workflows for publishing to crate
 
 The SDK is automatically published to crates.io when:
 - A new release is created on GitHub
-- A tag matching the pattern `rust-v*` is pushed (e.g., `rust-v0.1.0`, `rust-v1.2.0`)
+- A tag matching the pattern `sdk/rust/v*` is pushed (e.g., `sdk/rust/v0.1.0`, `sdk/rust/v1.2.0`)
 
 ### Required Setup
 
@@ -249,7 +249,7 @@ To enable automatic publishing, repository maintainers need to:
 
 2. **Add the token as a GitHub secret**:
    - Go to repository Settings → Secrets and variables → Actions
-   - Create a new secret named `CRATES_TOKEN`
+   - Create a new secret named `CARGO_API_KEY`
    - Paste the crates.io API token as the value
 
 ### Manual Publishing
@@ -266,7 +266,7 @@ cargo test --all-features
 # Build and package
 cargo package
 
-# Publish to crates.io (requires CRATES_TOKEN environment variable)
+# Publish to crates.io (requires CARGO_API_KEY environment variable)
 cargo publish
 ```
 
