@@ -7,6 +7,7 @@ import { PublicKey, Transaction } from '@solana/web3.js';
 import { toast } from 'react-hot-toast';
 import { tokenRegistryService, AgentRegistrationData, TokenBalance } from '@/lib/solana/token-registry';
 import { SVMAI_REGISTRATION_FEE_AGENT, SVMAI_TOKEN_SYMBOL } from '@/lib/constants';
+import { useI18nContext } from '@/components/common/I18nProvider';
 import Link from 'next/link';
 
 interface AgentFormData {
@@ -53,6 +54,7 @@ const initialFormData: AgentFormData = {
 };
 
 export default function RegisterAgentPage() {
+  const { t } = useI18nContext();
   const router = useRouter();
   const { publicKey, connected, signTransaction } = useWallet();
   const [formData, setFormData] = useState<AgentFormData>(initialFormData);
@@ -272,7 +274,7 @@ export default function RegisterAgentPage() {
 
   const renderStep1 = () => (
     <div className="space-y-6">
-      <h3 className="ascii-subsection-title">BASIC INFORMATION</h3>
+      <h3 className="ascii-subsection-title">{t('agent.register.step1.title')}</h3>
       
       <div>
         <label className="ascii-label">AGENT ID *</label>
@@ -670,14 +672,14 @@ export default function RegisterAgentPage() {
       <div className="mb-8">
         <div className="flex items-center gap-4 mb-4">
           <Link href="/agents" className="ascii-link">
-            ← BACK TO AGENTS
+            ← {t('agent.register.back')}
           </Link>
         </div>
         <h1 className="ascii-section-title text-3xl mb-2">
-          REGISTER AI AGENT
+          {t('agent.register.title')}
         </h1>
         <p className="ascii-body-text">
-          Register your AI agent on the Solana blockchain with {SVMAI_TOKEN_SYMBOL} token payment
+          {t('agent.register.subtitle')}
         </p>
       </div>
 
@@ -774,10 +776,10 @@ export default function RegisterAgentPage() {
           ))}
         </div>
         <div className="flex justify-between mt-2 text-xs">
-          <span className={currentStep === 1 ? 'font-bold' : ''}>BASIC INFO</span>
-          <span className={currentStep === 2 ? 'font-bold' : ''}>PROVIDER</span>
-          <span className={currentStep === 3 ? 'font-bold' : ''}>SKILLS</span>
-          <span className={currentStep === 4 ? 'font-bold' : ''}>ADDITIONAL</span>
+          <span className={currentStep === 1 ? 'font-bold' : ''}>{t('agent.register.steps.basic')}</span>
+          <span className={currentStep === 2 ? 'font-bold' : ''}>{t('agent.register.steps.provider')}</span>
+          <span className={currentStep === 3 ? 'font-bold' : ''}>{t('agent.register.steps.skills')}</span>
+          <span className={currentStep === 4 ? 'font-bold' : ''}>{t('agent.register.steps.additional')}</span>
         </div>
       </div>
 
@@ -797,7 +799,7 @@ export default function RegisterAgentPage() {
           disabled={currentStep === 1}
           className="ascii-button-secondary"
         >
-          [← PREVIOUS]
+          [← {t('agent.register.buttons.previous')}]
         </button>
         
         {currentStep < 4 ? (
@@ -812,7 +814,7 @@ export default function RegisterAgentPage() {
             }}
             className="ascii-button-primary"
           >
-            [NEXT →]
+            [{t('agent.register.buttons.next')} →]
           </button>
         ) : (
           <button
@@ -833,8 +835,8 @@ export default function RegisterAgentPage() {
             }
           >
             {loading
-              ? '[REGISTERING...]'
-              : `[REGISTER AGENT - ${SVMAI_REGISTRATION_FEE_AGENT} ${SVMAI_TOKEN_SYMBOL}]`
+              ? `[${t('agent.register.buttons.registering')}]`
+              : `[${t('agent.register.buttons.register')} - ${SVMAI_REGISTRATION_FEE_AGENT} ${SVMAI_TOKEN_SYMBOL}]`
             }
           </button>
         )}
