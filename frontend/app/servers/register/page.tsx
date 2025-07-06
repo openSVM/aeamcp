@@ -736,14 +736,14 @@ export default function RegisterServerPage() {
       <div className="mb-8">
         <div className="flex items-center gap-4 mb-4">
           <Link href="/servers" className="ascii-link">
-            ← BACK TO SERVERS
+            ← {t('server.register.back')}
           </Link>
         </div>
         <h1 className="ascii-section-title text-3xl mb-2">
-          REGISTER MCP SERVER
+          {t('server.register.title')}
         </h1>
         <p className="ascii-body-text">
-          Register your Model Context Protocol server on the Solana blockchain with {SVMAI_TOKEN_SYMBOL} token payment
+          {t('server.register.subtitle')}
         </p>
       </div>
 
