@@ -93,91 +93,91 @@ The convergence of artificial intelligence, blockchain technology, and economic 
 
 Large Language Models (LLMs) such as GPT-4, Claude, and Llama have demonstrated unprecedented capabilities in natural language understanding, reasoning, and generation. When augmented with tools, memory, and economic incentives, these models transform into autonomous agents capable of performing complex tasks, engaging in economic transactions, and providing specialized services across diverse domains.
 
-Simultaneously, the Model Context Protocol (MCP) has emerged as a standardized framework enabling AI systems to access external tools, resources, and prompts in a secure and interoperable manner. MCP provides the foundational infrastructure for AI agents to extend their capabilities beyond their training data, enabling dynamic interaction with real-world systems, APIs, and data sources.
+Одновременно с этим появился Model Context Protocol (MCP) как стандартизированная платформа, позволяющая ИИ-системам получать доступ к внешним инструментам, ресурсам и промптам безопасным и совместимым способом. MCP предоставляет фундаментальную инфраструктуру для ИИ-агентов для расширения своих возможностей за пределы обучающих данных, обеспечивая динамическое взаимодействие с реальными системами, API и источниками данных.
 
-\subsection{The AEA Network Solution}
+\subsection{Решение AEA Network}
 
-This paper presents the Autonomous Economic Agent Model Context Protocol (AEA Network), a comprehensive solution that addresses fundamental challenges through a novel decentralized registry system built on the Solana blockchain. AEA Network provides the foundational infrastructure for discovering, verifying, and economically coordinating autonomous agents and MCP servers in a fully decentralized manner.
+Данная работа представляет Протокол Контекста Модели Автономного Экономического Агента (AEA Network), комплексное решение, которое решает фундаментальные вызовы через новую децентрализованную систему реестра, построенную на блокчейне Solana. AEA Network предоставляет фундаментальную инфраструктуру для обнаружения, верификации и экономической координации автономных агентов и MCP-серверов полностью децентрализованным способом.
 
-\section{Core Concepts and Comprehensive Framework}
+\section{Основные Концепции и Комплексная Платформа}
 
-\subsection{What is the Model Context Protocol (MCP)}
+\subsection{Что такое Model Context Protocol (MCP)}
 
-The Model Context Protocol (MCP) represents a fundamental paradigm shift in how AI systems interact with external resources, tools, and data sources. At its core, MCP is a standardized communication protocol that enables Large Language Models (LLMs) and AI agents to seamlessly connect with external services, APIs, databases, and computational resources in a secure, reliable, and interoperable manner.
+Model Context Protocol (MCP) представляет фундаментальную смену парадигмы в том, как ИИ-системы взаимодействуют с внешними ресурсами, инструментами и источниками данных. В своей основе MCP является стандартизированным протоколом связи, который позволяет Большим Языковым Моделям (LLM) и ИИ-агентам беспрепятственно соединяться с внешними сервисами, API, базами данных и вычислительными ресурсами безопасным, надежным и совместимым способом.
 
-\subsubsection{MCP Architecture and Design Philosophy}
+\subsubsection{Архитектура и Философия Дизайна MCP}
 
-MCP operates on a client-server architecture where AI models act as clients that can request capabilities from MCP servers. These servers expose various functionalities including:
+MCP работает в архитектуре клиент-сервер, где ИИ-модели выступают в качестве клиентов, которые могут запрашивать возможности от MCP-серверов. Эти серверы предоставляют различные функциональности, включая:
 
 \begin{itemize}
-\item \textbf{Resource Access}: Direct access to files, databases, web services, and computational resources
-\item \textbf{Tool Integration}: Integration with external tools, APIs, and software systems
-\item \textbf{Prompt Engineering}: Dynamic prompt templates and context injection capabilities
-\item \textbf{Memory Management}: Persistent storage and retrieval of conversation state and learned patterns
-\item \textbf{Security Framework}: Authentication, authorization, and secure communication protocols
+\item \textbf{Доступ к Ресурсам}: Прямой доступ к файлам, базам данных, веб-сервисам и вычислительным ресурсам
+\item \textbf{Интеграция Инструментов}: Интеграция с внешними инструментами, API и программными системами
+\item \textbf{Промпт-инжиниринг}: Динамические шаблоны промптов и возможности инъекции контекста
+\item \textbf{Управление Памятью}: Постоянное хранение и извлечение состояния разговора и изученных паттернов
+\item \textbf{Фреймворк Безопасности}: Протоколы аутентификации, авторизации и безопасной связи
 \end{itemize}
 
-The protocol defines standardized interfaces for capabilities discovery, resource negotiation, and secure communication channels. This standardization enables AI agents to dynamically discover and utilize new capabilities without requiring specific integration code for each service.
+Протокол определяет стандартизированные интерфейсы для обнаружения возможностей, переговоров по ресурсам и безопасных каналов связи. Эта стандартизация позволяет ИИ-агентам динамически обнаруживать и использовать новые возможности без необходимости специфического интеграционного кода для каждого сервиса.
 
-\subsubsection{MCP's Revolutionary Impact on AI Autonomy}
+\subsubsection{Революционное Влияние MCP на Автономность ИИ}
 
-Traditional AI systems are limited by their training data and fixed capabilities at inference time. MCP breaks this limitation by enabling AI agents to:
+Традиционные ИИ-системы ограничены своими обучающими данными и фиксированными возможностями во время вывода. MCP разрушает это ограничение, позволяя ИИ-агентам:
 
 \begin{enumerate}
-\item \textbf{Dynamic Capability Extension}: Agents can discover and integrate new tools and resources in real-time
-\item \textbf{Context Preservation}: Maintain persistent context across multiple interactions and sessions
-\item \textbf{Interoperability}: Work seamlessly across different platforms and service providers
-\item \textbf{Security}: Operate within defined security boundaries while accessing external resources
-\item \textbf{Scalability}: Scale capabilities horizontally by connecting to multiple MCP servers
+\item \textbf{Динамическое Расширение Возможностей}: Агенты могут обнаруживать и интегрировать новые инструменты и ресурсы в реальном времени
+\item \textbf{Сохранение Контекста}: Поддерживать постоянный контекст через множественные взаимодействия и сессии
+\item \textbf{Интероперабельность}: Работать беспрепятственно через различные платформы и поставщиков услуг
+\item \textbf{Безопасность}: Работать в рамках определенных границ безопасности при доступе к внешним ресурсам
+\item \textbf{Масштабируемость}: Масштабировать возможности горизонтально, подключаясь к множественным MCP-серверам
 \end{enumerate}
 
-This fundamental capability enables true autonomous economic agents that can adapt, learn, and extend their capabilities to meet evolving demands in dynamic economic environments.
+Эта фундаментальная возможность обеспечивает истинных автономных экономических агентов, которые могут адаптироваться, учиться и расширять свои возможности для удовлетворения развивающихся потребностей в динамических экономических средах.
 
-\subsection{What is A2A (Agent-to-Agent) Communication}
+\subsection{Что такое A2A (Агент-к-Агенту) Коммуникация}
 
-Agent-to-Agent (A2A) communication represents the foundational layer for autonomous economic coordination, enabling AI agents to discover, negotiate, collaborate, and transact with other agents without human intervention. This represents a paradigm shift from traditional human-mediated economic interactions to fully autonomous economic ecosystems.
+Коммуникация Агент-к-Агенту (A2A) представляет фундаментальный слой для автономной экономической координации, позволяя ИИ-агентам обнаруживать, договариваться, сотрудничать и совершать транзакции с другими агентами без человеческого вмешательства. Это представляет смену парадигмы от традиционных опосредованных человеком экономических взаимодействий к полностью автономным экономическим экосистемам.
 
-\subsubsection{A2A Communication Protocols}
+\subsubsection{Протоколы A2A Коммуникации}
 
-A2A communication in the AEA Network context encompasses multiple layers of interaction:
+Коммуникация A2A в контексте AEA Network охватывает множественные слои взаимодействия:
 
 \begin{itemize}
-\item \textbf{Discovery Protocol}: Agents can discover other agents based on capabilities, reputation, and service offerings
-\item \textbf{Negotiation Framework}: Standardized protocols for price discovery, service negotiation, and contract formation
-\item \textbf{Transaction Layer}: Secure, atomic transaction execution with built-in dispute resolution
-\item \textbf{Reputation System}: Distributed reputation tracking enabling trust-based relationships
-\item \textbf{Coordination Mechanisms}: Multi-agent coordination for complex tasks requiring collaboration
+\item \textbf{Протокол Обнаружения}: Агенты могут обнаруживать других агентов на основе возможностей, репутации и предложений услуг
+\item \textbf{Фреймворк Переговоров}: Стандартизированные протоколы для обнаружения цен, переговоров по услугам и формирования контрактов
+\item \textbf{Транзакционный Слой}: Безопасное, атомарное исполнение транзакций с встроенным разрешением споров
+\item \textbf{Система Репутации}: Распределенное отслеживание репутации, обеспечивающее отношения, основанные на доверии
+\item \textbf{Механизмы Координации}: Мульти-агентная координация для сложных задач, требующих сотрудничества
 \end{itemize}
 
-\subsubsection{Economic Implications of A2A Systems}
+\subsubsection{Экономические Последствия A2A Систем}
 
-The emergence of A2A communication creates entirely new economic dynamics:
+Появление A2A коммуникации создает совершенно новые экономические динамики:
 
 \begin{enumerate}
-\item \textbf{Reduced Transaction Costs}: Elimination of intermediaries and human friction reduces costs
-\item \textbf{Increased Market Efficiency}: Real-time price discovery and instant contract execution
-\item \textbf{Global Accessibility}: 24/7 operation enables global, asynchronous economic participation
-\item \textbf{Micro-Economic Interactions}: Enables previously impossible micro-transactions and services
-\item \textbf{Emergent Specialization}: Agents can develop highly specialized capabilities and trade services
+\item \textbf{Сниженные Транзакционные Издержки}: Исключение посредников и человеческого трения снижает издержки
+\item \textbf{Повышенная Рыночная Эффективность}: Ценообразование в реальном времени и мгновенное исполнение контрактов
+\item \textbf{Глобальная Доступность}: Круглосуточная работа обеспечивает глобальное, асинхронное экономическое участие
+\item \textbf{Микро-экономические Взаимодействия}: Обеспечивает ранее невозможные микро-транзакции и услуги
+\item \textbf{Эмерджентная Специализация}: Агенты могут развивать высоко специализированные возможности и торговать услугами
 \end{enumerate}
 
-Research indicates that A2A economic systems could increase overall economic efficiency by 15-40\% while creating entirely new categories of economic value that were previously impossible due to coordination costs.
+Исследования показывают, что A2A экономические системы могут увеличить общую экономическую эффективность на 15-40\%, создавая совершенно новые категории экономической ценности, которые были ранее невозможны из-за координационных издержек.
 
-\subsection{Understanding AEA (Autonomous Economic Agents)}
+\subsection{Понимание AEA (Автономные Экономические Агенты)}
 
-Autonomous Economic Agents (AEAs) represent the convergence of artificial intelligence, economic theory, and blockchain technology to create intelligent entities capable of independent economic decision-making, value creation, and market participation. Unlike traditional software applications, AEAs possess agency, economic incentives, and the capability to evolve their strategies based on market feedback.
+Автономные Экономические Агенты (AEA) представляют конвергенцию искусственного интеллекта, экономической теории и блокчейн-технологии для создания интеллектуальных сущностей, способных к независимому экономическому принятию решений, созданию ценности и участию в рынке. В отличие от традиционных программных приложений, AEA обладают агентностью, экономическими стимулами и способностью эволюционировать свои стратегии на основе рыночной обратной связи.
 
-\subsubsection{Core Characteristics of AEAs}
+\subsubsection{Основные Характеристики AEA}
 
 \begin{itemize}
-\item \textbf{Economic Autonomy}: Independent decision-making regarding resource allocation and economic strategies
-\item \textbf{Goal Orientation}: Optimization toward specific economic objectives (profit maximization, utility optimization, service quality)
-\item \textbf{Adaptive Learning}: Continuous improvement based on market feedback and performance metrics
-\item \textbf{Resource Management}: Independent management of economic resources including tokens, data, and computational resources
-\item \textbf{Strategic Behavior}: Capability to develop and execute complex economic strategies including competition and cooperation
+\item \textbf{Экономическая Автономия}: Независимое принятие решений относительно распределения ресурсов и экономических стратегий
+\item \textbf{Целевая Ориентация}: Оптимизация к конкретным экономическим целям (максимизация прибыли, оптимизация полезности, качество услуг)
+\item \textbf{Адаптивное Обучение}: Непрерывное улучшение на основе рыночной обратной связи и показателей производительности
+\item \textbf{Управление Ресурсами}: Независимое управление экономическими ресурсами, включая токены, данные и вычислительные ресурсы
+\item \textbf{Стратегическое Поведение}: Способность разрабатывать и исполнять сложные экономические стратегии, включая конкуренцию и сотрудничество
 \end{itemize}
 
-\subsubsection{AEA Capabilities and Service Categories}
+\subsubsection{Возможности AEA и Категории Услуг}
 
 AEAs in the AEA Network ecosystem can provide diverse services:
 
