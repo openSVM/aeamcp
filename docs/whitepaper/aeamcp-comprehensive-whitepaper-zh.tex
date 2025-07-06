@@ -1,7 +1,7 @@
 \documentclass[12pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage[chinese]{babel}
+\usepackage{CJKutf8}
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
@@ -32,19 +32,20 @@ OpenSVM\\
 \date{\today}
 
 \begin{document}
+\begin{CJK}{UTF8}{gbsn}
 
 \maketitle
 
 \begin{abstract}
-The emergence of autonomous economic agents and large language model (LLM) applications has created an urgent need for decentralized discovery and verification infrastructure that can operate at scale while maintaining security and economic sustainability. This comprehensive paper presents the AEA Network (Autonomous Economic Agent Network), an on-chain registry system built on the Solana blockchain that enables secure, scalable, and economically incentivized registration of AI agents and Model Context Protocol (MCP) servers.
+自主经济代理和大语言模型(LLM)应用的出现，创造了对能够大规模运营同时保持安全性和经济可持续性的去中心化发现和验证基础设施的迫切需求。这篇综合性论文介绍了AEA网络(自主经济代理网络)，一个建立在Solana区块链上的链上注册系统，实现AI代理和模型上下文协议(MCP)服务器的安全、可扩展和经济激励注册。
 
-Our system introduces novel mechanisms for agent verification, reputation tracking, and economic interactions through a sophisticated dual-token model (\textbf{AEA}/\textbf{SVMAI}), comprehensive security architecture with multiple audit cycles\footnote{Detailed audit reports available at: \url{https://github.com/openSVM/aeamcp/tree/main/docs/audits}}, and native Solana optimization. The implementation features hybrid data storage optimization, event-driven architecture, Program Derived Addresses (PDAs) for deterministic account management, and comprehensive security measures achieving industry-standard protocol compliance with A2A, AEA, and MCP specifications.
+我们的系统通过复杂的双代币模型(\textbf{AEA}/\textbf{SVMAI})、包含多个审计周期的综合安全架构\footnote{详细审计报告可在以下网址获取：\url{https://github.com/openSVM/aeamcp/tree/main/docs/audits}}以及原生Solana优化，引入了用于代理验证、声誉跟踪和经济交互的新机制。该实施具有混合数据存储优化、事件驱动架构、用于确定性账户管理的程序派生地址(PDA)以及实现A2A、AEA和MCP规范行业标准协议合规性的综合安全措施。
 
-Through extensive performance evaluation, security auditing, real-world deployment analysis, and rigorous mathematical modeling, we demonstrate the system's ability to handle high-throughput discovery operations while maintaining decentralization and economic sustainability. The paper provides detailed technical specifications, comprehensive security analysis, economic modeling with formal proofs, deployment architecture, SDK implementation, and future roadmap that establishes AEA Network as foundational infrastructure for the emerging autonomous agent economy.
+通过广泛的性能评估、安全审计、实际部署分析和严格的数学建模，我们展示了系统在保持去中心化和经济可持续性的同时处理高吞吐量发现操作的能力。本文提供了详细的技术规范、综合安全分析、带有正式证明的经济建模、部署架构、SDK实施和未来路线图，将AEA网络确立为新兴自主代理经济的基础设施。
 
-Key innovations include: (1) Novel hybrid data architecture optimizing for both on-chain security and off-chain scalability, (2) Dual-tokenomics model enabling sustainable economic incentives with mathematical proofs of stability, (3) Native Solana integration leveraging the network's unique capabilities, (4) Comprehensive security framework with automated auditing and formal verification, (5) Event-driven real-time updates and notifications, (6) Modular SDK design for rapid integration, (7) Deployment with demonstrated performance metrics, and (8) Rigorous game-theoretical analysis proving economic sustainability and anti-Sybil resistance.
+关键创新包括：(1)优化链上安全性和链下可扩展性的新型混合数据架构，(2)支持可持续经济激励并具有稳定性数学证明的双代币经济模型，(3)利用网络独特能力的原生Solana集成，(4)具有自动审计和正式验证的综合安全框架，(5)事件驱动的实时更新和通知，(6)用于快速集成的模块化SDK设计，(7)具有已验证性能指标的部署，以及(8)证明经济可持续性和反女巫攻击的严格博弈论分析。
 
-\textbf{Keywords:} Autonomous Economic Agents, Blockchain, Solana, Model Context Protocol, Decentralized Registry, AI Infrastructure, Smart Contracts, Tokenomics
+\textbf{关键词：}自主经济代理、区块链、Solana、模型上下文协议、去中心化注册表、AI基础设施、智能合约、代币经济学
 \end{abstract}
 
 \newpage
@@ -1565,4 +1566,5 @@ P. Stone and M. Veloso, "Multiagent Systems: A Survey from a Machine Learning Pe
 
 \end{thebibliography}
 
+\end{CJK}
 \end{document}
