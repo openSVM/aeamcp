@@ -7,6 +7,7 @@ import { PublicKey, Transaction } from '@solana/web3.js';
 import { toast } from 'react-hot-toast';
 import { tokenRegistryService, McpServerRegistrationData, TokenBalance } from '@/lib/solana/token-registry';
 import { SVMAI_REGISTRATION_FEE_SERVER, SVMAI_TOKEN_SYMBOL, SVMAI_VERIFICATION_TIERS } from '@/lib/constants';
+import { useI18nContext } from '@/components/common/I18nProvider';
 import Link from 'next/link';
 
 interface ToolDefinition {
@@ -59,6 +60,7 @@ const initialFormData: ServerFormData = {
 };
 
 export default function RegisterServerPage() {
+  const { t } = useI18nContext();
   const router = useRouter();
   const { publicKey, connected, signTransaction } = useWallet();
   const [formData, setFormData] = useState<ServerFormData>(initialFormData);
