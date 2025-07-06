@@ -73,53 +73,18 @@
             { id: 'book-ch8', name: 'Ch 8: Program Events', path: '/docs/book/08_program_events_.md', chapter: 8 }
         ];
 
-        // Create navigation sidebar
-        const docNav = document.getElementById('doc-nav');
-        
-        // Add main documentation files
-        docFiles.forEach(doc => {
-            const li = document.createElement('li');
-            const a = document.createElement('a');
-            a.href = `#${doc.id}`;
-            a.dataset.path = doc.path;
-            a.className = 'block p-2 hover:bg-neutral-200 rounded focus:outline-none focus:ring-2 focus:ring-neutral-400';
-            a.innerText = doc.name;
-            a.setAttribute('role', 'menuitem');
-            a.addEventListener('click', (e) => {
-                e.preventDefault();
-                loadMarkdown(doc.path);
-                currentBookChapter = null; // Reset book chapter tracking
-                updateNavigationState(a);
-                window.location.hash = doc.id;
-            });
-            li.appendChild(a);
-            docNav.appendChild(li);
-        });
-
-        // Add separator for book section
-        const separator = document.createElement('li');
-        separator.innerHTML = '<hr class="my-4 border-neutral-400"><h3 class="text-lg font-bold mb-2 text-neutral-700">📚 Tutorial Book</h3>';
-        docNav.appendChild(separator);
-
-        // Add book chapters
-        bookChapters.forEach(chapter => {
-            const li = document.createElement('li');
-            const a = document.createElement('a');
-            a.href = `#${chapter.id}`;
-            a.dataset.path = chapter.path;
-            a.dataset.chapter = chapter.chapter;
-            a.className = 'block p-2 hover:bg-neutral-200 rounded book-chapter focus:outline-none focus:ring-2 focus:ring-neutral-400';
-            a.innerText = chapter.name;
-            a.setAttribute('role', 'menuitem');
-            a.addEventListener('click', (e) => {
-                e.preventDefault();
-                loadBookChapter(chapter);
-                updateNavigationState(a);
-                window.location.hash = chapter.id;
-            });
-            li.appendChild(a);
-            docNav.appendChild(li);
-        });
+        // Whitepaper files
+        const whitepapers = [
+            { id: 'whitepaper-en', name: 'English', path: '/whitepapers/aeamcp-comprehensive-whitepaper.pdf', lang: 'en' },
+            // { id: 'whitepaper-de', name: 'German (Deutsch)', path: '/whitepapers/aeamcp-comprehensive-whitepaper-de.pdf', lang: 'de' },
+            // { id: 'whitepaper-es', name: 'Spanish (Español)', path: '/whitepapers/aeamcp-comprehensive-whitepaper-es.pdf', lang: 'es' },
+            // { id: 'whitepaper-hi', name: 'Hindi (हिंदी)', path: '/whitepapers/aeamcp-comprehensive-whitepaper-hi.pdf', lang: 'hi' },
+            // { id: 'whitepaper-ja', name: 'Japanese (日本語)', path: '/whitepapers/aeamcp-comprehensive-whitepaper-ja.pdf', lang: 'ja' },
+            // { id: 'whitepaper-ko', name: 'Korean (한국어)', path: '/whitepapers/aeamcp-comprehensive-whitepaper-ko.pdf', lang: 'ko' },
+            // { id: 'whitepaper-th', name: 'Thai (ไทย)', path: '/whitepapers/aeamcp-comprehensive-whitepaper-th.pdf', lang: 'th' },
+            // { id: 'whitepaper-uk', name: 'Ukrainian (Українська)', path: '/whitepapers/aeamcp-comprehensive-whitepaper-uk.pdf', lang: 'uk' },
+            // { id: 'whitepaper-zh', name: 'Chinese (中文)', path: '/whitepapers/aeamcp-comprehensive-whitepaper-zh.pdf', lang: 'zh' }
+        ];
 
         // Function to render mermaid diagrams (including external files)
         async function renderMermaidDiagrams() {
@@ -313,6 +278,74 @@
 
         // Load default document or from hash
         window.addEventListener('DOMContentLoaded', () => {
+            // Create navigation sidebar
+            const docNav = document.getElementById('doc-nav');
+            
+            // Add main documentation files
+            docFiles.forEach(doc => {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = `#${doc.id}`;
+                a.dataset.path = doc.path;
+                a.className = 'block p-2 hover:bg-neutral-200 rounded focus:outline-none focus:ring-2 focus:ring-neutral-400';
+                a.innerText = doc.name;
+                a.setAttribute('role', 'menuitem');
+                a.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    loadMarkdown(doc.path);
+                    currentBookChapter = null; // Reset book chapter tracking
+                    updateNavigationState(a);
+                    window.location.hash = doc.id;
+                });
+                li.appendChild(a);
+                docNav.appendChild(li);
+            });
+
+            // Add separator for book section
+            const separator = document.createElement('li');
+            separator.innerHTML = '<hr class="my-4 border-neutral-400"><h3 class="text-lg font-bold mb-2 text-neutral-700">📚 Tutorial Book</h3>';
+            docNav.appendChild(separator);
+
+            // Add book chapters
+            bookChapters.forEach(chapter => {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = `#${chapter.id}`;
+                a.dataset.path = chapter.path;
+                a.dataset.chapter = chapter.chapter;
+                a.className = 'block p-2 hover:bg-neutral-200 rounded book-chapter focus:outline-none focus:ring-2 focus:ring-neutral-400';
+                a.innerText = chapter.name;
+                a.setAttribute('role', 'menuitem');
+                a.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    loadBookChapter(chapter);
+                    updateNavigationState(a);
+                    window.location.hash = chapter.id;
+                });
+                li.appendChild(a);
+                docNav.appendChild(li);
+            });
+
+            // Add separator for whitepaper section
+            const whitepaperSeparator = document.createElement('li');
+            whitepaperSeparator.innerHTML = '<hr class="my-4 border-neutral-400"><h3 class="text-lg font-bold mb-2 text-neutral-700">📄 Whitepapers</h3>';
+            docNav.appendChild(whitepaperSeparator);
+
+            // Add whitepaper files
+            whitepapers.forEach(whitepaper => {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = whitepaper.path;
+                a.target = '_blank';  // Open PDFs in new tab
+                a.rel = 'noopener noreferrer';
+                a.className = 'block p-2 hover:bg-neutral-200 rounded focus:outline-none focus:ring-2 focus:ring-neutral-400';
+                a.innerText = whitepaper.name;
+                a.setAttribute('role', 'menuitem');
+                a.setAttribute('title', `Open ${whitepaper.name} whitepaper in new tab`);
+                li.appendChild(a);
+                docNav.appendChild(li);
+            });
+
             const hash = window.location.hash.substring(1);
             const defaultDoc = docFiles[0].path;
             
