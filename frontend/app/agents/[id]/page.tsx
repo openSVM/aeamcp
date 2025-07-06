@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { useI18nContext } from '../../../components/common/I18nProvider';
 
 // Mock data for agent details
 const getAgentDetails = (id: string) => {
@@ -85,6 +86,7 @@ const useRealTimeActivity = (agentId: string) => {
 };
 
 export default function AgentDetailsPage() {
+  const { t } = useI18nContext();
   const params = useParams();
   const agentId = params.id as string;
   const [agent, setAgent] = useState<any>(null);
@@ -116,10 +118,10 @@ export default function AgentDetailsPage() {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
     
-    if (diffMins < 1) return 'JUST NOW';
-    if (diffMins < 60) return `${diffMins}M AGO`;
-    if (diffHours < 24) return `${diffHours}H AGO`;
-    return `${diffDays}D AGO`;
+    if (diffMins < 1) return t('common.time.just.now');
+    if (diffMins < 60) return t('common.time.minutes.ago').replace('{minutes}', diffMins.toString());
+    if (diffHours < 24) return t('common.time.hours.ago').replace('{hours}', diffHours.toString());
+    return t('common.time.days.ago').replace('{days}', diffDays.toString());
   };
 
   if (loading) {
@@ -142,12 +144,12 @@ export default function AgentDetailsPage() {
             <div className="ascii-logo w-16 h-12 mx-auto mb-4">
               <span className="text-2xl">[!]</span>
             </div>
-            <h3 className="ascii-subsection-title">AGENT NOT FOUND</h3>
+            <h3 className="ascii-subsection-title">{t('agent.details.not.found')}</h3>
             <p className="ascii-body-text mb-4">
-              The requested agent could not be found.
+              {t('agent.details.not.found.desc')}
             </p>
             <Link href="/agents" className="ascii-button-primary">
-              [← BACK TO AGENTS]
+              [← {t('agent.details.back')}]
             </Link>
           </div>
         </div>
@@ -161,7 +163,7 @@ export default function AgentDetailsPage() {
       <div className="mb-8">
         <div className="flex items-center mb-4">
           <Link href="/agents" className="ascii-link mr-4">
-            [← BACK TO AGENTS]
+            [← {t('agent.details.back')}]
           </Link>
           <div className="ascii-logo w-8 h-8 mr-3">
             <span className="text-lg font-bold">[BOT]</span>
@@ -186,19 +188,19 @@ export default function AgentDetailsPage() {
               <div className="grid grid-cols-2 gap-4 text-center">
                 <div>
                   <div className="ascii-subsection-title text-2xl">{agent.rating}</div>
-                  <div className="ascii-body-text text-sm">RATING</div>
+                  <div className="ascii-body-text text-sm">{t('agent.details.rating')}</div>
                 </div>
                 <div>
                   <div className="ascii-subsection-title text-2xl">{agent.users.toLocaleString()}</div>
-                  <div className="ascii-body-text text-sm">USERS</div>
+                  <div className="ascii-body-text text-sm">{t('agent.details.users')}</div>
                 </div>
                 <div>
                   <div className="ascii-subsection-title text-2xl">{agent.stakeRequired}</div>
-                  <div className="ascii-body-text text-sm">$SVMAI STAKE</div>
+                  <div className="ascii-body-text text-sm">{t('agent.details.stake')}</div>
                 </div>
                 <div>
                   <div className="ascii-subsection-title text-2xl">{agent.metrics.uptime}%</div>
-                  <div className="ascii-body-text text-sm">UPTIME</div>
+                  <div className="ascii-body-text text-sm">{t('agent.details.uptime')}</div>
                 </div>
               </div>
             </div>
@@ -210,10 +212,10 @@ export default function AgentDetailsPage() {
       <div className="mb-8">
         <div className="flex space-x-1 mb-4">
           {[
-            { id: 'overview', label: 'OVERVIEW' },
-            { id: 'versions', label: 'VERSIONS' },
-            { id: 'owner', label: 'OWNER' },
-            { id: 'activity', label: 'ACTIVITY' }
+            { id: 'overview', label: t('agent.details.tabs.overview') },
+            { id: 'versions', label: t('agent.details.tabs.versions') },
+            { id: 'owner', label: t('agent.details.tabs.owner') },
+            { id: 'activity', label: t('agent.details.tabs.activity') }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -232,7 +234,7 @@ export default function AgentDetailsPage() {
           <div className="lg:col-span-2">
             {/* Capabilities */}
             <div className="ascii-card mb-6">
-              <h3 className="ascii-subsection-title mb-4">CAPABILITIES</h3>
+              <h3 className="ascii-subsection-title mb-4">{t('agent.details.capabilities')}</h3>
               <div className="flex flex-wrap gap-2">
                 {agent.capabilities.map((capability: string) => (
                   <span
@@ -248,7 +250,7 @@ export default function AgentDetailsPage() {
 
             {/* Tags */}
             <div className="ascii-card mb-6">
-              <h3 className="ascii-subsection-title mb-4">TAGS</h3>
+              <h3 className="ascii-subsection-title mb-4">{t('agent.details.tags')}</h3>
               <div className="flex flex-wrap gap-2">
                 {agent.tags.map((tag: string) => (
                   <span
@@ -264,22 +266,22 @@ export default function AgentDetailsPage() {
 
             {/* Metrics */}
             <div className="ascii-card">
-              <h3 className="ascii-subsection-title mb-4">PERFORMANCE METRICS</h3>
+              <h3 className="ascii-subsection-title mb-4">{t('agent.details.metrics')}</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="ascii-info-box">
-                  <div className="ascii-body-text text-sm">TOTAL TRANSACTIONS</div>
+                  <div className="ascii-body-text text-sm">{t('agent.details.metrics.transactions')}</div>
                   <div className="ascii-subsection-title">{agent.metrics.totalTransactions.toLocaleString()}</div>
                 </div>
                 <div className="ascii-info-box">
-                  <div className="ascii-body-text text-sm">TOTAL REVENUE</div>
+                  <div className="ascii-body-text text-sm">{t('agent.details.metrics.revenue')}</div>
                   <div className="ascii-subsection-title">{agent.metrics.totalRevenue} $SVMAI</div>
                 </div>
                 <div className="ascii-info-box">
-                  <div className="ascii-body-text text-sm">AVG RESPONSE TIME</div>
+                  <div className="ascii-body-text text-sm">{t('agent.details.metrics.response')}</div>
                   <div className="ascii-subsection-title">{agent.metrics.responseTime}ms</div>
                 </div>
                 <div className="ascii-info-box">
-                  <div className="ascii-body-text text-sm">UPTIME</div>
+                  <div className="ascii-body-text text-sm">{t('agent.details.metrics.uptime')}</div>
                   <div className="ascii-subsection-title">{agent.metrics.uptime}%</div>
                 </div>
               </div>
@@ -289,13 +291,13 @@ export default function AgentDetailsPage() {
           <div>
             {/* Quick Actions */}
             <div className="ascii-card mb-6">
-              <h3 className="ascii-subsection-title mb-4">QUICK ACTIONS</h3>
+              <h3 className="ascii-subsection-title mb-4">{t('agent.details.actions')}</h3>
               <div className="space-y-3">
                 <button className="ascii-button-primary w-full">
-                  [USE AGENT]
+                  [{t('agent.details.actions.use')}]
                 </button>
                 <button className="ascii-button-secondary w-full">
-                  [STAKE $SVMAI]
+                  [{t('agent.details.actions.stake')}]
                 </button>
                 <a
                   href={agent.providerUrl}
@@ -303,27 +305,27 @@ export default function AgentDetailsPage() {
                   rel="noopener noreferrer"
                   className="ascii-button-secondary w-full block text-center"
                 >
-                  [EXTERNAL LINK]
+                  [{t('agent.details.actions.external')}]
                 </a>
               </div>
             </div>
 
             {/* Status */}
             <div className="ascii-card">
-              <h3 className="ascii-subsection-title mb-4">STATUS</h3>
+              <h3 className="ascii-subsection-title mb-4">{t('agent.details.status')}</h3>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="ascii-body-text">STATUS:</span>
+                  <span className="ascii-body-text">{t('agent.details.status')}:</span>
                   <span className="ascii-status ascii-status-active">{agent.status.toUpperCase()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="ascii-body-text">LAST UPDATE:</span>
+                  <span className="ascii-body-text">{t('agent.details.status.last.update')}:</span>
                   <span className="ascii-body-text">{new Date(agent.lastUpdate).toLocaleDateString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="ascii-body-text">VERIFIED:</span>
+                  <span className="ascii-body-text">{t('agent.details.status.verified')}:</span>
                   <span className="ascii-status" style={{ backgroundColor: '#D4D4D4', color: '#171717' }}>
-                    {agent.owner.verified ? 'YES' : 'NO'}
+                    {agent.owner.verified ? t('common.yes') : t('common.no')}
                   </span>
                 </div>
               </div>
@@ -334,7 +336,7 @@ export default function AgentDetailsPage() {
 
       {activeTab === 'versions' && (
         <div className="ascii-card">
-          <h3 className="ascii-subsection-title mb-6">VERSION HISTORY</h3>
+          <h3 className="ascii-subsection-title mb-6">{t('agent.details.versions.title')}</h3>
           <div className="space-y-4">
             {agent.versions.map((version: any, index: number) => (
               <div
@@ -347,7 +349,7 @@ export default function AgentDetailsPage() {
                   <div className="ascii-body-text text-sm">{new Date(version.date).toLocaleDateString()}</div>
                   {index === 0 && (
                     <span className="ascii-status" style={{ backgroundColor: '#404040', color: '#FFFFFF' }}>
-                      CURRENT
+                      {t('agent.details.versions.current')}
                     </span>
                   )}
                 </div>
@@ -361,42 +363,42 @@ export default function AgentDetailsPage() {
       {activeTab === 'owner' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="ascii-card">
-            <h3 className="ascii-subsection-title mb-6">OWNER INFORMATION</h3>
+            <h3 className="ascii-subsection-title mb-6">{t('agent.details.owner.title')}</h3>
             <div className="space-y-4">
               <div>
-                <div className="ascii-body-text text-sm mb-1">NAME:</div>
+                <div className="ascii-body-text text-sm mb-1">{t('agent.details.owner.name')}:</div>
                 <div className="ascii-subsection-title">{agent.owner.name}</div>
               </div>
               <div>
-                <div className="ascii-body-text text-sm mb-1">WALLET ADDRESS:</div>
+                <div className="ascii-body-text text-sm mb-1">{t('agent.details.owner.wallet')}:</div>
                 <div className="ascii-body-text font-mono text-sm break-all">
                   {agent.owner.wallet}
                 </div>
               </div>
               <div>
-                <div className="ascii-body-text text-sm mb-1">VERIFIED:</div>
+                <div className="ascii-body-text text-sm mb-1">{t('agent.details.owner.verified')}:</div>
                 <span className="ascii-status" style={{ backgroundColor: agent.owner.verified ? '#D4D4D4' : '#E5E5E5', color: '#171717' }}>
-                  {agent.owner.verified ? 'VERIFIED' : 'UNVERIFIED'}
+                  {agent.owner.verified ? t('common.verified') : t('common.unverified')}
                 </span>
               </div>
               <div>
-                <div className="ascii-body-text text-sm mb-1">JOINED:</div>
+                <div className="ascii-body-text text-sm mb-1">{t('agent.details.owner.joined')}:</div>
                 <div className="ascii-body-text">{new Date(agent.owner.joinDate).toLocaleDateString()}</div>
               </div>
             </div>
           </div>
 
           <div className="ascii-card">
-            <h3 className="ascii-subsection-title mb-6">OWNER ACTIONS</h3>
+            <h3 className="ascii-subsection-title mb-6">{t('agent.details.owner.actions')}</h3>
             <div className="space-y-3">
               <button className="ascii-button-secondary w-full">
-                [VIEW PROFILE]
+                [{t('agent.details.owner.actions.profile')}]
               </button>
               <button className="ascii-button-secondary w-full">
-                [CONTACT OWNER]
+                [{t('agent.details.owner.actions.contact')}]
               </button>
               <button className="ascii-button-secondary w-full">
-                [VIEW OTHER AGENTS]
+                [{t('agent.details.owner.actions.other')}]
               </button>
             </div>
           </div>
@@ -406,10 +408,10 @@ export default function AgentDetailsPage() {
       {activeTab === 'activity' && (
         <div className="ascii-card">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="ascii-subsection-title">REAL-TIME ACTIVITY</h3>
+            <h3 className="ascii-subsection-title">{t('agent.details.activity.title')}</h3>
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-              <span className="ascii-body-text text-sm">LIVE</span>
+              <span className="ascii-body-text text-sm">{t('agent.details.activity.live')}</span>
             </div>
           </div>
           <div className="space-y-3 max-h-96 overflow-y-auto">

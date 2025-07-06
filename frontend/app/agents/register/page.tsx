@@ -7,6 +7,7 @@ import { PublicKey, Transaction } from '@solana/web3.js';
 import { toast } from 'react-hot-toast';
 import { tokenRegistryService, AgentRegistrationData, TokenBalance } from '@/lib/solana/token-registry';
 import { SVMAI_REGISTRATION_FEE_AGENT, SVMAI_TOKEN_SYMBOL } from '@/lib/constants';
+import { useI18nContext } from '@/components/common/I18nProvider';
 import Link from 'next/link';
 
 interface AgentFormData {
@@ -53,6 +54,7 @@ const initialFormData: AgentFormData = {
 };
 
 export default function RegisterAgentPage() {
+  const { t } = useI18nContext();
   const router = useRouter();
   const { publicKey, connected, signTransaction } = useWallet();
   const [formData, setFormData] = useState<AgentFormData>(initialFormData);
