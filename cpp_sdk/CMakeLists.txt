@@ -71,6 +71,7 @@ target_link_libraries(aireg++ INTERFACE ${LIBSODIUM_LIBRARIES})
 add_library(aireg++_impl STATIC
     src/aireg++.cpp
     src/stubs.cpp
+    src/c_sdk_impl.cpp
 )
 target_include_directories(aireg++_impl PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

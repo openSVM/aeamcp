@@ -12,6 +12,7 @@
 #pragma once
 
 #include <aireg++/common.hpp>
+#include <aireg++/c_sdk_bridge.hpp>
 #include <string>
 #include <memory>
 #include <optional>
@@ -175,6 +176,12 @@ public:
 private:
     class Impl;
     std::unique_ptr<Impl> pimpl_;
+    
+    // Friend declarations for other SDK classes
+    friend class Agent;
+    friend class Mcp;
+    friend class Payments;
+    friend class TransactionBuilder;
 };
 
 /**

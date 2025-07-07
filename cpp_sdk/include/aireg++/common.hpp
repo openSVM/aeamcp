@@ -192,13 +192,15 @@ enum class ConfirmationStatus {
 };
 
 /**
- * @brief RAII wrapper for C SDK resources
+ * @brief RAII wrapper for C SDK resources (deprecated)
  * 
- * This template provides automatic cleanup of C SDK resources
- * using RAII principles.
+ * This template is deprecated. Use the custom deleters with std::unique_ptr
+ * in c_sdk_bridge.hpp instead for better RAII compliance.
+ * 
+ * @deprecated Use Bridge::*Ptr types from c_sdk_bridge.hpp instead
  */
 template<typename T>
-class Resource {
+class [[deprecated("Use Bridge::*Ptr types from c_sdk_bridge.hpp instead")]] Resource {
 public:
     using Deleter = void(*)(T*);
     

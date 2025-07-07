@@ -15,6 +15,7 @@
 #include <aireg++/mcp.hpp>
 #include <aireg++/payments.hpp>
 #include <aireg++/idl.hpp>
+#include <aireg++/c_sdk_bridge.hpp>
 #include <algorithm>
 #include <sstream>
 #include <regex>
@@ -62,8 +63,22 @@ bool is_valid_websocket_url(const std::string& url) {
 class Client::Impl {
 public:
     ClientConfig config;
+    Bridge::ClientPtr client_ptr;
     
-    Impl(const ClientConfig& cfg) : config(cfg) {}
+    Impl(const ClientConfig& cfg) : config(cfg) {
+        // Convert cluster to C SDK cluster ID
+        uint32_t cluster_id = static_cast<uint32_t>(cfg.cluster);
+        
+        // Get RPC URL
+        std::string rpc_url = cfg.custom_rpc_url.value_or(cluster_to_url(cfg.cluster));
+        
+        // Create C SDK client using RAII wrapper
+        client_ptr = Bridge::make_client(rpc_url.c_str(), cluster_id);
+        
+        if (!client_ptr) {
+            throw RpcException("Failed to create client");
+        }
+    }
 };
 
 Client::Client(const ClientConfig& config) : pimpl_(std::make_unique<Impl>(config)) {}
@@ -150,6 +165,7 @@ bool Client::is_connected() const {
 class TransactionBuilder::Impl {
 public:
     Client& client;
+    Bridge::TransactionBuilderPtr builder_ptr;
     std::optional<PublicKey> payer;
     std::optional<std::string> recent_blockhash;
     struct Instruction {
@@ -159,7 +175,14 @@ public:
     };
     std::vector<Instruction> instructions;
     
-    Impl(Client& c) : client(c) {}
+    Impl(Client& c) : client(c) {
+        // Create C SDK transaction builder using RAII wrapper
+        builder_ptr = Bridge::make_transaction_builder(c.pimpl_->client_ptr.get());
+        
+        if (!builder_ptr) {
+            throw TransactionException("Failed to create transaction builder");
+        }
+    }
 };
 
 TransactionBuilder::TransactionBuilder(Client& client) : pimpl_(std::make_unique<Impl>(client)) {}
@@ -364,7 +387,16 @@ TransactionBuilder& TransactionBuilder::clear() {
 class Agent::Impl {
 public:
     Client& client;
-    Impl(Client& c) : client(c) {}
+    Bridge::AgentPtr agent_ptr;
+    
+    Impl(Client& c) : client(c) {
+        // Create C SDK agent using RAII wrapper
+        agent_ptr = Bridge::make_agent(c.pimpl_->client_ptr.get());
+        
+        if (!agent_ptr) {
+            throw RegistryException("Failed to create agent");
+        }
+    }
 };
 
 Agent::Agent(Client& client) : pimpl_(std::make_unique<Impl>(client)) {}
@@ -505,7 +537,16 @@ void Agent::validate_registration_params(const AgentRegistrationParams& params) 
 class Mcp::Impl {
 public:
     Client& client;
-    Impl(Client& c) : client(c) {}
+    Bridge::McpPtr mcp_ptr;
+    
+    Impl(Client& c) : client(c) {
+        // Create C SDK MCP using RAII wrapper
+        mcp_ptr = Bridge::make_mcp(c.pimpl_->client_ptr.get());
+        
+        if (!mcp_ptr) {
+            throw RegistryException("Failed to create MCP");
+        }
+    }
 };
 
 Mcp::Mcp(Client& client) : pimpl_(std::make_unique<Impl>(client)) {}
@@ -672,7 +713,16 @@ void Mcp::validate_endpoint(McpProtocol protocol, const std::string& endpoint) {
 class Payments::Impl {
 public:
     Client& client;
-    Impl(Client& c) : client(c) {}
+    Bridge::PaymentsPtr payments_ptr;
+    
+    Impl(Client& c) : client(c) {
+        // Create C SDK payments using RAII wrapper
+        payments_ptr = Bridge::make_payments(c.pimpl_->client_ptr.get());
+        
+        if (!payments_ptr) {
+            throw PaymentException("Failed to create payments");
+        }
+    }
 };
 
 Payments::Payments(Client& client) : pimpl_(std::make_unique<Impl>(client)) {}

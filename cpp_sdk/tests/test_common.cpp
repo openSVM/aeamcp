@@ -97,7 +97,10 @@ TEST_F(CommonTest, ResourceRaii) {
     resource_deleted = false;
     
     {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         Resource<int> resource(new int(42), test_deleter);
+#pragma GCC diagnostic pop
         EXPECT_TRUE(resource.is_valid());
         EXPECT_EQ(*resource.get(), 42);
         EXPECT_FALSE(resource_deleted);
@@ -110,8 +113,11 @@ TEST_F(CommonTest, ResourceRaii) {
 TEST_F(CommonTest, ResourceMove) {
     resource_deleted = false;
     
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     Resource<int> resource1(new int(42), test_deleter);
     Resource<int> resource2 = std::move(resource1);
+#pragma GCC diagnostic pop
     
     EXPECT_FALSE(resource1.is_valid());
     EXPECT_TRUE(resource2.is_valid());
@@ -122,7 +128,10 @@ TEST_F(CommonTest, ResourceMove) {
 TEST_F(CommonTest, ResourceRelease) {
     resource_deleted = false;
     
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     Resource<int> resource(new int(42), test_deleter);
+#pragma GCC diagnostic pop
     int* released_ptr = resource.release();
     
     EXPECT_FALSE(resource.is_valid());

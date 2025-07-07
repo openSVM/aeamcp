@@ -19,6 +19,7 @@
 #include <aireg++/payments.hpp>
 #include <aireg++/idl.hpp>
 #include <aireg++/common.hpp>
+#include <aireg++/c_sdk_bridge.hpp>
 
 /**
  * @namespace SolanaAiRegistries

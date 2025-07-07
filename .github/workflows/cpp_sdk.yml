@@ -19,12 +19,16 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         build-type: [Debug, Release]
-        compiler: [gcc, clang]
+        compiler: [gcc, clang, msvc]
         exclude:
           - os: windows-latest
             compiler: gcc
           - os: macos-latest
             compiler: gcc
+          - os: ubuntu-latest
+            compiler: msvc
+          - os: macos-latest
+            compiler: msvc
     
     steps:
     - uses: actions/checkout@v4
@@ -55,6 +59,11 @@ jobs:
         choco install cmake ninja
         vcpkg install libsodium:x64-windows
         echo "CMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake" >> $env:GITHUB_ENV
+        if ("${{ matrix.compiler }}" -eq "msvc") {
+          echo "Using MSVC compiler"
+        } else {
+          echo "Using Clang compiler"
+        }
     
     - name: Install Google Test
       run: |
@@ -80,14 +89,24 @@ jobs:
       run: |
         cd cpp_sdk
         mkdir build && cd build
-        cmake .. -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DENABLE_SANITIZERS=ON
+        if [[ "${{ matrix.compiler }}" == "msvc" ]]; then
+          cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DENABLE_SANITIZERS=ON -DCMAKE_TOOLCHAIN_FILE=${{ env.CMAKE_TOOLCHAIN_FILE }}
+        else
+          cmake .. -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DENABLE_SANITIZERS=ON
+        fi
+      shell: bash
       env:
         CI: true
     
     - name: Build
       run: |
         cd cpp_sdk/build
-        ninja
+        if [[ "${{ matrix.compiler }}" == "msvc" ]]; then
+          cmake --build . --config ${{ matrix.build-type }}
+        else
+          ninja
+        fi
+      shell: bash
     
     - name: Run tests
       run: |
