@@ -31,9 +31,9 @@ namespace {
  * @return true if valid HTTP/HTTPS URL
  */
 bool is_valid_http_url(const std::string& url) {
-    // Regex for basic HTTP/HTTPS URL validation
+    // More balanced regex for HTTP/HTTPS URL validation
     static const std::regex http_regex(
-        R"(^https?:\/\/(?:[-\w.])+(?:\:[0-9]+)?(?:\/(?:[\w\/_.])*(?:\?(?:[\w&=%.])*)?(?:\#(?:[\w.])*)?)?$)",
+        R"(^https?:\/\/(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*|(?:[0-9]{1,3}\.){3}[0-9]{1,3})(?::[1-9][0-9]{0,4})?(?:\/(?:[-\w\/_.,~:?#[\]@!$&'()*+,;=%])*)?$)",
         std::regex_constants::icase
     );
     return std::regex_match(url, http_regex);
@@ -45,9 +45,9 @@ bool is_valid_http_url(const std::string& url) {
  * @return true if valid WebSocket URL
  */
 bool is_valid_websocket_url(const std::string& url) {
-    // Regex for basic WebSocket URL validation
+    // More balanced regex for WebSocket URL validation
     static const std::regex ws_regex(
-        R"(^wss?:\/\/(?:[-\w.])+(?:\:[0-9]+)?(?:\/(?:[\w\/_.])*(?:\?(?:[\w&=%.])*)?)?$)",
+        R"(^wss?:\/\/(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*|(?:[0-9]{1,3}\.){3}[0-9]{1,3})(?::[1-9][0-9]{0,4})?(?:\/(?:[-\w\/_.,~:?#[\]@!$&'()*+,;=%])*)?$)",
         std::regex_constants::icase
     );
     return std::regex_match(url, ws_regex);

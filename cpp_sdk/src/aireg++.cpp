@@ -96,6 +96,15 @@ size_t decode_base58(const std::string& str, uint8_t* output, size_t output_len)
         leading_ones++;
     }
     
+    // If the string is all 1's, treat it as all zeros
+    if (leading_ones == str.length()) {
+        if (leading_ones > output_len) {
+            return 0; // Too many leading ones for output buffer
+        }
+        std::memset(output, 0, std::min(leading_ones, output_len));
+        return std::min(leading_ones, output_len);
+    }
+    
     // Allocate space for big integer
     std::vector<uint8_t> digits(str.length());
     size_t digits_len = 0;
