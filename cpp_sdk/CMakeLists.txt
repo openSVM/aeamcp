@@ -14,6 +14,10 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
+# Sanitizer options
+option(ENABLE_SANITIZERS "Enable sanitizers (AddressSanitizer, UBSanitizer)" OFF)
+option(ENABLE_VALGRIND "Enable Valgrind support" OFF)
+
 # Compiler-specific options
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     add_compile_options(-Wall -Wextra -Wpedantic)
@@ -23,6 +27,24 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang
     endif()
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         add_compile_options(-g -O0 --coverage)
+        add_link_options(--coverage)
+    endif()
+    
+    # Enable sanitizers if requested
+    if(ENABLE_SANITIZERS)
+        add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+        add_link_options(-fsanitize=address,undefined)
+    endif()
+endif()
+
+# Valgrind support
+if(ENABLE_VALGRIND)
+    find_program(VALGRIND_EXECUTABLE valgrind)
+    if(VALGRIND_EXECUTABLE)
+        set(VALGRIND_ARGS --tool=memcheck --leak-check=full --error-exitcode=1)
+        message(STATUS "Valgrind found: ${VALGRIND_EXECUTABLE}")
+    else()
+        message(WARNING "Valgrind not found, but ENABLE_VALGRIND is ON")
     endif()
 endif()
 
@@ -81,6 +103,22 @@ add_custom_target(docs
     COMMAND doxygen ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile
     COMMENT "Generating API documentation"
 )
+
+# Memory safety targets
+if(ENABLE_SANITIZERS)
+    add_custom_target(test-sanitizers
+        COMMAND ${CMAKE_CTEST_COMMAND} --verbose
+        COMMENT "Running tests with sanitizers"
+    )
+endif()
+
+if(ENABLE_VALGRIND AND VALGRIND_EXECUTABLE)
+    add_custom_target(test-valgrind
+        COMMAND ${VALGRIND_EXECUTABLE} ${VALGRIND_ARGS} $<TARGET_FILE:aireg++_tests>
+        COMMENT "Running tests with Valgrind"
+        DEPENDS aireg++_tests
+    )
+endif()
 
 # Install configuration
 install(TARGETS aireg++ aireg++_impl EXPORT aireg++Targets)

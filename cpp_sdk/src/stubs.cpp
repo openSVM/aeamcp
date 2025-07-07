@@ -18,6 +18,8 @@
 #include <algorithm>
 #include <sstream>
 #include <regex>
+#include <unordered_map>
+#include <sodium.h>
 
 namespace SolanaAiRegistries {
 
@@ -191,20 +193,156 @@ std::vector<uint8_t> TransactionBuilder::build() {
         throw TransactionException("Payer not set");
     }
     
-    // Mock implementation - return dummy transaction data
+    if (pimpl_->instructions.empty()) {
+        throw TransactionException("No instructions added");
+    }
+    
+    // Get recent blockhash if not set
+    std::string blockhash = pimpl_->recent_blockhash.value_or(pimpl_->client.get_latest_blockhash());
+    
+    // Start building transaction according to Solana format
     std::vector<uint8_t> tx_data;
-    tx_data.resize(64 + pimpl_->instructions.size() * 32); // Mock size
+    
+    // 1. Compact-u16 for number of signatures (placeholder, will be filled later)
+    tx_data.push_back(0x00); // We'll put the actual count here
+    
+    // 2. Message header (3 bytes)
+    tx_data.push_back(0x01); // num_required_signatures
+    tx_data.push_back(0x00); // num_readonly_signed_accounts
+    tx_data.push_back(0x00); // num_readonly_unsigned_accounts
+    
+    // 3. Collect all unique accounts
+    std::vector<PublicKey> all_accounts;
+    std::unordered_map<std::string, uint8_t> account_indices;
+    
+    // Add payer first (signer)
+    all_accounts.push_back(*pimpl_->payer);
+    account_indices[pimpl_->payer->to_base58()] = 0;
+    
+    // Add all instruction accounts
+    for (const auto& instruction : pimpl_->instructions) {
+        // Add program ID
+        std::string program_id_str = instruction.program_id.to_base58();
+        if (account_indices.find(program_id_str) == account_indices.end()) {
+            account_indices[program_id_str] = static_cast<uint8_t>(all_accounts.size());
+            all_accounts.push_back(instruction.program_id);
+        }
+        
+        // Add instruction accounts
+        for (const auto& account : instruction.accounts) {
+            std::string account_str = account.to_base58();
+            if (account_indices.find(account_str) == account_indices.end()) {
+                account_indices[account_str] = static_cast<uint8_t>(all_accounts.size());
+                all_accounts.push_back(account);
+            }
+        }
+    }
+    
+    // 4. Compact-u16 for number of accounts
+    if (all_accounts.size() < 128) {
+        tx_data.push_back(static_cast<uint8_t>(all_accounts.size()));
+    } else {
+        // For larger counts, use compact-u16 encoding
+        uint16_t count = static_cast<uint16_t>(all_accounts.size());
+        tx_data.push_back(0x80 | (count & 0x7F));
+        tx_data.push_back((count >> 7) & 0xFF);
+    }
+    
+    // 5. Account addresses (32 bytes each)
+    for (const auto& account : all_accounts) {
+        const uint8_t* account_bytes = account.bytes();
+        tx_data.insert(tx_data.end(), account_bytes, account_bytes + 32);
+    }
+    
+    // 6. Recent blockhash (32 bytes)
+    PublicKey blockhash_key(blockhash);
+    const uint8_t* blockhash_bytes = blockhash_key.bytes();
+    tx_data.insert(tx_data.end(), blockhash_bytes, blockhash_bytes + 32);
+    
+    // 7. Compact-u16 for number of instructions
+    if (pimpl_->instructions.size() < 128) {
+        tx_data.push_back(static_cast<uint8_t>(pimpl_->instructions.size()));
+    } else {
+        uint16_t count = static_cast<uint16_t>(pimpl_->instructions.size());
+        tx_data.push_back(0x80 | (count & 0x7F));
+        tx_data.push_back((count >> 7) & 0xFF);
+    }
+    
+    // 8. Instructions
+    for (const auto& instruction : pimpl_->instructions) {
+        // Program ID index
+        std::string program_id_str = instruction.program_id.to_base58();
+        tx_data.push_back(account_indices[program_id_str]);
+        
+        // Number of accounts
+        if (instruction.accounts.size() < 128) {
+            tx_data.push_back(static_cast<uint8_t>(instruction.accounts.size()));
+        } else {
+            uint16_t count = static_cast<uint16_t>(instruction.accounts.size());
+            tx_data.push_back(0x80 | (count & 0x7F));
+            tx_data.push_back((count >> 7) & 0xFF);
+        }
+        
+        // Account indices
+        for (const auto& account : instruction.accounts) {
+            std::string account_str = account.to_base58();
+            tx_data.push_back(account_indices[account_str]);
+        }
+        
+        // Data length
+        if (instruction.data.size() < 128) {
+            tx_data.push_back(static_cast<uint8_t>(instruction.data.size()));
+        } else {
+            uint16_t count = static_cast<uint16_t>(instruction.data.size());
+            tx_data.push_back(0x80 | (count & 0x7F));
+            tx_data.push_back((count >> 7) & 0xFF);
+        }
+        
+        // Data
+        tx_data.insert(tx_data.end(), instruction.data.begin(), instruction.data.end());
+    }
+    
     return tx_data;
 }
 
 std::vector<uint8_t> TransactionBuilder::build_and_sign(const std::vector<uint8_t>& keypair_data) {
-    if (keypair_data.size() != 32) {
-        throw TransactionException("Invalid keypair size");
+    if (keypair_data.size() != 64) {
+        throw TransactionException("Invalid keypair size: expected 64 bytes (32 private + 32 public)");
     }
     
+    // Build the transaction message
     auto tx_data = build();
-    // Mock signing - in real implementation, sign the transaction
-    return tx_data;
+    
+    // Extract private key (first 32 bytes)
+    std::vector<uint8_t> private_key(keypair_data.begin(), keypair_data.begin() + 32);
+    
+    // Create message hash for signing (skip the signature placeholder)
+    std::vector<uint8_t> message(tx_data.begin() + 1, tx_data.end());
+    
+    // Sign the message using libsodium (ed25519)
+    std::vector<uint8_t> signature(64);
+    unsigned long long sig_len = 0;
+    
+    if (crypto_sign_detached(signature.data(), &sig_len, 
+                           message.data(), message.size(),
+                           private_key.data()) != 0) {
+        throw TransactionException("Failed to sign transaction");
+    }
+    
+    // Build final transaction with signature
+    std::vector<uint8_t> signed_tx;
+    signed_tx.reserve(1 + 64 + tx_data.size() - 1);
+    
+    // Number of signatures
+    signed_tx.push_back(0x01);
+    
+    // Signature
+    signed_tx.insert(signed_tx.end(), signature.begin(), signature.end());
+    
+    // Message (skip the signature count placeholder)
+    signed_tx.insert(signed_tx.end(), tx_data.begin() + 1, tx_data.end());
+    
+    return signed_tx;
 }
 
 uint64_t TransactionBuilder::estimate_fee() {
@@ -281,42 +419,60 @@ uint64_t Agent::get_agent_count() {
 }
 
 std::string Agent::capability_to_string(AgentCapability capability) {
-    switch (capability) {
-        case AgentCapability::TextGeneration: return "TextGeneration";
-        case AgentCapability::ImageGeneration: return "ImageGeneration";
-        case AgentCapability::CodeGeneration: return "CodeGeneration";
-        case AgentCapability::DataAnalysis: return "DataAnalysis";
-        case AgentCapability::WebSearch: return "WebSearch";
-        case AgentCapability::Custom: return "Custom";
-        default: return "Unknown";
-    }
+    static const std::unordered_map<AgentCapability, std::string> capability_map = {
+        {AgentCapability::TextGeneration, "TextGeneration"},
+        {AgentCapability::ImageGeneration, "ImageGeneration"},
+        {AgentCapability::CodeGeneration, "CodeGeneration"},
+        {AgentCapability::DataAnalysis, "DataAnalysis"},
+        {AgentCapability::WebSearch, "WebSearch"},
+        {AgentCapability::Custom, "Custom"}
+    };
+    
+    auto it = capability_map.find(capability);
+    return it != capability_map.end() ? it->second : "Unknown";
 }
 
 AgentCapability Agent::string_to_capability(const std::string& capability_str) {
-    if (capability_str == "TextGeneration") return AgentCapability::TextGeneration;
-    if (capability_str == "ImageGeneration") return AgentCapability::ImageGeneration;
-    if (capability_str == "CodeGeneration") return AgentCapability::CodeGeneration;
-    if (capability_str == "DataAnalysis") return AgentCapability::DataAnalysis;
-    if (capability_str == "WebSearch") return AgentCapability::WebSearch;
-    if (capability_str == "Custom") return AgentCapability::Custom;
+    static const std::unordered_map<std::string, AgentCapability> string_map = {
+        {"TextGeneration", AgentCapability::TextGeneration},
+        {"ImageGeneration", AgentCapability::ImageGeneration},
+        {"CodeGeneration", AgentCapability::CodeGeneration},
+        {"DataAnalysis", AgentCapability::DataAnalysis},
+        {"WebSearch", AgentCapability::WebSearch},
+        {"Custom", AgentCapability::Custom}
+    };
+    
+    auto it = string_map.find(capability_str);
+    if (it != string_map.end()) {
+        return it->second;
+    }
     throw std::invalid_argument("Invalid capability string: " + capability_str);
 }
 
 std::string Agent::pricing_model_to_string(PricingModel model) {
-    switch (model) {
-        case PricingModel::PerRequest: return "PerRequest";
-        case PricingModel::PerToken: return "PerToken";
-        case PricingModel::Subscription: return "Subscription";
-        case PricingModel::Free: return "Free";
-        default: return "Unknown";
-    }
+    static const std::unordered_map<PricingModel, std::string> model_map = {
+        {PricingModel::PerRequest, "PerRequest"},
+        {PricingModel::PerToken, "PerToken"},
+        {PricingModel::Subscription, "Subscription"},
+        {PricingModel::Free, "Free"}
+    };
+    
+    auto it = model_map.find(model);
+    return it != model_map.end() ? it->second : "Unknown";
 }
 
 PricingModel Agent::string_to_pricing_model(const std::string& model_str) {
-    if (model_str == "PerRequest") return PricingModel::PerRequest;
-    if (model_str == "PerToken") return PricingModel::PerToken;
-    if (model_str == "Subscription") return PricingModel::Subscription;
-    if (model_str == "Free") return PricingModel::Free;
+    static const std::unordered_map<std::string, PricingModel> string_map = {
+        {"PerRequest", PricingModel::PerRequest},
+        {"PerToken", PricingModel::PerToken},
+        {"Subscription", PricingModel::Subscription},
+        {"Free", PricingModel::Free}
+    };
+    
+    auto it = string_map.find(model_str);
+    if (it != string_map.end()) {
+        return it->second;
+    }
     throw std::invalid_argument("Invalid pricing model string: " + model_str);
 }
 
@@ -409,42 +565,60 @@ uint64_t Mcp::get_server_count() {
 }
 
 std::string Mcp::protocol_to_string(McpProtocol protocol) {
-    switch (protocol) {
-        case McpProtocol::Http: return "Http";
-        case McpProtocol::WebSocket: return "WebSocket";
-        case McpProtocol::Stdio: return "Stdio";
-        case McpProtocol::Custom: return "Custom";
-        default: return "Unknown";
-    }
+    static const std::unordered_map<McpProtocol, std::string> protocol_map = {
+        {McpProtocol::Http, "Http"},
+        {McpProtocol::WebSocket, "WebSocket"},
+        {McpProtocol::Stdio, "Stdio"},
+        {McpProtocol::Custom, "Custom"}
+    };
+    
+    auto it = protocol_map.find(protocol);
+    return it != protocol_map.end() ? it->second : "Unknown";
 }
 
 McpProtocol Mcp::string_to_protocol(const std::string& protocol_str) {
-    if (protocol_str == "Http") return McpProtocol::Http;
-    if (protocol_str == "WebSocket") return McpProtocol::WebSocket;
-    if (protocol_str == "Stdio") return McpProtocol::Stdio;
-    if (protocol_str == "Custom") return McpProtocol::Custom;
+    static const std::unordered_map<std::string, McpProtocol> string_map = {
+        {"Http", McpProtocol::Http},
+        {"WebSocket", McpProtocol::WebSocket},
+        {"Stdio", McpProtocol::Stdio},
+        {"Custom", McpProtocol::Custom}
+    };
+    
+    auto it = string_map.find(protocol_str);
+    if (it != string_map.end()) {
+        return it->second;
+    }
     throw std::invalid_argument("Invalid protocol string: " + protocol_str);
 }
 
 std::string Mcp::capability_to_string(McpCapability capability) {
-    switch (capability) {
-        case McpCapability::Resources: return "Resources";
-        case McpCapability::Tools: return "Tools";
-        case McpCapability::Prompts: return "Prompts";
-        case McpCapability::Sampling: return "Sampling";
-        case McpCapability::Logging: return "Logging";
-        case McpCapability::Custom: return "Custom";
-        default: return "Unknown";
-    }
+    static const std::unordered_map<McpCapability, std::string> capability_map = {
+        {McpCapability::Resources, "Resources"},
+        {McpCapability::Tools, "Tools"},
+        {McpCapability::Prompts, "Prompts"},
+        {McpCapability::Sampling, "Sampling"},
+        {McpCapability::Logging, "Logging"},
+        {McpCapability::Custom, "Custom"}
+    };
+    
+    auto it = capability_map.find(capability);
+    return it != capability_map.end() ? it->second : "Unknown";
 }
 
 McpCapability Mcp::string_to_capability(const std::string& capability_str) {
-    if (capability_str == "Resources") return McpCapability::Resources;
-    if (capability_str == "Tools") return McpCapability::Tools;
-    if (capability_str == "Prompts") return McpCapability::Prompts;
-    if (capability_str == "Sampling") return McpCapability::Sampling;
-    if (capability_str == "Logging") return McpCapability::Logging;
-    if (capability_str == "Custom") return McpCapability::Custom;
+    static const std::unordered_map<std::string, McpCapability> string_map = {
+        {"Resources", McpCapability::Resources},
+        {"Tools", McpCapability::Tools},
+        {"Prompts", McpCapability::Prompts},
+        {"Sampling", McpCapability::Sampling},
+        {"Logging", McpCapability::Logging},
+        {"Custom", McpCapability::Custom}
+    };
+    
+    auto it = string_map.find(capability_str);
+    if (it != string_map.end()) {
+        return it->second;
+    }
     throw std::invalid_argument("Invalid capability string: " + capability_str);
 }
 
@@ -577,42 +751,55 @@ Signature Payments::request_refund(const PublicKey& payment_id, const std::strin
 }
 
 std::string Payments::payment_method_to_string(PaymentMethod method) {
-    switch (method) {
-        case PaymentMethod::Sol: return "Sol";
-        case PaymentMethod::SvmaiToken: return "SvmaiToken";
-        case PaymentMethod::Usdc: return "Usdc";
-        case PaymentMethod::Custom: return "Custom";
-        default: return "Unknown";
-    }
+    static const std::unordered_map<PaymentMethod, std::string> method_map = {
+        {PaymentMethod::Sol, "Sol"},
+        {PaymentMethod::SvmaiToken, "SvmaiToken"},
+        {PaymentMethod::Usdc, "Usdc"},
+        {PaymentMethod::Custom, "Custom"}
+    };
+    
+    auto it = method_map.find(method);
+    return it != method_map.end() ? it->second : "Unknown";
 }
 
 PaymentMethod Payments::string_to_payment_method(const std::string& method_str) {
-    if (method_str == "Sol") return PaymentMethod::Sol;
-    if (method_str == "SvmaiToken") return PaymentMethod::SvmaiToken;
-    if (method_str == "Usdc") return PaymentMethod::Usdc;
-    if (method_str == "Custom") return PaymentMethod::Custom;
+    static const std::unordered_map<std::string, PaymentMethod> string_map = {
+        {"Sol", PaymentMethod::Sol},
+        {"SvmaiToken", PaymentMethod::SvmaiToken},
+        {"Usdc", PaymentMethod::Usdc},
+        {"Custom", PaymentMethod::Custom}
+    };
+    
+    auto it = string_map.find(method_str);
+    if (it != string_map.end()) {
+        return it->second;
+    }
     throw std::invalid_argument("Invalid payment method string: " + method_str);
 }
 
 std::string Payments::payment_status_to_string(PaymentStatus status) {
-    switch (status) {
-        case PaymentStatus::Pending: return "Pending";
-        case PaymentStatus::Completed: return "Completed";
-        case PaymentStatus::Failed: return "Failed";
-        case PaymentStatus::Refunded: return "Refunded";
-        case PaymentStatus::Expired: return "Expired";
-        default: return "Unknown";
-    }
+    static const std::unordered_map<PaymentStatus, std::string> status_map = {
+        {PaymentStatus::Pending, "Pending"},
+        {PaymentStatus::Completed, "Completed"},
+        {PaymentStatus::Failed, "Failed"},
+        {PaymentStatus::Refunded, "Refunded"},
+        {PaymentStatus::Expired, "Expired"}
+    };
+    
+    auto it = status_map.find(status);
+    return it != status_map.end() ? it->second : "Unknown";
 }
 
 std::string Payments::payment_type_to_string(PaymentType type) {
-    switch (type) {
-        case PaymentType::Prepay: return "Prepay";
-        case PaymentType::PayAsYouGo: return "PayAsYouGo";
-        case PaymentType::Subscription: return "Subscription";
-        case PaymentType::Stream: return "Stream";
-        default: return "Unknown";
-    }
+    static const std::unordered_map<PaymentType, std::string> type_map = {
+        {PaymentType::Prepay, "Prepay"},
+        {PaymentType::PayAsYouGo, "PayAsYouGo"},
+        {PaymentType::Subscription, "Subscription"},
+        {PaymentType::Stream, "Stream"}
+    };
+    
+    auto it = type_map.find(type);
+    return it != type_map.end() ? it->second : "Unknown";
 }
 
 void Payments::validate_prepay_params(const PrepayParams& params) {
@@ -770,50 +957,59 @@ std::optional<size_t> Idl::get_serialization_size(IdlType type, std::optional<si
 }
 
 std::string Idl::idl_type_to_string(IdlType type) {
-    switch (type) {
-        case IdlType::Bool: return "Bool";
-        case IdlType::U8: return "U8";
-        case IdlType::I8: return "I8";
-        case IdlType::U16: return "U16";
-        case IdlType::I16: return "I16";
-        case IdlType::U32: return "U32";
-        case IdlType::I32: return "I32";
-        case IdlType::U64: return "U64";
-        case IdlType::I64: return "I64";
-        case IdlType::U128: return "U128";
-        case IdlType::I128: return "I128";
-        case IdlType::Bytes: return "Bytes";
-        case IdlType::String: return "String";
-        case IdlType::PublicKey: return "PublicKey";
-        case IdlType::Array: return "Array";
-        case IdlType::Vec: return "Vec";
-        case IdlType::Option: return "Option";
-        case IdlType::Struct: return "Struct";
-        case IdlType::Enum: return "Enum";
-        default: return "Unknown";
-    }
+    static const std::unordered_map<IdlType, std::string> type_map = {
+        {IdlType::Bool, "Bool"},
+        {IdlType::U8, "U8"},
+        {IdlType::I8, "I8"},
+        {IdlType::U16, "U16"},
+        {IdlType::I16, "I16"},
+        {IdlType::U32, "U32"},
+        {IdlType::I32, "I32"},
+        {IdlType::U64, "U64"},
+        {IdlType::I64, "I64"},
+        {IdlType::U128, "U128"},
+        {IdlType::I128, "I128"},
+        {IdlType::Bytes, "Bytes"},
+        {IdlType::String, "String"},
+        {IdlType::PublicKey, "PublicKey"},
+        {IdlType::Array, "Array"},
+        {IdlType::Vec, "Vec"},
+        {IdlType::Option, "Option"},
+        {IdlType::Struct, "Struct"},
+        {IdlType::Enum, "Enum"}
+    };
+    
+    auto it = type_map.find(type);
+    return it != type_map.end() ? it->second : "Unknown";
 }
 
 IdlType Idl::string_to_idl_type(const std::string& type_str) {
-    if (type_str == "Bool") return IdlType::Bool;
-    if (type_str == "U8") return IdlType::U8;
-    if (type_str == "I8") return IdlType::I8;
-    if (type_str == "U16") return IdlType::U16;
-    if (type_str == "I16") return IdlType::I16;
-    if (type_str == "U32") return IdlType::U32;
-    if (type_str == "I32") return IdlType::I32;
-    if (type_str == "U64") return IdlType::U64;
-    if (type_str == "I64") return IdlType::I64;
-    if (type_str == "U128") return IdlType::U128;
-    if (type_str == "I128") return IdlType::I128;
-    if (type_str == "Bytes") return IdlType::Bytes;
-    if (type_str == "String") return IdlType::String;
-    if (type_str == "PublicKey") return IdlType::PublicKey;
-    if (type_str == "Array") return IdlType::Array;
-    if (type_str == "Vec") return IdlType::Vec;
-    if (type_str == "Option") return IdlType::Option;
-    if (type_str == "Struct") return IdlType::Struct;
-    if (type_str == "Enum") return IdlType::Enum;
+    static const std::unordered_map<std::string, IdlType> string_map = {
+        {"Bool", IdlType::Bool},
+        {"U8", IdlType::U8},
+        {"I8", IdlType::I8},
+        {"U16", IdlType::U16},
+        {"I16", IdlType::I16},
+        {"U32", IdlType::U32},
+        {"I32", IdlType::I32},
+        {"U64", IdlType::U64},
+        {"I64", IdlType::I64},
+        {"U128", IdlType::U128},
+        {"I128", IdlType::I128},
+        {"Bytes", IdlType::Bytes},
+        {"String", IdlType::String},
+        {"PublicKey", IdlType::PublicKey},
+        {"Array", IdlType::Array},
+        {"Vec", IdlType::Vec},
+        {"Option", IdlType::Option},
+        {"Struct", IdlType::Struct},
+        {"Enum", IdlType::Enum}
+    };
+    
+    auto it = string_map.find(type_str);
+    if (it != string_map.end()) {
+        return it->second;
+    }
     throw std::invalid_argument("Invalid IDL type string: " + type_str);
 }
 

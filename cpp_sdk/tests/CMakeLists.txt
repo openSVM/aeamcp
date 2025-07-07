@@ -14,6 +14,8 @@ endif()
 add_executable(aireg++_tests
     test_main.cpp
     test_common.cpp
+    test_base58.cpp
+    test_url_validation.cpp
     test_client.cpp
     test_agent.cpp
     test_mcp.cpp
