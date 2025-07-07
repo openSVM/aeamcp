@@ -160,8 +160,8 @@ TEST_F(IdlTest, CodeGeneration) {
         
         GeneratedCode code = Idl::generate_cpp_code(idl, options);
         EXPECT_FALSE(code.header_content.empty());
-        EXPECT_THAT(code.header_content, ::testing::HasSubstr("namespace TestProgram"));
-        EXPECT_THAT(code.header_content, ::testing::HasSubstr("initialize"));
+        EXPECT_TRUE(code.header_content.find("namespace TestProgram") != std::string::npos);
+        EXPECT_TRUE(code.header_content.find("initialize") != std::string::npos);
     });
 }
 
@@ -181,5 +181,5 @@ TEST_F(IdlTest, IdlValidation) {
     
     errors = Idl::validate_idl(invalid_idl);
     EXPECT_FALSE(errors.empty());
-    EXPECT_THAT(errors[0], ::testing::HasSubstr("name"));
+    EXPECT_TRUE(errors[0].find("name") != std::string::npos);
 }

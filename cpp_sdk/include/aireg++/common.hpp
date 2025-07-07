@@ -16,6 +16,7 @@
 #include <memory>
 #include <optional>
 #include <cstdint>
+#include <array>
 
 namespace SolanaAiRegistries {
 

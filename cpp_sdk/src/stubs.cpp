@@ -7,6 +7,9 @@
  * implementation, these would interface with the actual C SDK.
  */
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
 #include <aireg++/client.hpp>
 #include <aireg++/agent.hpp>
 #include <aireg++/mcp.hpp>
@@ -14,8 +17,41 @@
 #include <aireg++/idl.hpp>
 #include <algorithm>
 #include <sstream>
+#include <regex>
 
 namespace SolanaAiRegistries {
+
+namespace {
+
+/**
+ * @brief Validate HTTP/HTTPS URL format
+ * @param url URL to validate
+ * @return true if valid HTTP/HTTPS URL
+ */
+bool is_valid_http_url(const std::string& url) {
+    // Regex for basic HTTP/HTTPS URL validation
+    static const std::regex http_regex(
+        R"(^https?:\/\/(?:[-\w.])+(?:\:[0-9]+)?(?:\/(?:[\w\/_.])*(?:\?(?:[\w&=%.])*)?(?:\#(?:[\w.])*)?)?$)",
+        std::regex_constants::icase
+    );
+    return std::regex_match(url, http_regex);
+}
+
+/**
+ * @brief Validate WebSocket URL format
+ * @param url URL to validate
+ * @return true if valid WebSocket URL
+ */
+bool is_valid_websocket_url(const std::string& url) {
+    // Regex for basic WebSocket URL validation
+    static const std::regex ws_regex(
+        R"(^wss?:\/\/(?:[-\w.])+(?:\:[0-9]+)?(?:\/(?:[\w\/_.])*(?:\?(?:[\w&=%.])*)?)?$)",
+        std::regex_constants::icase
+    );
+    return std::regex_match(url, ws_regex);
+}
+
+} // anonymous namespace
 
 // ============================================================================
 // Client Implementation
@@ -300,9 +336,9 @@ void Agent::validate_registration_params(const AgentRegistrationParams& params) 
     if (params.api_endpoint.empty()) {
         throw std::invalid_argument("Agent API endpoint cannot be empty");
     }
-    // Basic URL validation
-    if (params.api_endpoint.find("http") != 0) {
-        throw std::invalid_argument("Agent API endpoint must be a valid URL");
+    // Validate URL format
+    if (!is_valid_http_url(params.api_endpoint)) {
+        throw std::invalid_argument("Agent API endpoint must be a valid HTTP/HTTPS URL");
     }
 }
 
@@ -435,13 +471,13 @@ void Mcp::validate_registration_params(const McpRegistrationParams& params) {
 void Mcp::validate_endpoint(McpProtocol protocol, const std::string& endpoint) {
     switch (protocol) {
         case McpProtocol::Http:
-            if (endpoint.find("http") != 0) {
-                throw std::invalid_argument("HTTP endpoint must start with http:// or https://");
+            if (!is_valid_http_url(endpoint)) {
+                throw std::invalid_argument("HTTP endpoint must be a valid HTTP/HTTPS URL");
             }
             break;
         case McpProtocol::WebSocket:
-            if (endpoint.find("ws") != 0) {
-                throw std::invalid_argument("WebSocket endpoint must start with ws:// or wss://");
+            if (!is_valid_websocket_url(endpoint)) {
+                throw std::invalid_argument("WebSocket endpoint must be a valid WebSocket URL");
             }
             break;
         case McpProtocol::Stdio:
@@ -894,3 +930,5 @@ IdlDefinition Idl::load_svmai_token_idl() {
 }
 
 } // namespace SolanaAiRegistries
+
+#pragma GCC diagnostic pop

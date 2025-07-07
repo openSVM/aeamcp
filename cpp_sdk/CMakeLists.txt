@@ -16,7 +16,11 @@ endif()
 
 # Compiler-specific options
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    add_compile_options(-Wall -Wextra -Wpedantic -Werror)
+    add_compile_options(-Wall -Wextra -Wpedantic)
+    # Only enable -Werror in CI/Release builds
+    if(DEFINED ENV{CI} OR CMAKE_BUILD_TYPE STREQUAL "Release")
+        add_compile_options(-Werror)
+    endif()
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         add_compile_options(-g -O0 --coverage)
     endif()
@@ -79,7 +83,7 @@ add_custom_target(docs
 )
 
 # Install configuration
-install(TARGETS aireg++ EXPORT aireg++Targets)
+install(TARGETS aireg++ aireg++_impl EXPORT aireg++Targets)
 install(DIRECTORY include/ DESTINATION include)
 install(EXPORT aireg++Targets
     FILE aireg++Targets.cmake

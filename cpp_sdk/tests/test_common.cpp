@@ -68,69 +68,64 @@ TEST_F(CommonTest, ExceptionHierarchy) {
     
     // Test derived exceptions
     RpcException rpc_ex("Connection failed");
-    EXPECT_THAT(rpc_ex.what(), ::testing::HasSubstr("RPC Error"));
-    EXPECT_THAT(rpc_ex.what(), ::testing::HasSubstr("Connection failed"));
+    EXPECT_TRUE(std::string(rpc_ex.what()).find("RPC Error") != std::string::npos);
+    EXPECT_TRUE(std::string(rpc_ex.what()).find("Connection failed") != std::string::npos);
     
     TransactionException tx_ex("Invalid transaction");
-    EXPECT_THAT(tx_ex.what(), ::testing::HasSubstr("Transaction Error"));
-    EXPECT_THAT(tx_ex.what(), ::testing::HasSubstr("Invalid transaction"));
+    EXPECT_TRUE(std::string(tx_ex.what()).find("Transaction Error") != std::string::npos);
+    EXPECT_TRUE(std::string(tx_ex.what()).find("Invalid transaction") != std::string::npos);
     
     PaymentException pay_ex("Insufficient funds");
-    EXPECT_THAT(pay_ex.what(), ::testing::HasSubstr("Payment Error"));
-    EXPECT_THAT(pay_ex.what(), ::testing::HasSubstr("Insufficient funds"));
+    EXPECT_TRUE(std::string(pay_ex.what()).find("Payment Error") != std::string::npos);
+    EXPECT_TRUE(std::string(pay_ex.what()).find("Insufficient funds") != std::string::npos);
     
     RegistryException reg_ex("Agent not found");
-    EXPECT_THAT(reg_ex.what(), ::testing::HasSubstr("Registry Error"));
-    EXPECT_THAT(reg_ex.what(), ::testing::HasSubstr("Agent not found"));
+    EXPECT_TRUE(std::string(reg_ex.what()).find("Registry Error") != std::string::npos);
+    EXPECT_TRUE(std::string(reg_ex.what()).find("Agent not found") != std::string::npos);
+}
+
+// Test helper for Resource tests
+static bool resource_deleted = false;
+static void test_deleter(int* ptr) {
+    delete ptr;
+    resource_deleted = true;
 }
 
 TEST_F(CommonTest, ResourceRaii) {
-    bool deleted = false;
-    auto deleter = [&deleted](int* ptr) {
-        delete ptr;
-        deleted = true;
-    };
+    resource_deleted = false;
     
     {
-        Resource<int> resource(new int(42), deleter);
+        Resource<int> resource(new int(42), test_deleter);
         EXPECT_TRUE(resource.is_valid());
         EXPECT_EQ(*resource.get(), 42);
-        EXPECT_FALSE(deleted);
+        EXPECT_FALSE(resource_deleted);
     }
     
     // Resource should be automatically deleted
-    EXPECT_TRUE(deleted);
+    EXPECT_TRUE(resource_deleted);
 }
 
 TEST_F(CommonTest, ResourceMove) {
-    bool deleted = false;
-    auto deleter = [&deleted](int* ptr) {
-        delete ptr;
-        deleted = true;
-    };
+    resource_deleted = false;
     
-    Resource<int> resource1(new int(42), deleter);
+    Resource<int> resource1(new int(42), test_deleter);
     Resource<int> resource2 = std::move(resource1);
     
     EXPECT_FALSE(resource1.is_valid());
     EXPECT_TRUE(resource2.is_valid());
     EXPECT_EQ(*resource2.get(), 42);
-    EXPECT_FALSE(deleted);
+    EXPECT_FALSE(resource_deleted);
 }
 
 TEST_F(CommonTest, ResourceRelease) {
-    bool deleted = false;
-    auto deleter = [&deleted](int* ptr) {
-        delete ptr;
-        deleted = true;
-    };
+    resource_deleted = false;
     
-    Resource<int> resource(new int(42), deleter);
+    Resource<int> resource(new int(42), test_deleter);
     int* released_ptr = resource.release();
     
     EXPECT_FALSE(resource.is_valid());
     EXPECT_EQ(*released_ptr, 42);
-    EXPECT_FALSE(deleted);
+    EXPECT_FALSE(resource_deleted);
     
     // Manual cleanup required after release
     delete released_ptr;

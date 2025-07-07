@@ -19,6 +19,128 @@ namespace SolanaAiRegistries {
 // SDK initialization state
 static bool sdk_initialized = false;
 
+// Base58 alphabet (Bitcoin/Solana style)
+static const char* BASE58_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+
+namespace {
+
+/**
+ * @brief Encode binary data to base58
+ * @param data Binary data to encode
+ * @param len Length of binary data
+ * @return Base58 encoded string
+ */
+std::string encode_base58(const uint8_t* data, size_t len) {
+    if (!data || len == 0) {
+        return "";
+    }
+    
+    // Count leading zeros
+    size_t leading_zeros = 0;
+    while (leading_zeros < len && data[leading_zeros] == 0) {
+        leading_zeros++;
+    }
+    
+    // Allocate enough space for the result
+    std::vector<uint8_t> digits((len * 138 / 100) + 1);
+    size_t digits_len = 1;
+    digits[0] = 0;
+    
+    // Process each byte
+    for (size_t i = leading_zeros; i < len; i++) {
+        uint32_t carry = data[i];
+        for (size_t j = 0; j < digits_len; j++) {
+            carry += static_cast<uint32_t>(digits[j]) << 8;
+            digits[j] = carry % 58;
+            carry /= 58;
+        }
+        
+        while (carry > 0) {
+            digits[digits_len++] = carry % 58;
+            carry /= 58;
+        }
+    }
+    
+    // Convert to base58 string
+    std::string result;
+    result.reserve(leading_zeros + digits_len);
+    
+    // Add leading '1's for leading zeros
+    for (size_t i = 0; i < leading_zeros; i++) {
+        result += '1';
+    }
+    
+    // Add digits in reverse order
+    for (size_t i = digits_len; i > 0; i--) {
+        result += BASE58_ALPHABET[digits[i - 1]];
+    }
+    
+    return result;
+}
+
+/**
+ * @brief Decode base58 string to binary data
+ * @param str Base58 encoded string
+ * @param output Buffer to store decoded data
+ * @param output_len Length of output buffer
+ * @return Number of bytes decoded, or 0 on error
+ */
+size_t decode_base58(const std::string& str, uint8_t* output, size_t output_len) {
+    if (str.empty() || !output || output_len == 0) {
+        return 0;
+    }
+    
+    // Count leading '1's
+    size_t leading_ones = 0;
+    while (leading_ones < str.length() && str[leading_ones] == '1') {
+        leading_ones++;
+    }
+    
+    // Allocate space for big integer
+    std::vector<uint8_t> digits(str.length());
+    size_t digits_len = 0;
+    
+    // Process each character
+    for (size_t i = leading_ones; i < str.length(); i++) {
+        const char* pos = strchr(BASE58_ALPHABET, str[i]);
+        if (!pos) {
+            return 0; // Invalid character
+        }
+        
+        uint32_t carry = static_cast<uint32_t>(pos - BASE58_ALPHABET);
+        for (size_t j = 0; j < digits_len; j++) {
+            carry += static_cast<uint32_t>(digits[j]) * 58;
+            digits[j] = carry & 0xFF;
+            carry >>= 8;
+        }
+        
+        while (carry > 0) {
+            if (digits_len >= digits.size()) {
+                return 0; // Buffer too small
+            }
+            digits[digits_len++] = carry & 0xFF;
+            carry >>= 8;
+        }
+    }
+    
+    // Check if output buffer is large enough
+    if (leading_ones + digits_len > output_len) {
+        return 0; // Output buffer too small
+    }
+    
+    // Copy leading zeros
+    std::memset(output, 0, leading_ones);
+    
+    // Copy digits in reverse order
+    for (size_t i = 0; i < digits_len; i++) {
+        output[leading_ones + i] = digits[digits_len - 1 - i];
+    }
+    
+    return leading_ones + digits_len;
+}
+
+} // anonymous namespace
+
 void initialize() {
     if (sdk_initialized) {
         return; // Already initialized
@@ -52,22 +174,15 @@ PublicKey::PublicKey() {
 }
 
 PublicKey::PublicKey(const std::string& base58) {
-    // TODO: Implement base58 decoding
-    // For now, create a mock implementation
-    if (base58.empty() || base58.length() != 44) {
-        throw SdkException("Invalid base58 public key format");
+    if (base58.empty()) {
+        throw SdkException("Empty base58 public key string");
     }
     
-    // Mock implementation - in real implementation, decode base58
-    std::memset(data_.data(), 0, SIZE);
-    
-    // Special case for system program ID
-    if (base58 == "11111111111111111111111111111112") {
-        data_[0] = 0x00;
-        data_[1] = 0x00;
-        data_[2] = 0x00;
-        data_[3] = 0x00;
-        // ... rest remains zero
+    size_t decoded_len = decode_base58(base58, data_.data(), SIZE);
+    if (decoded_len != SIZE) {
+        throw SdkException("Invalid base58 public key: decoded to " + 
+                          std::to_string(decoded_len) + " bytes, expected " + 
+                          std::to_string(SIZE));
     }
 }
 
@@ -79,24 +194,7 @@ PublicKey::PublicKey(const uint8_t* bytes) {
 }
 
 std::string PublicKey::to_base58() const {
-    // TODO: Implement base58 encoding
-    // For now, return a mock base58 string
-    
-    // Special case for zero key (system program)
-    bool is_zero = true;
-    for (size_t i = 0; i < SIZE; ++i) {
-        if (data_[i] != 0) {
-            is_zero = false;
-            break;
-        }
-    }
-    
-    if (is_zero) {
-        return "11111111111111111111111111111112";
-    }
-    
-    // Mock base58 encoding - in real implementation, encode to base58
-    return "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM";
+    return encode_base58(data_.data(), SIZE);
 }
 
 bool PublicKey::operator==(const PublicKey& other) const noexcept {
@@ -109,13 +207,16 @@ Signature::Signature() {
 }
 
 Signature::Signature(const std::string& base58) {
-    // TODO: Implement base58 decoding for signatures
-    if (base58.empty() || base58.length() != 88) {
-        throw SdkException("Invalid base58 signature format");
+    if (base58.empty()) {
+        throw SdkException("Empty base58 signature string");
     }
     
-    // Mock implementation
-    std::memset(data_.data(), 0, SIZE);
+    size_t decoded_len = decode_base58(base58, data_.data(), SIZE);
+    if (decoded_len != SIZE) {
+        throw SdkException("Invalid base58 signature: decoded to " + 
+                          std::to_string(decoded_len) + " bytes, expected " + 
+                          std::to_string(SIZE));
+    }
 }
 
 Signature::Signature(const uint8_t* bytes) {
@@ -126,9 +227,7 @@ Signature::Signature(const uint8_t* bytes) {
 }
 
 std::string Signature::to_base58() const {
-    // TODO: Implement base58 encoding for signatures
-    // Mock implementation
-    return "5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW";
+    return encode_base58(data_.data(), SIZE);
 }
 
 bool Signature::operator==(const Signature& other) const noexcept {

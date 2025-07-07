@@ -39,11 +39,6 @@ set_target_properties(aireg++_tests PROPERTIES
 # Register tests with CTest
 gtest_discover_tests(aireg++_tests)
 
-# Add integration test label for selective running
-set_tests_properties(${CMAKE_CURRENT_BINARY_DIR}/aireg++_tests PROPERTIES
-    LABELS "unit"
-)
-
 # Create integration test target
 add_test(NAME integration_tests
     COMMAND aireg++_tests --gtest_filter="*Integration*"
