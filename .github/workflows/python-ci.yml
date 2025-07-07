@@ -1,0 +1,177 @@
+name: Python SDK CI
+
+on:
+  push:
+    paths: ['python/**']
+    branches: [main, develop]
+  pull_request:
+    paths: ['python/**']
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+    
+    defaults:
+      run:
+        working-directory: python
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('python/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-${{ matrix.python-version }}-
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[dev]
+    
+    - name: Run code formatting checks
+      run: |
+        black --check --diff .
+        isort --check-only --diff .
+    
+    - name: Run type checking
+      run: mypy .
+    
+    - name: Run linting
+      run: flake8 .
+    
+    - name: Run unit tests
+      run: |
+        pytest tests/unit -v --cov=solana_ai_registries --cov-report=xml --cov-report=html
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: python/coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    
+    defaults:
+      run:
+        working-directory: python
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[dev]
+    
+    - name: Run integration tests
+      run: |
+        pytest tests/integration -m devnet -v --tb=short
+      env:
+        SOLANA_RPC_URL: https://api.devnet.solana.com
+        # Add other environment variables as needed
+    
+    - name: Generate test report
+      if: always()
+      run: |
+        pytest tests/integration -m devnet --junitxml=integration-report.xml
+      env:
+        SOLANA_RPC_URL: https://api.devnet.solana.com
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: integration-test-results
+        path: python/integration-report.xml
+
+  docs:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    defaults:
+      run:
+        working-directory: python
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[dev,docs]
+    
+    - name: Build documentation
+      run: |
+        # Future: Add Sphinx documentation build
+        echo "Documentation build placeholder"
+    
+    - name: Deploy to GitHub Pages
+      if: success()
+      run: |
+        # Future: Deploy documentation to GitHub Pages
+        echo "Documentation deployment placeholder"
+
+  security:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    defaults:
+      run:
+        working-directory: python
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[dev]
+        pip install safety bandit
+    
+    - name: Run security checks
+      run: |
+        # Check for known security vulnerabilities
+        safety check
+        
+        # Run static security analysis
+        bandit -r solana_ai_registries/ -f json -o bandit-report.json || true
+    
+    - name: Upload security report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: security-report
+        path: python/bandit-report.json
