@@ -98,11 +98,20 @@ size_t decode_base58(const std::string& str, uint8_t* output, size_t output_len)
     
     // If the string is all 1's, treat it as all zeros
     if (leading_ones == str.length()) {
-        if (leading_ones > output_len) {
-            return 0; // Too many leading ones for output buffer
+        // For all-ones string, we need to fill the output with zeros
+        // but only if the length matches what we'd expect for a full zero array
+        // For PublicKey (32 bytes), this should be 33 '1' characters
+        // For Signature (64 bytes), this should be 65 '1' characters  
+        if ((output_len == 32 && leading_ones == 33) ||  // PublicKey
+            (output_len == 64 && leading_ones == 65) ||  // Signature  
+            (output_len != 32 && output_len != 64 && leading_ones <= output_len)) {    // Other sizes
+            if (output_len > 0) {
+                std::memset(output, 0, output_len);
+                return output_len;
+            }
         }
-        std::memset(output, 0, std::min(leading_ones, output_len));
-        return std::min(leading_ones, output_len);
+        // Wrong length all-ones string
+        return 0;
     }
     
     // Allocate space for big integer

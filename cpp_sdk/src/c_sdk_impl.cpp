@@ -130,7 +130,7 @@ aireg_client_t* aireg_client_create(const char* rpc_url, uint32_t cluster) {
         return nullptr;
     }
     
-    strcpy(client->rpc_url, rpc_url);
+    strncpy(client->rpc_url, rpc_url, strlen(rpc_url) + 1);
     client->cluster = cluster;
     
     return client;
