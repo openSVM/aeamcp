@@ -49,10 +49,38 @@ if(ENABLE_VALGRIND)
 endif()
 
 # Find required packages
-find_package(PkgConfig REQUIRED)
+find_package(PkgConfig)
 
 # Find libsodium
-pkg_check_modules(LIBSODIUM REQUIRED libsodium)
+if(PkgConfig_FOUND)
+    pkg_check_modules(LIBSODIUM libsodium)
+endif()
+
+# Fallback for systems without pkg-config or if libsodium is not found via pkg-config
+if(NOT LIBSODIUM_FOUND)
+    find_path(LIBSODIUM_INCLUDE_DIR sodium.h
+        PATHS /usr/include /usr/local/include /opt/local/include
+              ${CMAKE_PREFIX_PATH}/include
+        PATH_SUFFIXES sodium
+    )
+    
+    find_library(LIBSODIUM_LIBRARY
+        NAMES sodium libsodium
+        PATHS /usr/lib /usr/local/lib /opt/local/lib
+              ${CMAKE_PREFIX_PATH}/lib
+    )
+    
+    if(LIBSODIUM_INCLUDE_DIR AND LIBSODIUM_LIBRARY)
+        set(LIBSODIUM_FOUND TRUE)
+        set(LIBSODIUM_INCLUDE_DIRS ${LIBSODIUM_INCLUDE_DIR})
+        set(LIBSODIUM_LIBRARIES ${LIBSODIUM_LIBRARY})
+        message(STATUS "Found libsodium: ${LIBSODIUM_LIBRARY}")
+    endif()
+endif()
+
+if(NOT LIBSODIUM_FOUND)
+    message(FATAL_ERROR "libsodium not found! Please install libsodium development package.")
+endif()
 
 # Include directories
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
