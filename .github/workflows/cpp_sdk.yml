@@ -33,11 +33,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - name: Install libsodium
+      if: matrix.os == 'ubuntu-latest'
+      run: sudo apt-get update && sudo apt-get install -y libsodium-dev
+    
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
-        sudo apt-get update
-        sudo apt-get install -y cmake ninja-build libsodium-dev pkg-config valgrind
+        sudo apt-get install -y cmake ninja-build pkg-config valgrind
         if [ "${{ matrix.compiler }}" = "clang" ]; then
           sudo apt-get install -y clang-15
           echo "CC=clang-15" >> $GITHUB_ENV
@@ -140,10 +143,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - name: Install libsodium
+      run: sudo apt-get update && sudo apt-get install -y libsodium-dev
+    
     - name: Install dependencies
       run: |
-        sudo apt-get update
-        sudo apt-get install -y cmake ninja-build libsodium-dev pkg-config valgrind clang-15
+        sudo apt-get install -y cmake ninja-build pkg-config valgrind clang-15
         echo "CC=clang-15" >> $GITHUB_ENV
         echo "CXX=clang++-15" >> $GITHUB_ENV
     
@@ -193,10 +198,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - name: Install libsodium
+      run: sudo apt-get update && sudo apt-get install -y libsodium-dev
+    
     - name: Install dependencies
       run: |
-        sudo apt-get update
-        sudo apt-get install -y cmake ninja-build libsodium-dev pkg-config clang-15 clang-tidy-15
+        sudo apt-get install -y cmake ninja-build pkg-config clang-15 clang-tidy-15
         echo "CC=clang-15" >> $GITHUB_ENV
         echo "CXX=clang++-15" >> $GITHUB_ENV
     
