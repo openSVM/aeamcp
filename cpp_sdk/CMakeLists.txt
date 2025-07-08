@@ -54,19 +54,36 @@ find_package(PkgConfig)
 # Find libsodium
 if(PkgConfig_FOUND)
     pkg_check_modules(LIBSODIUM libsodium)
+    if(LIBSODIUM_FOUND)
+        message(STATUS "Found libsodium via pkg-config: ${LIBSODIUM_LIBRARIES}")
+    endif()
 endif()
 
 # Fallback for systems without pkg-config or if libsodium is not found via pkg-config
 if(NOT LIBSODIUM_FOUND)
+    # Add macOS brew paths
+    if(APPLE)
+        # Try to find brew prefix
+        execute_process(
+            COMMAND brew --prefix
+            OUTPUT_VARIABLE BREW_PREFIX
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+        if(BREW_PREFIX)
+            list(APPEND CMAKE_PREFIX_PATH ${BREW_PREFIX})
+        endif()
+    endif()
+    
     find_path(LIBSODIUM_INCLUDE_DIR sodium.h
-        PATHS /usr/include /usr/local/include /opt/local/include
+        PATHS /usr/include /usr/local/include /opt/local/include /opt/homebrew/include
               ${CMAKE_PREFIX_PATH}/include
         PATH_SUFFIXES sodium
     )
     
     find_library(LIBSODIUM_LIBRARY
         NAMES sodium libsodium
-        PATHS /usr/lib /usr/local/lib /opt/local/lib
+        PATHS /usr/lib /usr/local/lib /opt/local/lib /opt/homebrew/lib
               ${CMAKE_PREFIX_PATH}/lib
     )
     

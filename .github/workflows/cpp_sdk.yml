@@ -51,6 +51,10 @@ jobs:
       if: matrix.os == 'macos-latest'
       run: |
         brew install cmake ninja libsodium pkg-config
+        # Set brew paths for pkg-config and CMake
+        BREW_PREFIX=$(brew --prefix)
+        echo "PKG_CONFIG_PATH=${BREW_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH}" >> $GITHUB_ENV
+        echo "CMAKE_PREFIX_PATH=${BREW_PREFIX}:${CMAKE_PREFIX_PATH}" >> $GITHUB_ENV
         if [ "${{ matrix.compiler }}" = "clang" ]; then
           echo "CC=clang" >> $GITHUB_ENV
           echo "CXX=clang++" >> $GITHUB_ENV
