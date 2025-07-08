@@ -51,10 +51,12 @@ jobs:
       if: matrix.os == 'macos-latest'
       run: |
         brew install cmake ninja libsodium pkg-config
-        # Set brew paths for pkg-config and CMake
         BREW_PREFIX=$(brew --prefix)
         echo "PKG_CONFIG_PATH=${BREW_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH}" >> $GITHUB_ENV
         echo "CMAKE_PREFIX_PATH=${BREW_PREFIX}:${CMAKE_PREFIX_PATH}" >> $GITHUB_ENV
+        echo "LIBRARY_PATH=${BREW_PREFIX}/lib:${LIBRARY_PATH}" >> $GITHUB_ENV
+        echo "LD_LIBRARY_PATH=${BREW_PREFIX}/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+        echo "DYLD_LIBRARY_PATH=${BREW_PREFIX}/lib:${DYLD_LIBRARY_PATH}" >> $GITHUB_ENV
         if [ "${{ matrix.compiler }}" = "clang" ]; then
           echo "CC=clang" >> $GITHUB_ENV
           echo "CXX=clang++" >> $GITHUB_ENV
@@ -215,7 +217,7 @@ jobs:
     
     - name: Install dependencies
       run: |
-        sudo apt-get install -y cmake ninja-build pkg-config clang-15 clang-tidy-15
+        sudo apt-get install -y cmake ninja-build pkg-config clang-15 clang-tidy-15 clang-format-15  # Add clang-format-15 here
         echo "CC=clang-15" >> $GITHUB_ENV
         echo "CXX=clang++-15" >> $GITHUB_ENV
     
@@ -250,6 +252,9 @@ jobs:
     
     - name: Install libsodium
       run: sudo apt-get update && sudo apt-get install -y libsodium-dev
+
+    - name: Create doxygen output directory
+      run: mkdir -p cpp_sdk/docs/doxygen
     
     - name: Install dependencies
       run: |
