@@ -146,7 +146,7 @@ add_custom_target(coverage
 )
 
 add_custom_target(docs
-    COMMAND ${CMAKE_COMMAND} -E make_directory docs/html
+    COMMAND ${CMAKE_COMMAND} -E make_directory docs/doxygen
     COMMAND doxygen ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile
     COMMENT "Generating API documentation"
 )

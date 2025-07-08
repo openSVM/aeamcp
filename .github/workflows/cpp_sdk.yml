@@ -35,7 +35,7 @@ jobs:
     
     - name: Install libsodium
       if: matrix.os == 'ubuntu-latest'
-      run: sudo apt-get update && sudo apt-get install -y libsodium-dev
+      run: sudo apt-get update && sudo apt-get install -y libsodium-dev lcov
     
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
@@ -50,7 +50,7 @@ jobs:
     - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
       run: |
-        brew install cmake ninja libsodium pkg-config
+        brew install cmake ninja libsodium pkg-config lcov
         BREW_PREFIX=$(brew --prefix)
         echo "PKG_CONFIG_PATH=${BREW_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH}" >> $GITHUB_ENV
         echo "CMAKE_PREFIX_PATH=${BREW_PREFIX}:${CMAKE_PREFIX_PATH}" >> $GITHUB_ENV
@@ -159,7 +159,7 @@ jobs:
     - uses: actions/checkout@v4
     
     - name: Install libsodium
-      run: sudo apt-get update && sudo apt-get install -y libsodium-dev
+      run: sudo apt-get update && sudo apt-get install -y libsodium-dev lcov
     
     - name: Install dependencies
       run: |
@@ -213,7 +213,7 @@ jobs:
     - uses: actions/checkout@v4
     
     - name: Install libsodium
-      run: sudo apt-get update && sudo apt-get install -y libsodium-dev
+      run: sudo apt-get update && sudo apt-get install -y libsodium-dev lcov
     
     - name: Install dependencies
       run: |
@@ -251,7 +251,7 @@ jobs:
     - uses: actions/checkout@v4
     
     - name: Install libsodium
-      run: sudo apt-get update && sudo apt-get install -y libsodium-dev
+      run: sudo apt-get update && sudo apt-get install -y libsodium-dev lcov
 
     - name: Create doxygen output directory
       run: mkdir -p cpp_sdk/docs/doxygen
