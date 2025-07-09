@@ -138,13 +138,22 @@ add_custom_target(test-integration
     COMMENT "Running integration tests"
 )
 
+# Check for specific gcov version for coverage
+find_program(GCOV_8_EXECUTABLE gcov-8)
+if(GCOV_8_EXECUTABLE)
+    set(GCOV_TOOL ${GCOV_8_EXECUTABLE})
+else()
+    find_program(GCOV_EXECUTABLE gcov)
+    set(GCOV_TOOL ${GCOV_EXECUTABLE})
+endif()
+
 add_custom_target(coverage
     # Clean any existing coverage data
     COMMAND ${CMAKE_COMMAND} -E remove -f coverage.info coverage_filtered.info
     # Run tests to generate .gcda files (no need to zero counters since we clean .gcda)
     COMMAND tests/aireg++_tests
     # Capture coverage data from all .gcno/.gcda files with error handling
-    COMMAND lcov --capture --directory . --output-file coverage.info --ignore-errors mismatch,gcov,source --rc geninfo_unexecuted_blocks=1
+    COMMAND lcov --gcov-tool ${GCOV_TOOL} --capture --directory . --output-file coverage.info --ignore-errors mismatch,gcov,source --rc geninfo_unexecuted_blocks=1
     # Filter out system headers and test files
     COMMAND lcov --remove coverage.info '/usr/*' '*/tests/*' '*/examples/*' '*/googletest/*' --output-file coverage_filtered.info --ignore-errors mismatch,source,unused
     # Create output directory

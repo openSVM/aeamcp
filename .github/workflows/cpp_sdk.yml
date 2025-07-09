@@ -37,6 +37,19 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: sudo apt-get update && sudo apt-get install -y libsodium-dev lcov
     
+    - name: Install GCC-8 for code coverage
+      if: matrix.os == 'ubuntu-latest' && matrix.compiler == 'gcc'
+      run: sudo apt-get install -y gcc-8 g++-8
+
+    - name: Set GCC-8 as default for code coverage
+      if: matrix.os == 'ubuntu-latest' && matrix.compiler == 'gcc'
+      run: |
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 80
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 80
+        echo "CC=gcc-8" >> $GITHUB_ENV
+        echo "CXX=g++-8" >> $GITHUB_ENV
+        echo "GCOV=gcov-8" >> $GITHUB_ENV
+    
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
@@ -133,7 +146,7 @@ jobs:
         ctest --verbose --output-on-failure
     
     - name: Generate coverage report (Debug builds only)
-      if: matrix.build-type == 'Debug'
+      if: matrix.build-type == 'Debug' && matrix.os == 'ubuntu-latest' && matrix.compiler == 'gcc'
       run: |
         cd cpp_sdk/build
         ninja coverage
