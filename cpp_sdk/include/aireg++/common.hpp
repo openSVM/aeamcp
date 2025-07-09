@@ -213,13 +213,13 @@ public:
    * @param resource Pointer to C SDK resource
    * @param deleter Function to delete the resource
    */
-  Resource(T *resource, Deleter deleter)
+  Resource(T * resource, Deleter deleter)
       : resource_(resource), deleter_(deleter) {}
 
   /**
    * @brief Move constructor
    */
-  Resource(Resource &&other) noexcept
+  Resource(Resource && other) noexcept
       : resource_(other.resource_), deleter_(other.deleter_) {
     other.resource_ = nullptr;
   }

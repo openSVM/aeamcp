@@ -243,7 +243,7 @@ jobs:
     - name: Run clang-format check
       run: |
         cd cpp_sdk
-        find . -name "*.cpp" -o -name "*.hpp" | xargs clang-format-15 --dry-run --Werror
+        find . -name "*.cpp" -o -name "*.hpp" | grep -v "^./build" | xargs clang-format-15 --dry-run --Werror
 
   documentation:
     runs-on: ubuntu-latest
