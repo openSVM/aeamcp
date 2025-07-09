@@ -1,0 +1,33 @@
+[package]
+name = "access-control"
+version = "0.1.0"
+description = "Solana program for wallet signature-based access control in AEAMCP protocol"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/openSVM/aeamcp"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "access_control"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = { version = "0.29.0", features = ["init-if-needed"] }
+anchor-spl = "0.29.0"
+spl-token = { version = "=4.0.0", features = ["no-entrypoint"] }
+solana-program = "1.18.26"
+ed25519-dalek = { version = "2.1.1", default-features = false, features = ["rand_core"] }
+rand_core = { version = "0.6.4", default-features = false }
+sha2 = { version = "0.10.8", default-features = false }
+bytemuck = { version = "1.16.1", features = ["derive"] }
+
+[dev-dependencies]
+solana-program-test = "1.18.26"
+solana-sdk = "1.18.26"
+tokio = { version = "1.39.3", features = ["rt", "macros"] }

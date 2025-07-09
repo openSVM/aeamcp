@@ -5,10 +5,12 @@ anchor_version = "0.29.0"
 members = [
     "programs/agent-registry",
     "programs/mcp-server-registry",
+    "programs/access-control",
 ]
 [programs.devnet]
 agent_registry = "2CyuaQMyxJNg637bYSR1ZhwfDFd3ssCvTJHMBTbCH8D4"
 mcp_server_registry = "FYu2V5y6vGjsra7rqCKs5Z4paMLQB2mT4iTc9KABGCSM"
+access_control = "ACTRLxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 [features]
 skip-lint = false
