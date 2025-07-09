@@ -25,92 +25,92 @@ namespace SolanaAiRegistries {
  * @brief Agent capability types
  */
 enum class AgentCapability {
-  TextGeneration,   ///< Text generation capabilities
-  ImageGeneration,  ///< Image generation capabilities
-  CodeGeneration,   ///< Code generation capabilities
-  DataAnalysis,     ///< Data analysis capabilities
-  WebSearch,        ///< Web search capabilities
-  Custom            ///< Custom capabilities
+  TextGeneration,  ///< Text generation capabilities
+  ImageGeneration, ///< Image generation capabilities
+  CodeGeneration,  ///< Code generation capabilities
+  DataAnalysis,    ///< Data analysis capabilities
+  WebSearch,       ///< Web search capabilities
+  Custom           ///< Custom capabilities
 };
 
 /**
  * @brief Agent pricing model
  */
 enum class PricingModel {
-  PerRequest,    ///< Per-request pricing
-  PerToken,      ///< Per-token pricing
-  Subscription,  ///< Subscription-based pricing
-  Free           ///< Free usage
+  PerRequest,   ///< Per-request pricing
+  PerToken,     ///< Per-token pricing
+  Subscription, ///< Subscription-based pricing
+  Free          ///< Free usage
 };
 
 /**
  * @brief Agent registry entry information
  */
 struct AgentInfo {
-  PublicKey agent_id;                         ///< Unique agent identifier
-  std::string name;                           ///< Agent display name
-  std::string description;                    ///< Agent description
-  std::string version;                        ///< Agent version
-  PublicKey owner;                            ///< Agent owner public key
-  std::vector<AgentCapability> capabilities;  ///< Agent capabilities
-  std::string api_endpoint;                   ///< Agent API endpoint URL
-  PricingModel pricing_model;                 ///< Pricing model
-  uint64_t price_per_request;                 ///< Price per request in lamports
-  uint64_t price_per_token;                   ///< Price per token in lamports
-  bool is_active;                             ///< Whether agent is active
-  std::chrono::system_clock::time_point created_at;  ///< Creation timestamp
-  std::chrono::system_clock::time_point updated_at;  ///< Last update timestamp
-  std::optional<std::string> metadata_uri;  ///< URI to additional metadata
-  std::vector<std::string> tags;            ///< Agent tags for categorization
+  PublicKey agent_id;                        ///< Unique agent identifier
+  std::string name;                          ///< Agent display name
+  std::string description;                   ///< Agent description
+  std::string version;                       ///< Agent version
+  PublicKey owner;                           ///< Agent owner public key
+  std::vector<AgentCapability> capabilities; ///< Agent capabilities
+  std::string api_endpoint;                  ///< Agent API endpoint URL
+  PricingModel pricing_model;                ///< Pricing model
+  uint64_t price_per_request;                ///< Price per request in lamports
+  uint64_t price_per_token;                  ///< Price per token in lamports
+  bool is_active;                            ///< Whether agent is active
+  std::chrono::system_clock::time_point created_at; ///< Creation timestamp
+  std::chrono::system_clock::time_point updated_at; ///< Last update timestamp
+  std::optional<std::string> metadata_uri; ///< URI to additional metadata
+  std::vector<std::string> tags;           ///< Agent tags for categorization
 };
 
 /**
  * @brief Agent search filters
  */
 struct AgentSearchFilters {
-  std::optional<std::string> name_contains;  ///< Filter by name containing text
+  std::optional<std::string> name_contains; ///< Filter by name containing text
   std::optional<std::vector<AgentCapability>>
-      capabilities;                               ///< Filter by capabilities
-  std::optional<PricingModel> pricing_model;      ///< Filter by pricing model
-  std::optional<uint64_t> max_price_per_request;  ///< Maximum price per request
-  std::optional<uint64_t> max_price_per_token;    ///< Maximum price per token
-  std::optional<bool> active_only;                ///< Show only active agents
-  std::optional<std::vector<std::string>> tags;   ///< Filter by tags
-  std::optional<PublicKey> owner;                 ///< Filter by owner
+      capabilities;                              ///< Filter by capabilities
+  std::optional<PricingModel> pricing_model;     ///< Filter by pricing model
+  std::optional<uint64_t> max_price_per_request; ///< Maximum price per request
+  std::optional<uint64_t> max_price_per_token;   ///< Maximum price per token
+  std::optional<bool> active_only;               ///< Show only active agents
+  std::optional<std::vector<std::string>> tags;  ///< Filter by tags
+  std::optional<PublicKey> owner;                ///< Filter by owner
 };
 
 /**
  * @brief Agent registration parameters
  */
 struct AgentRegistrationParams {
-  std::string name;                           ///< Agent name (required)
-  std::string description;                    ///< Agent description (required)
-  std::string version;                        ///< Agent version (required)
-  std::vector<AgentCapability> capabilities;  ///< Agent capabilities (required)
-  std::string api_endpoint;                   ///< API endpoint URL (required)
-  PricingModel pricing_model;                 ///< Pricing model (required)
-  uint64_t price_per_request = 0;             ///< Price per request in lamports
-  uint64_t price_per_token = 0;               ///< Price per token in lamports
-  std::optional<std::string> metadata_uri;    ///< URI to additional metadata
-  std::vector<std::string> tags;              ///< Agent tags
+  std::string name;                          ///< Agent name (required)
+  std::string description;                   ///< Agent description (required)
+  std::string version;                       ///< Agent version (required)
+  std::vector<AgentCapability> capabilities; ///< Agent capabilities (required)
+  std::string api_endpoint;                  ///< API endpoint URL (required)
+  PricingModel pricing_model;                ///< Pricing model (required)
+  uint64_t price_per_request = 0;            ///< Price per request in lamports
+  uint64_t price_per_token = 0;              ///< Price per token in lamports
+  std::optional<std::string> metadata_uri;   ///< URI to additional metadata
+  std::vector<std::string> tags;             ///< Agent tags
 };
 
 /**
  * @brief Agent update parameters
  */
 struct AgentUpdateParams {
-  std::optional<std::string> name;         ///< New agent name
-  std::optional<std::string> description;  ///< New agent description
-  std::optional<std::string> version;      ///< New agent version
+  std::optional<std::string> name;        ///< New agent name
+  std::optional<std::string> description; ///< New agent description
+  std::optional<std::string> version;     ///< New agent version
   std::optional<std::vector<AgentCapability>>
-      capabilities;                              ///< New capabilities
-  std::optional<std::string> api_endpoint;       ///< New API endpoint
-  std::optional<PricingModel> pricing_model;     ///< New pricing model
-  std::optional<uint64_t> price_per_request;     ///< New price per request
-  std::optional<uint64_t> price_per_token;       ///< New price per token
-  std::optional<bool> is_active;                 ///< New active status
-  std::optional<std::string> metadata_uri;       ///< New metadata URI
-  std::optional<std::vector<std::string>> tags;  ///< New tags
+      capabilities;                             ///< New capabilities
+  std::optional<std::string> api_endpoint;      ///< New API endpoint
+  std::optional<PricingModel> pricing_model;    ///< New pricing model
+  std::optional<uint64_t> price_per_request;    ///< New price per request
+  std::optional<uint64_t> price_per_token;      ///< New price per token
+  std::optional<bool> is_active;                ///< New active status
+  std::optional<std::string> metadata_uri;      ///< New metadata URI
+  std::optional<std::vector<std::string>> tags; ///< New tags
 };
 
 /**
@@ -121,7 +121,7 @@ struct AgentUpdateParams {
  * updates, queries, and deactivation with proper error handling and validation.
  */
 class Agent {
- public:
+public:
   /**
    * @brief Construct Agent with client
    * @param client Client instance for blockchain operations
@@ -248,8 +248,8 @@ class Agent {
    * @return Agent capability enum
    * @throws std::invalid_argument if string is invalid
    */
-  static AgentCapability string_to_capability(
-      const std::string &capability_str);
+  static AgentCapability
+  string_to_capability(const std::string &capability_str);
 
   /**
    * @brief Get pricing model as string
@@ -271,12 +271,12 @@ class Agent {
    * @param params Parameters to validate
    * @throws std::invalid_argument if parameters are invalid
    */
-  static void validate_registration_params(
-      const AgentRegistrationParams &params);
+  static void
+  validate_registration_params(const AgentRegistrationParams &params);
 
- private:
+private:
   class Impl;
   std::unique_ptr<Impl> pimpl_;
 };
 
-}  // namespace SolanaAiRegistries
+} // namespace SolanaAiRegistries

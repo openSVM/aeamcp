@@ -95,14 +95,14 @@ bool is_valid_websocket_url(const std::string &url) {
   return std::regex_match(url, ws_regex);
 }
 
-}  // anonymous namespace
+} // anonymous namespace
 
 // ============================================================================
 // Client Implementation
 // ============================================================================
 
 class Client::Impl {
- public:
+public:
   ClientConfig config;
   Bridge::ClientPtr client_ptr;
 
@@ -129,8 +129,8 @@ Client::~Client() = default;
 Client::Client(Client &&other) noexcept = default;
 Client &Client::operator=(Client &&other) noexcept = default;
 
-std::optional<AccountInfo> Client::get_account_info(
-    const PublicKey &public_key) {
+std::optional<AccountInfo>
+Client::get_account_info(const PublicKey &public_key) {
   // Mock implementation - return system program account info
   if (public_key.to_base58() == "11111111111111111111111111111112") {
     AccountInfo info;
@@ -147,7 +147,7 @@ std::optional<AccountInfo> Client::get_account_info(
 uint64_t Client::get_balance(const PublicKey &public_key) {
   // Mock implementation
   if (public_key.to_base58() == "11111111111111111111111111111112") {
-    return 1;  // System program has 1 lamport
+    return 1; // System program has 1 lamport
   }
   return 0;
 }
@@ -172,14 +172,15 @@ TransactionResult Client::send_and_confirm_transaction(
   return result;
 }
 
-Signature Client::send_transaction(
-    const std::vector<uint8_t> &transaction_data) {
+Signature
+Client::send_transaction(const std::vector<uint8_t> &transaction_data) {
   // Mock implementation
   return Signature();
 }
 
-TransactionResult Client::confirm_transaction(
-    const Signature &signature, std::chrono::milliseconds timeout_ms) {
+TransactionResult
+Client::confirm_transaction(const Signature &signature,
+                            std::chrono::milliseconds timeout_ms) {
   // Mock implementation
   TransactionResult result;
   result.signature = signature;
@@ -188,8 +189,8 @@ TransactionResult Client::confirm_transaction(
   return result;
 }
 
-std::optional<TransactionResult> Client::get_transaction(
-    const Signature &signature) {
+std::optional<TransactionResult>
+Client::get_transaction(const Signature &signature) {
   // Mock implementation
   TransactionResult result;
   result.signature = signature;
@@ -203,7 +204,7 @@ std::string Client::get_rpc_url() const {
 }
 
 bool Client::is_connected() const {
-  return true;  // Mock implementation
+  return true; // Mock implementation
 }
 
 // ============================================================================
@@ -211,7 +212,7 @@ bool Client::is_connected() const {
 // ============================================================================
 
 class TransactionBuilder::Impl {
- public:
+public:
   Client &client;
   Bridge::TransactionBuilderPtr builder_ptr;
   std::optional<PublicKey> payer;
@@ -238,23 +239,24 @@ TransactionBuilder::TransactionBuilder(Client &client)
 TransactionBuilder::~TransactionBuilder() = default;
 TransactionBuilder::TransactionBuilder(TransactionBuilder &&other) noexcept =
     default;
-TransactionBuilder &TransactionBuilder::operator=(
-    TransactionBuilder &&other) noexcept = default;
+TransactionBuilder &
+TransactionBuilder::operator=(TransactionBuilder &&other) noexcept = default;
 
 TransactionBuilder &TransactionBuilder::set_payer(const PublicKey &payer) {
   pimpl_->payer = payer;
   return *this;
 }
 
-TransactionBuilder &TransactionBuilder::set_recent_blockhash(
-    const std::string &blockhash) {
+TransactionBuilder &
+TransactionBuilder::set_recent_blockhash(const std::string &blockhash) {
   pimpl_->recent_blockhash = blockhash;
   return *this;
 }
 
-TransactionBuilder &TransactionBuilder::add_instruction(
-    const PublicKey &program_id, const std::vector<PublicKey> &accounts,
-    const std::vector<uint8_t> &data) {
+TransactionBuilder &
+TransactionBuilder::add_instruction(const PublicKey &program_id,
+                                    const std::vector<PublicKey> &accounts,
+                                    const std::vector<uint8_t> &data) {
   Impl::Instruction instruction;
   instruction.program_id = program_id;
   instruction.accounts = accounts;
@@ -280,12 +282,12 @@ std::vector<uint8_t> TransactionBuilder::build() {
   std::vector<uint8_t> tx_data;
 
   // 1. Compact-u16 for number of signatures (placeholder, will be filled later)
-  tx_data.push_back(0x00);  // We'll put the actual count here
+  tx_data.push_back(0x00); // We'll put the actual count here
 
   // 2. Message header (3 bytes)
-  tx_data.push_back(0x01);  // num_required_signatures
-  tx_data.push_back(0x00);  // num_readonly_signed_accounts
-  tx_data.push_back(0x00);  // num_readonly_unsigned_accounts
+  tx_data.push_back(0x01); // num_required_signatures
+  tx_data.push_back(0x00); // num_readonly_signed_accounts
+  tx_data.push_back(0x00); // num_readonly_unsigned_accounts
 
   // 3. Collect all unique accounts
   std::vector<PublicKey> all_accounts;
@@ -384,8 +386,8 @@ std::vector<uint8_t> TransactionBuilder::build() {
   return tx_data;
 }
 
-std::vector<uint8_t> TransactionBuilder::build_and_sign(
-    const std::vector<uint8_t> &keypair_data) {
+std::vector<uint8_t>
+TransactionBuilder::build_and_sign(const std::vector<uint8_t> &keypair_data) {
   if (keypair_data.size() != 64) {
     throw TransactionException(
         "Invalid keypair size: expected 64 bytes (32 private + 32 public)");
@@ -443,7 +445,7 @@ TransactionBuilder &TransactionBuilder::clear() {
 // ============================================================================
 
 class Agent::Impl {
- public:
+public:
   Client &client;
   Bridge::AgentPtr agent_ptr;
 
@@ -599,7 +601,7 @@ void Agent::validate_registration_params(
 // ============================================================================
 
 class Mcp::Impl {
- public:
+public:
   Client &client;
   Bridge::McpPtr mcp_ptr;
 
@@ -649,8 +651,8 @@ std::vector<McpServerInfo> Mcp::get_servers_by_owner(const PublicKey &owner,
   return {};
 }
 
-std::vector<McpServerInfo> Mcp::get_servers_by_capability(
-    McpCapability capability, bool active_only) {
+std::vector<McpServerInfo>
+Mcp::get_servers_by_capability(McpCapability capability, bool active_only) {
   // Mock implementation
   return {};
 }
@@ -754,26 +756,26 @@ void Mcp::validate_registration_params(const McpRegistrationParams &params) {
 
 void Mcp::validate_endpoint(McpProtocol protocol, const std::string &endpoint) {
   switch (protocol) {
-    case McpProtocol::Http:
-      if (!is_valid_http_url(endpoint)) {
-        throw std::invalid_argument(
-            "HTTP endpoint must be a valid HTTP/HTTPS URL");
-      }
-      break;
-    case McpProtocol::WebSocket:
-      if (!is_valid_websocket_url(endpoint)) {
-        throw std::invalid_argument(
-            "WebSocket endpoint must be a valid WebSocket URL");
-      }
-      break;
-    case McpProtocol::Stdio:
-      // Any non-empty string is valid for stdio
-      break;
-    case McpProtocol::Custom:
-      // Any non-empty string is valid for custom protocol
-      break;
-    default:
-      throw std::invalid_argument("Unknown protocol");
+  case McpProtocol::Http:
+    if (!is_valid_http_url(endpoint)) {
+      throw std::invalid_argument(
+          "HTTP endpoint must be a valid HTTP/HTTPS URL");
+    }
+    break;
+  case McpProtocol::WebSocket:
+    if (!is_valid_websocket_url(endpoint)) {
+      throw std::invalid_argument(
+          "WebSocket endpoint must be a valid WebSocket URL");
+    }
+    break;
+  case McpProtocol::Stdio:
+    // Any non-empty string is valid for stdio
+    break;
+  case McpProtocol::Custom:
+    // Any non-empty string is valid for custom protocol
+    break;
+  default:
+    throw std::invalid_argument("Unknown protocol");
   }
 }
 
@@ -782,7 +784,7 @@ void Mcp::validate_endpoint(McpProtocol protocol, const std::string &endpoint) {
 // ============================================================================
 
 class Payments::Impl {
- public:
+public:
   Client &client;
   Bridge::PaymentsPtr payments_ptr;
 
@@ -801,30 +803,33 @@ Payments::~Payments() = default;
 Payments::Payments(Payments &&other) noexcept = default;
 Payments &Payments::operator=(Payments &&other) noexcept = default;
 
-std::pair<PublicKey, Signature> Payments::create_prepayment(
-    const PrepayParams &params, const std::vector<uint8_t> &payer_keypair) {
+std::pair<PublicKey, Signature>
+Payments::create_prepayment(const PrepayParams &params,
+                            const std::vector<uint8_t> &payer_keypair) {
   validate_prepay_params(params);
   // Mock implementation
   return {PublicKey(), Signature()};
 }
 
-std::pair<PublicKey, Signature> Payments::pay_as_you_go(
-    const PayAsYouGoParams &params, const std::vector<uint8_t> &payer_keypair) {
+std::pair<PublicKey, Signature>
+Payments::pay_as_you_go(const PayAsYouGoParams &params,
+                        const std::vector<uint8_t> &payer_keypair) {
   validate_pay_as_you_go_params(params);
   // Mock implementation
   return {PublicKey(), Signature()};
 }
 
-std::pair<PublicKey, Signature> Payments::create_subscription(
-    const SubscriptionParams &params,
-    const std::vector<uint8_t> &payer_keypair) {
+std::pair<PublicKey, Signature>
+Payments::create_subscription(const SubscriptionParams &params,
+                              const std::vector<uint8_t> &payer_keypair) {
   validate_subscription_params(params);
   // Mock implementation
   return {PublicKey(), Signature()};
 }
 
-std::pair<PublicKey, Signature> Payments::start_stream(
-    const StreamParams &params, const std::vector<uint8_t> &payer_keypair) {
+std::pair<PublicKey, Signature>
+Payments::start_stream(const StreamParams &params,
+                       const std::vector<uint8_t> &payer_keypair) {
   validate_stream_params(params);
   // Mock implementation
   return {PublicKey(), Signature()};
@@ -836,9 +841,9 @@ Signature Payments::stop_stream(const PublicKey &stream_id,
   return Signature();
 }
 
-Signature Payments::cancel_subscription(
-    const PublicKey &subscription_id,
-    const std::vector<uint8_t> &payer_keypair) {
+Signature
+Payments::cancel_subscription(const PublicKey &subscription_id,
+                              const std::vector<uint8_t> &payer_keypair) {
   // Mock implementation
   return Signature();
 }
@@ -848,8 +853,9 @@ std::optional<PaymentInfo> Payments::get_payment(const PublicKey &payment_id) {
   return std::nullopt;
 }
 
-std::vector<PaymentInfo> Payments::search_payments(
-    const PaymentSearchFilters &filters, size_t limit, size_t offset) {
+std::vector<PaymentInfo>
+Payments::search_payments(const PaymentSearchFilters &filters, size_t limit,
+                          size_t offset) {
   // Mock implementation
   return {};
 }
@@ -860,7 +866,7 @@ BalanceInfo Payments::get_balance(const PublicKey &account,
   // Mock implementation
   BalanceInfo balance;
   balance.account = account;
-  balance.balance = 1000000;  // 1 SOL
+  balance.balance = 1000000; // 1 SOL
   balance.method = method;
   balance.is_native = (method == PaymentMethod::Sol);
   balance.token_mint = token_mint;
@@ -877,9 +883,9 @@ uint64_t Payments::estimate_payment_fee(PaymentMethod method, uint64_t amount) {
   return 5000;
 }
 
-Signature Payments::request_refund(
-    const PublicKey &payment_id, const std::string &reason,
-    const std::vector<uint8_t> &recipient_keypair) {
+Signature
+Payments::request_refund(const PublicKey &payment_id, const std::string &reason,
+                         const std::vector<uint8_t> &recipient_keypair) {
   // Mock implementation
   return Signature();
 }
@@ -895,8 +901,8 @@ std::string Payments::payment_method_to_string(PaymentMethod method) {
   return it != method_map.end() ? it->second : "Unknown";
 }
 
-PaymentMethod Payments::string_to_payment_method(
-    const std::string &method_str) {
+PaymentMethod
+Payments::string_to_payment_method(const std::string &method_str) {
   static const std::unordered_map<std::string, PaymentMethod> string_map = {
       {"Sol", PaymentMethod::Sol},
       {"SvmaiToken", PaymentMethod::SvmaiToken},
@@ -980,7 +986,7 @@ void Payments::validate_stream_params(const StreamParams &params) {
 // ============================================================================
 
 class Idl::Impl {
- public:
+public:
   // Empty for now
 };
 
@@ -1095,87 +1101,88 @@ std::vector<std::string> Idl::validate_idl(const IdlDefinition &idl) {
   return errors;
 }
 
-std::string Idl::get_cpp_type_name(
-    IdlType type, const std::optional<std::string> &struct_name,
-    const std::optional<std::string> &enum_name) {
+std::string
+Idl::get_cpp_type_name(IdlType type,
+                       const std::optional<std::string> &struct_name,
+                       const std::optional<std::string> &enum_name) {
   switch (type) {
-    case IdlType::Bool:
-      return "bool";
-    case IdlType::U8:
-      return "uint8_t";
-    case IdlType::I8:
-      return "int8_t";
-    case IdlType::U16:
-      return "uint16_t";
-    case IdlType::I16:
-      return "int16_t";
-    case IdlType::U32:
-      return "uint32_t";
-    case IdlType::I32:
-      return "int32_t";
-    case IdlType::U64:
-      return "uint64_t";
-    case IdlType::I64:
-      return "int64_t";
-    case IdlType::U128:
-      return "uint128_t";
-    case IdlType::I128:
-      return "int128_t";
-    case IdlType::Bytes:
-      return "std::vector<uint8_t>";
-    case IdlType::String:
-      return "std::string";
-    case IdlType::PublicKey:
-      return "SolanaAiRegistries::PublicKey";
-    case IdlType::Array:
-      return "std::array<uint8_t, N>";  // N would be replaced with actual size
-    case IdlType::Vec:
-      return "std::vector<T>";  // T would be replaced with inner type
-    case IdlType::Option:
-      return "std::optional<T>";  // T would be replaced with inner type
-    case IdlType::Struct:
-      return struct_name ? *struct_name : "UnknownStruct";
-    case IdlType::Enum:
-      return enum_name ? *enum_name : "UnknownEnum";
-    default:
-      return "Unknown";
+  case IdlType::Bool:
+    return "bool";
+  case IdlType::U8:
+    return "uint8_t";
+  case IdlType::I8:
+    return "int8_t";
+  case IdlType::U16:
+    return "uint16_t";
+  case IdlType::I16:
+    return "int16_t";
+  case IdlType::U32:
+    return "uint32_t";
+  case IdlType::I32:
+    return "int32_t";
+  case IdlType::U64:
+    return "uint64_t";
+  case IdlType::I64:
+    return "int64_t";
+  case IdlType::U128:
+    return "uint128_t";
+  case IdlType::I128:
+    return "int128_t";
+  case IdlType::Bytes:
+    return "std::vector<uint8_t>";
+  case IdlType::String:
+    return "std::string";
+  case IdlType::PublicKey:
+    return "SolanaAiRegistries::PublicKey";
+  case IdlType::Array:
+    return "std::array<uint8_t, N>"; // N would be replaced with actual size
+  case IdlType::Vec:
+    return "std::vector<T>"; // T would be replaced with inner type
+  case IdlType::Option:
+    return "std::optional<T>"; // T would be replaced with inner type
+  case IdlType::Struct:
+    return struct_name ? *struct_name : "UnknownStruct";
+  case IdlType::Enum:
+    return enum_name ? *enum_name : "UnknownEnum";
+  default:
+    return "Unknown";
   }
 }
 
-std::optional<size_t> Idl::get_serialization_size(
-    IdlType type, std::optional<size_t> array_size) {
+std::optional<size_t>
+Idl::get_serialization_size(IdlType type, std::optional<size_t> array_size) {
   switch (type) {
-    case IdlType::Bool:
-      return 1;
-    case IdlType::U8:
-    case IdlType::I8:
-      return 1;
-    case IdlType::U16:
-    case IdlType::I16:
-      return 2;
-    case IdlType::U32:
-    case IdlType::I32:
-      return 4;
-    case IdlType::U64:
-    case IdlType::I64:
-      return 8;
-    case IdlType::U128:
-    case IdlType::I128:
-      return 16;
-    case IdlType::PublicKey:
-      return 32;
-    case IdlType::Array:
-      return array_size;
-    case IdlType::String:
-    case IdlType::Bytes:
-    case IdlType::Vec:
-    case IdlType::Option:
-      return std::nullopt;
-    case IdlType::Struct:
-    case IdlType::Enum:
-      return std::nullopt;  // Would need to calculate based on definition
-    default:
-      return std::nullopt;
+  case IdlType::Bool:
+    return 1;
+  case IdlType::U8:
+  case IdlType::I8:
+    return 1;
+  case IdlType::U16:
+  case IdlType::I16:
+    return 2;
+  case IdlType::U32:
+  case IdlType::I32:
+    return 4;
+  case IdlType::U64:
+  case IdlType::I64:
+    return 8;
+  case IdlType::U128:
+  case IdlType::I128:
+    return 16;
+  case IdlType::PublicKey:
+    return 32;
+  case IdlType::Array:
+    return array_size;
+  case IdlType::String:
+  case IdlType::Bytes:
+  case IdlType::Vec:
+  case IdlType::Option:
+    return std::nullopt;
+  case IdlType::Struct:
+  case IdlType::Enum:
+    return std::nullopt; // Would need to calculate based on definition
+  default:
+    return std::nullopt;
   }
 }
 
@@ -1216,12 +1223,12 @@ IdlType Idl::string_to_idl_type(const std::string &type_str) {
   throw std::invalid_argument("Invalid IDL type string: " + type_str);
 }
 
-std::vector<uint8_t> Idl::create_instruction_data(
-    const IdlInstruction &instruction,
-    const std::vector<std::vector<uint8_t>> &args) {
+std::vector<uint8_t>
+Idl::create_instruction_data(const IdlInstruction &instruction,
+                             const std::vector<std::vector<uint8_t>> &args) {
   // Mock implementation
   std::vector<uint8_t> data;
-  data.push_back(0x00);  // Instruction discriminant
+  data.push_back(0x00); // Instruction discriminant
 
   // Append argument data
   for (const auto &arg : args) {
@@ -1239,7 +1246,7 @@ Idl::deserialize_account_data(const IdlStruct &struct_def,
 
   // Would deserialize based on struct definition
   for (const auto &field : struct_def.fields) {
-    result[field.name] = {0x00};  // Mock data
+    result[field.name] = {0x00}; // Mock data
   }
 
   return result;
@@ -1332,6 +1339,6 @@ IdlDefinition Idl::load_svmai_token_idl() {
   return idl;
 }
 
-}  // namespace SolanaAiRegistries
+} // namespace SolanaAiRegistries
 
 #pragma GCC diagnostic pop

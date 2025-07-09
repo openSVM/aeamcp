@@ -46,14 +46,16 @@ int main() {
 
       std::cout << "    Capabilities: ";
       for (size_t i = 0; i < agent_info.capabilities.size(); ++i) {
-        if (i > 0) std::cout << ", ";
+        if (i > 0)
+          std::cout << ", ";
         std::cout << Agent::capability_to_string(agent_info.capabilities[i]);
       }
       std::cout << std::endl;
 
       std::cout << "    Tags: ";
       for (size_t i = 0; i < agent_info.tags.size(); ++i) {
-        if (i > 0) std::cout << ", ";
+        if (i > 0)
+          std::cout << ", ";
         std::cout << agent_info.tags[i];
       }
       std::cout << std::endl << std::endl;
@@ -82,7 +84,7 @@ int main() {
 
     // Test invalid parameters
     AgentRegistrationParams invalid_params = valid_params;
-    invalid_params.name = "";  // Invalid empty name
+    invalid_params.name = ""; // Invalid empty name
 
     try {
       Agent::validate_registration_params(invalid_params);

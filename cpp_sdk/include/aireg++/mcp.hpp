@@ -25,93 +25,93 @@ namespace SolanaAiRegistries {
  * @brief MCP server protocol types
  */
 enum class McpProtocol {
-  Http,       ///< HTTP-based protocol
-  WebSocket,  ///< WebSocket protocol
-  Stdio,      ///< Standard I/O protocol
-  Custom      ///< Custom protocol
+  Http,      ///< HTTP-based protocol
+  WebSocket, ///< WebSocket protocol
+  Stdio,     ///< Standard I/O protocol
+  Custom     ///< Custom protocol
 };
 
 /**
  * @brief MCP server capability types
  */
 enum class McpCapability {
-  Resources,  ///< Resource management
-  Tools,      ///< Tool execution
-  Prompts,    ///< Prompt templates
-  Sampling,   ///< Text sampling
-  Logging,    ///< Logging capabilities
-  Custom      ///< Custom capabilities
+  Resources, ///< Resource management
+  Tools,     ///< Tool execution
+  Prompts,   ///< Prompt templates
+  Sampling,  ///< Text sampling
+  Logging,   ///< Logging capabilities
+  Custom     ///< Custom capabilities
 };
 
 /**
  * @brief MCP server registry entry information
  */
 struct McpServerInfo {
-  PublicKey server_id;      ///< Unique server identifier
-  std::string name;         ///< Server display name
-  std::string description;  ///< Server description
-  std::string version;      ///< Server version
-  PublicKey owner;          ///< Server owner public key
-  McpProtocol protocol;     ///< Communication protocol
-  std::string endpoint;     ///< Server endpoint (URL, command, etc.)
-  std::vector<McpCapability> capabilities;  ///< Server capabilities
-  bool is_active;                           ///< Whether server is active
-  std::chrono::system_clock::time_point created_at;  ///< Creation timestamp
-  std::chrono::system_clock::time_point updated_at;  ///< Last update timestamp
-  std::optional<std::string> schema_uri;  ///< URI to MCP schema definition
-  std::optional<std::string> documentation_uri;  ///< URI to documentation
-  std::vector<std::string> tags;       ///< Server tags for categorization
-  std::optional<std::string> license;  ///< License information
-  std::optional<std::string> repository_uri;  ///< Source code repository URI
+  PublicKey server_id;     ///< Unique server identifier
+  std::string name;        ///< Server display name
+  std::string description; ///< Server description
+  std::string version;     ///< Server version
+  PublicKey owner;         ///< Server owner public key
+  McpProtocol protocol;    ///< Communication protocol
+  std::string endpoint;    ///< Server endpoint (URL, command, etc.)
+  std::vector<McpCapability> capabilities; ///< Server capabilities
+  bool is_active;                          ///< Whether server is active
+  std::chrono::system_clock::time_point created_at; ///< Creation timestamp
+  std::chrono::system_clock::time_point updated_at; ///< Last update timestamp
+  std::optional<std::string> schema_uri; ///< URI to MCP schema definition
+  std::optional<std::string> documentation_uri; ///< URI to documentation
+  std::vector<std::string> tags;             ///< Server tags for categorization
+  std::optional<std::string> license;        ///< License information
+  std::optional<std::string> repository_uri; ///< Source code repository URI
 };
 
 /**
  * @brief MCP server search filters
  */
 struct McpSearchFilters {
-  std::optional<std::string> name_contains;  ///< Filter by name containing text
-  std::optional<McpProtocol> protocol;       ///< Filter by protocol type
+  std::optional<std::string> name_contains; ///< Filter by name containing text
+  std::optional<McpProtocol> protocol;      ///< Filter by protocol type
   std::optional<std::vector<McpCapability>>
-      capabilities;                              ///< Filter by capabilities
-  std::optional<bool> active_only;               ///< Show only active servers
-  std::optional<std::vector<std::string>> tags;  ///< Filter by tags
-  std::optional<PublicKey> owner;                ///< Filter by owner
-  std::optional<std::string> license;            ///< Filter by license
+      capabilities;                             ///< Filter by capabilities
+  std::optional<bool> active_only;              ///< Show only active servers
+  std::optional<std::vector<std::string>> tags; ///< Filter by tags
+  std::optional<PublicKey> owner;               ///< Filter by owner
+  std::optional<std::string> license;           ///< Filter by license
 };
 
 /**
  * @brief MCP server registration parameters
  */
 struct McpRegistrationParams {
-  std::string name;         ///< Server name (required)
-  std::string description;  ///< Server description (required)
-  std::string version;      ///< Server version (required)
-  McpProtocol protocol;     ///< Communication protocol (required)
-  std::string endpoint;     ///< Server endpoint (required)
-  std::vector<McpCapability> capabilities;  ///< Server capabilities (required)
-  std::optional<std::string> schema_uri;    ///< MCP schema definition URI
-  std::optional<std::string> documentation_uri;  ///< Documentation URI
-  std::vector<std::string> tags;                 ///< Server tags
-  std::optional<std::string> license;            ///< License information
-  std::optional<std::string> repository_uri;     ///< Source code repository URI
+  std::string name;        ///< Server name (required)
+  std::string description; ///< Server description (required)
+  std::string version;     ///< Server version (required)
+  McpProtocol protocol;    ///< Communication protocol (required)
+  std::string endpoint;    ///< Server endpoint (required)
+  std::vector<McpCapability> capabilities; ///< Server capabilities (required)
+  std::optional<std::string> schema_uri;   ///< MCP schema definition URI
+  std::optional<std::string> documentation_uri; ///< Documentation URI
+  std::vector<std::string> tags;                ///< Server tags
+  std::optional<std::string> license;           ///< License information
+  std::optional<std::string> repository_uri;    ///< Source code repository URI
 };
 
 /**
  * @brief MCP server update parameters
  */
 struct McpUpdateParams {
-  std::optional<std::string> name;         ///< New server name
-  std::optional<std::string> description;  ///< New server description
-  std::optional<std::string> version;      ///< New server version
-  std::optional<McpProtocol> protocol;     ///< New communication protocol
-  std::optional<std::string> endpoint;     ///< New server endpoint
-  std::optional<std::vector<McpCapability>> capabilities;  ///< New capabilities
-  std::optional<bool> is_active;                 ///< New active status
-  std::optional<std::string> schema_uri;         ///< New schema URI
-  std::optional<std::string> documentation_uri;  ///< New documentation URI
-  std::optional<std::vector<std::string>> tags;  ///< New tags
-  std::optional<std::string> license;            ///< New license
-  std::optional<std::string> repository_uri;     ///< New repository URI
+  std::optional<std::string> name;        ///< New server name
+  std::optional<std::string> description; ///< New server description
+  std::optional<std::string> version;     ///< New server version
+  std::optional<McpProtocol> protocol;    ///< New communication protocol
+  std::optional<std::string> endpoint;    ///< New server endpoint
+  std::optional<std::vector<McpCapability>> capabilities; ///< New capabilities
+  std::optional<bool> is_active;                          ///< New active status
+  std::optional<std::string> schema_uri;                  ///< New schema URI
+  std::optional<std::string> documentation_uri; ///< New documentation URI
+  std::optional<std::vector<std::string>> tags; ///< New tags
+  std::optional<std::string> license;           ///< New license
+  std::optional<std::string> repository_uri;    ///< New repository URI
 };
 
 /**
@@ -122,7 +122,7 @@ struct McpUpdateParams {
  * updates, queries, and discovery with proper error handling and validation.
  */
 class Mcp {
- public:
+public:
   /**
    * @brief Construct Mcp with client
    * @param client Client instance for blockchain operations
@@ -186,9 +186,9 @@ class Mcp {
    * @return List of matching servers
    * @throws RegistryException if search fails
    */
-  std::vector<McpServerInfo> search_servers(
-      const McpSearchFilters &filters = {}, size_t limit = 100,
-      size_t offset = 0);
+  std::vector<McpServerInfo>
+  search_servers(const McpSearchFilters &filters = {}, size_t limit = 100,
+                 size_t offset = 0);
 
   /**
    * @brief Get all servers owned by a public key
@@ -293,9 +293,9 @@ class Mcp {
   static void validate_endpoint(McpProtocol protocol,
                                 const std::string &endpoint);
 
- private:
+private:
   class Impl;
   std::unique_ptr<Impl> pimpl_;
 };
 
-}  // namespace SolanaAiRegistries
+} // namespace SolanaAiRegistries

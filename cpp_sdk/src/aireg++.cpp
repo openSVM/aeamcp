@@ -105,10 +105,10 @@ size_t decode_base58(const std::string &str, uint8_t *output,
     // but only if the length matches what we'd expect for a full zero array
     // For PublicKey (32 bytes), this should be 33 '1' characters
     // For Signature (64 bytes), this should be 65 '1' characters
-    if ((output_len == 32 && leading_ones == 33) ||  // PublicKey
-        (output_len == 64 && leading_ones == 65) ||  // Signature
+    if ((output_len == 32 && leading_ones == 33) || // PublicKey
+        (output_len == 64 && leading_ones == 65) || // Signature
         (output_len != 32 && output_len != 64 &&
-         leading_ones <= output_len)) {  // Other sizes
+         leading_ones <= output_len)) { // Other sizes
       if (output_len > 0) {
         std::memset(output, 0, output_len);
         return output_len;
@@ -126,7 +126,7 @@ size_t decode_base58(const std::string &str, uint8_t *output,
   for (size_t i = leading_ones; i < str.length(); i++) {
     const char *pos = strchr(BASE58_ALPHABET, str[i]);
     if (!pos) {
-      return 0;  // Invalid character
+      return 0; // Invalid character
     }
 
     uint32_t carry = static_cast<uint32_t>(pos - BASE58_ALPHABET);
@@ -138,7 +138,7 @@ size_t decode_base58(const std::string &str, uint8_t *output,
 
     while (carry > 0) {
       if (digits_len >= digits.size()) {
-        return 0;  // Buffer too small
+        return 0; // Buffer too small
       }
       digits[digits_len++] = carry & 0xFF;
       carry >>= 8;
@@ -147,7 +147,7 @@ size_t decode_base58(const std::string &str, uint8_t *output,
 
   // Check if output buffer is large enough
   if (leading_ones + digits_len > output_len) {
-    return 0;  // Output buffer too small
+    return 0; // Output buffer too small
   }
 
   // Copy leading zeros
@@ -161,11 +161,11 @@ size_t decode_base58(const std::string &str, uint8_t *output,
   return leading_ones + digits_len;
 }
 
-}  // anonymous namespace
+} // anonymous namespace
 
 void initialize() {
   if (sdk_initialized) {
-    return;  // Already initialized
+    return; // Already initialized
   }
 
   // Initialize libsodium
@@ -180,7 +180,7 @@ void initialize() {
 
 void cleanup() noexcept {
   if (!sdk_initialized) {
-    return;  // Already cleaned up
+    return; // Already cleaned up
   }
 
   // TODO: Cleanup C SDK (libaireg) when available
@@ -257,15 +257,15 @@ bool Signature::operator==(const Signature &other) const noexcept {
 // Utility functions
 std::string cluster_to_url(Cluster cluster) {
   switch (cluster) {
-    case Cluster::Devnet:
-      return "https://api.devnet.solana.com";
-    case Cluster::Testnet:
-      return "https://api.testnet.solana.com";
-    case Cluster::MainnetBeta:
-      return "https://api.mainnet-beta.solana.com";
-    default:
-      throw SdkException("Unknown cluster type");
+  case Cluster::Devnet:
+    return "https://api.devnet.solana.com";
+  case Cluster::Testnet:
+    return "https://api.testnet.solana.com";
+  case Cluster::MainnetBeta:
+    return "https://api.mainnet-beta.solana.com";
+  default:
+    throw SdkException("Unknown cluster type");
   }
 }
 
-}  // namespace SolanaAiRegistries
+} // namespace SolanaAiRegistries

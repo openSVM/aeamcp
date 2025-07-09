@@ -11,7 +11,7 @@
 using namespace SolanaAiRegistries;
 
 class McpTest : public ::testing::Test {
- protected:
+protected:
   void SetUp() override {
     ClientConfig config;
     config.cluster = Cluster::Devnet;
@@ -86,12 +86,12 @@ TEST_F(McpTest, ParameterValidation) {
   EXPECT_NO_THROW(Mcp::validate_registration_params(params));
 
   // Invalid parameters should throw
-  params.name = "";  // Empty name
+  params.name = ""; // Empty name
   EXPECT_THROW(Mcp::validate_registration_params(params),
                std::invalid_argument);
 
   params.name = "Test MCP Server";
-  params.endpoint = "invalid-url";  // Invalid endpoint
+  params.endpoint = "invalid-url"; // Invalid endpoint
   EXPECT_THROW(Mcp::validate_registration_params(params),
                std::invalid_argument);
 }

@@ -25,7 +25,7 @@ namespace SolanaAiRegistries {
  * @brief Base exception class for all SDK errors
  */
 class SdkException : public std::runtime_error {
- public:
+public:
   /**
    * @brief Construct exception with error message
    * @param message Error message
@@ -38,7 +38,7 @@ class SdkException : public std::runtime_error {
  * @brief Exception thrown for RPC-related errors
  */
 class RpcException : public SdkException {
- public:
+public:
   explicit RpcException(const std::string &message)
       : SdkException("RPC Error: " + message) {}
 };
@@ -47,7 +47,7 @@ class RpcException : public SdkException {
  * @brief Exception thrown for transaction-related errors
  */
 class TransactionException : public SdkException {
- public:
+public:
   explicit TransactionException(const std::string &message)
       : SdkException("Transaction Error: " + message) {}
 };
@@ -56,7 +56,7 @@ class TransactionException : public SdkException {
  * @brief Exception thrown for payment-related errors
  */
 class PaymentException : public SdkException {
- public:
+public:
   explicit PaymentException(const std::string &message)
       : SdkException("Payment Error: " + message) {}
 };
@@ -65,7 +65,7 @@ class PaymentException : public SdkException {
  * @brief Exception thrown for registry operation errors
  */
 class RegistryException : public SdkException {
- public:
+public:
   explicit RegistryException(const std::string &message)
       : SdkException("Registry Error: " + message) {}
 };
@@ -74,8 +74,8 @@ class RegistryException : public SdkException {
  * @brief Represents a Solana public key
  */
 class PublicKey {
- public:
-  static constexpr size_t SIZE = 32;  ///< Size of a public key in bytes
+public:
+  static constexpr size_t SIZE = 32; ///< Size of a public key in bytes
 
   /**
    * @brief Default constructor - creates zero public key
@@ -120,7 +120,7 @@ class PublicKey {
     return !(*this == other);
   }
 
- private:
+private:
   std::array<uint8_t, SIZE> data_;
 };
 
@@ -128,8 +128,8 @@ class PublicKey {
  * @brief Represents a transaction signature
  */
 class Signature {
- public:
-  static constexpr size_t SIZE = 64;  ///< Size of a signature in bytes
+public:
+  static constexpr size_t SIZE = 64; ///< Size of a signature in bytes
 
   /**
    * @brief Default constructor
@@ -165,7 +165,7 @@ class Signature {
    */
   bool operator==(const Signature &other) const noexcept;
 
- private:
+private:
   std::array<uint8_t, SIZE> data_;
 };
 
@@ -173,9 +173,9 @@ class Signature {
  * @brief Represents a Solana cluster/network
  */
 enum class Cluster {
-  Devnet,      ///< Solana devnet
-  Testnet,     ///< Solana testnet
-  MainnetBeta  ///< Solana mainnet-beta
+  Devnet,     ///< Solana devnet
+  Testnet,    ///< Solana testnet
+  MainnetBeta ///< Solana mainnet-beta
 };
 
 /**
@@ -189,9 +189,9 @@ std::string cluster_to_url(Cluster cluster);
  * @brief Transaction confirmation status
  */
 enum class ConfirmationStatus {
-  Processed,  ///< Transaction processed
-  Confirmed,  ///< Transaction confirmed
-  Finalized   ///< Transaction finalized
+  Processed, ///< Transaction processed
+  Confirmed, ///< Transaction confirmed
+  Finalized  ///< Transaction finalized
 };
 
 /**
@@ -205,7 +205,7 @@ enum class ConfirmationStatus {
 template <typename T>
 class [[deprecated(
     "Use Bridge::*Ptr types from c_sdk_bridge.hpp instead")]] Resource {
- public:
+public:
   using Deleter = void (*)(T *);
 
   /**
@@ -283,9 +283,9 @@ class [[deprecated(
   Resource(const Resource &) = delete;
   Resource &operator=(const Resource &) = delete;
 
- private:
+private:
   T *resource_;
   Deleter deleter_;
 };
 
-}  // namespace SolanaAiRegistries
+} // namespace SolanaAiRegistries

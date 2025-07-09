@@ -15,7 +15,7 @@
 using namespace SolanaAiRegistries;
 
 class Base58Test : public ::testing::Test {
- protected:
+protected:
   void SetUp() override {
     // Initialize random number generator
     generator_.seed(std::random_device{}());
@@ -103,15 +103,15 @@ TEST_F(Base58Test, InvalidBase58Characters) {
       "O",
       "I",
       "l",
-      "11111111111111111111111111111110",  // Has '0'
-      "1111111111111111111111111111111O",  // Has 'O'
-      "1111111111111111111111111111111I",  // Has 'I'
-      "1111111111111111111111111111111l",  // Has 'l'
-      "!@#$%^&*()",                        // Special characters
-      "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0",  // Valid
-                                                                      // chars +
-                                                                      // invalid
-                                                                      // '0'
+      "11111111111111111111111111111110", // Has '0'
+      "1111111111111111111111111111111O", // Has 'O'
+      "1111111111111111111111111111111I", // Has 'I'
+      "1111111111111111111111111111111l", // Has 'l'
+      "!@#$%^&*()",                       // Special characters
+      "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0", // Valid
+                                                                     // chars +
+                                                                     // invalid
+                                                                     // '0'
   };
 
   for (const auto &invalid : invalid_strings) {
@@ -125,12 +125,12 @@ TEST_F(Base58Test, InvalidBase58Characters) {
 TEST_F(Base58Test, InvalidLengthHandling) {
   // Test strings that decode to wrong length
   std::vector<std::string> wrong_length_strings = {
-      "2",                                // Too short for PublicKey (32 bytes)
-      "22",                               // Still too short
-      "1111111111111111111111111111111",  // 31 chars, still too short
+      "2",                               // Too short for PublicKey (32 bytes)
+      "22",                              // Still too short
+      "1111111111111111111111111111111", // 31 chars, still too short
       "111111111111111111111111111111111111111111111111111111111111111111111111"
       "11111111111111111111111111111111111111111111111111111111111111111111111"
-      "1",  // Too long
+      "1", // Too long
   };
 
   for (const auto &wrong_length : wrong_length_strings) {
@@ -149,7 +149,7 @@ TEST_F(Base58Test, EmptyStringHandling) {
 TEST_F(Base58Test, LeadingZerosHandling) {
   // Test that leading zeros are properly handled
   std::vector<uint8_t> with_leading_zeros = {0x00, 0x00, 0x00, 0x01};
-  with_leading_zeros.resize(32, 0x00);  // Pad to 32 bytes
+  with_leading_zeros.resize(32, 0x00); // Pad to 32 bytes
 
   PublicKey key(with_leading_zeros.data());
   std::string base58_str = key.to_base58();
@@ -294,14 +294,14 @@ TEST_F(Base58Test, PerformanceTest) {
   // Performance expectations (adjust based on requirements and environment)
   // If CI env var set, we more chill on timing
   if (std::getenv("CI")) {
-    EXPECT_LT(encode_time.count(), 200000)  // 200ms on CI
+    EXPECT_LT(encode_time.count(), 200000) // 200ms on CI
         << "Encoding 1000 keys should take < 200ms on CI";
-    EXPECT_LT(decode_time.count(), 200000)  // 200ms on CI
+    EXPECT_LT(decode_time.count(), 200000) // 200ms on CI
         << "Decoding 1000 keys should take < 200ms on CI";
   } else {
-    EXPECT_LT(encode_time.count(), 50000)  // 50ms local
+    EXPECT_LT(encode_time.count(), 50000) // 50ms local
         << "Encoding 1000 keys should take < 50ms";
-    EXPECT_LT(decode_time.count(), 50000)  // 50ms local
+    EXPECT_LT(decode_time.count(), 50000) // 50ms local
         << "Decoding 1000 keys should take < 50ms";
   }
 
@@ -317,7 +317,7 @@ TEST_F(Base58Test, PerformanceTest) {
 TEST_F(Base58Test, AlphabetEdgeCases) {
   // Test with bytes that map to first and last characters of base58 alphabet
   std::vector<uint8_t> first_char_bytes(32, 0x00);
-  first_char_bytes[31] = 0x01;  // Should result in '2' at the end
+  first_char_bytes[31] = 0x01; // Should result in '2' at the end
 
   PublicKey first_key(first_char_bytes.data());
   std::string first_base58 = first_key.to_base58();
@@ -325,7 +325,7 @@ TEST_F(Base58Test, AlphabetEdgeCases) {
       << "Should end with '2': " << first_base58;
 
   std::vector<uint8_t> last_char_bytes(32, 0x00);
-  last_char_bytes[31] = 0x39;  // Should result in 'z' at the end
+  last_char_bytes[31] = 0x39; // Should result in 'z' at the end
 
   PublicKey last_key(last_char_bytes.data());
   std::string last_base58 = last_key.to_base58();

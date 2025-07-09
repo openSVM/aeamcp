@@ -35,8 +35,8 @@ aireg_client_t *aireg_client_create(const char *rpc_url, uint32_t cluster);
 void aireg_client_destroy(aireg_client_t *client);
 
 // Transaction builder functions
-aireg_transaction_builder_t *aireg_transaction_builder_create(
-    aireg_client_t *client);
+aireg_transaction_builder_t *
+aireg_transaction_builder_create(aireg_client_t *client);
 void aireg_transaction_builder_destroy(aireg_transaction_builder_t *builder);
 
 // Agent functions
@@ -282,5 +282,5 @@ inline BalanceInfoPtr make_balance_info() {
   return BalanceInfoPtr(aireg_balance_info_create());
 }
 
-}  // namespace Bridge
-}  // namespace SolanaAiRegistries
+} // namespace Bridge
+} // namespace SolanaAiRegistries

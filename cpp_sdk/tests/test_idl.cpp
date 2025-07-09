@@ -10,7 +10,7 @@
 using namespace SolanaAiRegistries;
 
 class IdlTest : public ::testing::Test {
- protected:
+protected:
   void SetUp() override {}
   void TearDown() override {}
 };

@@ -25,132 +25,132 @@ namespace SolanaAiRegistries {
  * @brief Payment method types
  */
 enum class PaymentMethod {
-  Sol,         ///< Native SOL payments
-  SvmaiToken,  ///< SVMAI token payments
-  Usdc,        ///< USDC payments
-  Custom       ///< Custom SPL token payments
+  Sol,        ///< Native SOL payments
+  SvmaiToken, ///< SVMAI token payments
+  Usdc,       ///< USDC payments
+  Custom      ///< Custom SPL token payments
 };
 
 /**
  * @brief Payment status
  */
 enum class PaymentStatus {
-  Pending,    ///< Payment is pending
-  Completed,  ///< Payment completed successfully
-  Failed,     ///< Payment failed
-  Refunded,   ///< Payment was refunded
-  Expired     ///< Payment expired
+  Pending,   ///< Payment is pending
+  Completed, ///< Payment completed successfully
+  Failed,    ///< Payment failed
+  Refunded,  ///< Payment was refunded
+  Expired    ///< Payment expired
 };
 
 /**
  * @brief Payment type
  */
 enum class PaymentType {
-  Prepay,        ///< One-time prepayment
-  PayAsYouGo,    ///< Pay-as-you-go per request
-  Subscription,  ///< Recurring subscription
-  Stream         ///< Continuous streaming payment
+  Prepay,       ///< One-time prepayment
+  PayAsYouGo,   ///< Pay-as-you-go per request
+  Subscription, ///< Recurring subscription
+  Stream        ///< Continuous streaming payment
 };
 
 /**
  * @brief Payment information
  */
 struct PaymentInfo {
-  PublicKey payment_id;  ///< Unique payment identifier
-  PublicKey payer;       ///< Payer public key
-  PublicKey recipient;   ///< Recipient public key
-  PaymentMethod method;  ///< Payment method used
-  PaymentType type;      ///< Payment type
-  uint64_t amount;       ///< Payment amount (in base units)
-  PaymentStatus status;  ///< Current payment status
-  std::chrono::system_clock::time_point created_at;  ///< Creation timestamp
-  std::chrono::system_clock::time_point updated_at;  ///< Last update timestamp
+  PublicKey payment_id; ///< Unique payment identifier
+  PublicKey payer;      ///< Payer public key
+  PublicKey recipient;  ///< Recipient public key
+  PaymentMethod method; ///< Payment method used
+  PaymentType type;     ///< Payment type
+  uint64_t amount;      ///< Payment amount (in base units)
+  PaymentStatus status; ///< Current payment status
+  std::chrono::system_clock::time_point created_at; ///< Creation timestamp
+  std::chrono::system_clock::time_point updated_at; ///< Last update timestamp
   std::optional<Signature>
-      transaction_signature;        ///< Transaction signature if completed
-  std::optional<std::string> memo;  ///< Payment memo
+      transaction_signature;       ///< Transaction signature if completed
+  std::optional<std::string> memo; ///< Payment memo
   std::optional<std::chrono::system_clock::time_point>
-      expires_at;  ///< Expiration time
+      expires_at; ///< Expiration time
 };
 
 /**
  * @brief Prepayment parameters
  */
 struct PrepayParams {
-  PublicKey recipient;  ///< Payment recipient
-  uint64_t amount;      ///< Amount to prepay (in base units)
-  PaymentMethod method = PaymentMethod::Sol;  ///< Payment method
+  PublicKey recipient; ///< Payment recipient
+  uint64_t amount;     ///< Amount to prepay (in base units)
+  PaymentMethod method = PaymentMethod::Sol; ///< Payment method
   std::optional<PublicKey>
-      token_mint;                   ///< Custom token mint (if method is Custom)
-  std::optional<std::string> memo;  ///< Payment memo
-  std::optional<std::chrono::minutes> expires_in;  ///< Expiration time from now
+      token_mint;                  ///< Custom token mint (if method is Custom)
+  std::optional<std::string> memo; ///< Payment memo
+  std::optional<std::chrono::minutes> expires_in; ///< Expiration time from now
 };
 
 /**
  * @brief Pay-as-you-go payment parameters
  */
 struct PayAsYouGoParams {
-  PublicKey service_provider;   ///< Service provider public key
-  uint64_t amount_per_request;  ///< Amount per request (in base units)
-  PaymentMethod method = PaymentMethod::Sol;  ///< Payment method
+  PublicKey service_provider;  ///< Service provider public key
+  uint64_t amount_per_request; ///< Amount per request (in base units)
+  PaymentMethod method = PaymentMethod::Sol; ///< Payment method
   std::optional<PublicKey>
-      token_mint;  ///< Custom token mint (if method is Custom)
-  std::optional<uint64_t> max_requests;  ///< Maximum number of requests
-  std::optional<std::string> memo;       ///< Payment memo
+      token_mint; ///< Custom token mint (if method is Custom)
+  std::optional<uint64_t> max_requests; ///< Maximum number of requests
+  std::optional<std::string> memo;      ///< Payment memo
 };
 
 /**
  * @brief Subscription parameters
  */
 struct SubscriptionParams {
-  PublicKey service_provider;  ///< Service provider public key
-  uint64_t amount_per_period;  ///< Amount per billing period (in base units)
-  std::chrono::seconds billing_period;        ///< Billing period duration
-  PaymentMethod method = PaymentMethod::Sol;  ///< Payment method
+  PublicKey service_provider; ///< Service provider public key
+  uint64_t amount_per_period; ///< Amount per billing period (in base units)
+  std::chrono::seconds billing_period;       ///< Billing period duration
+  PaymentMethod method = PaymentMethod::Sol; ///< Payment method
   std::optional<PublicKey>
-      token_mint;  ///< Custom token mint (if method is Custom)
-  std::optional<uint32_t> max_periods;  ///< Maximum number of billing periods
-  std::optional<std::string> memo;      ///< Payment memo
+      token_mint; ///< Custom token mint (if method is Custom)
+  std::optional<uint32_t> max_periods; ///< Maximum number of billing periods
+  std::optional<std::string> memo;     ///< Payment memo
 };
 
 /**
  * @brief Stream payment parameters
  */
 struct StreamParams {
-  PublicKey recipient;            ///< Payment recipient
-  uint64_t rate_per_second;       ///< Payment rate per second (in base units)
-  std::chrono::seconds duration;  ///< Stream duration
-  PaymentMethod method = PaymentMethod::Sol;  ///< Payment method
+  PublicKey recipient;           ///< Payment recipient
+  uint64_t rate_per_second;      ///< Payment rate per second (in base units)
+  std::chrono::seconds duration; ///< Stream duration
+  PaymentMethod method = PaymentMethod::Sol; ///< Payment method
   std::optional<PublicKey>
-      token_mint;                   ///< Custom token mint (if method is Custom)
-  std::optional<std::string> memo;  ///< Payment memo
+      token_mint;                  ///< Custom token mint (if method is Custom)
+  std::optional<std::string> memo; ///< Payment memo
 };
 
 /**
  * @brief Payment search filters
  */
 struct PaymentSearchFilters {
-  std::optional<PublicKey> payer;       ///< Filter by payer
-  std::optional<PublicKey> recipient;   ///< Filter by recipient
-  std::optional<PaymentMethod> method;  ///< Filter by payment method
-  std::optional<PaymentType> type;      ///< Filter by payment type
-  std::optional<PaymentStatus> status;  ///< Filter by status
+  std::optional<PublicKey> payer;      ///< Filter by payer
+  std::optional<PublicKey> recipient;  ///< Filter by recipient
+  std::optional<PaymentMethod> method; ///< Filter by payment method
+  std::optional<PaymentType> type;     ///< Filter by payment type
+  std::optional<PaymentStatus> status; ///< Filter by status
   std::optional<std::chrono::system_clock::time_point>
-      created_after;  ///< Created after timestamp
+      created_after; ///< Created after timestamp
   std::optional<std::chrono::system_clock::time_point>
-      created_before;                  ///< Created before timestamp
-  std::optional<uint64_t> min_amount;  ///< Minimum amount
-  std::optional<uint64_t> max_amount;  ///< Maximum amount
+      created_before;                 ///< Created before timestamp
+  std::optional<uint64_t> min_amount; ///< Minimum amount
+  std::optional<uint64_t> max_amount; ///< Maximum amount
 };
 
 /**
  * @brief Balance information for an account
  */
 struct BalanceInfo {
-  PublicKey account;                    ///< Account public key
-  uint64_t balance;                     ///< Account balance (in base units)
-  PaymentMethod method;                 ///< Token/currency type
-  std::optional<PublicKey> token_mint;  ///< Token mint (for SPL tokens)
-  bool is_native;                       ///< Whether this is native SOL
+  PublicKey account;                   ///< Account public key
+  uint64_t balance;                    ///< Account balance (in base units)
+  PaymentMethod method;                ///< Token/currency type
+  std::optional<PublicKey> token_mint; ///< Token mint (for SPL tokens)
+  bool is_native;                      ///< Whether this is native SOL
 };
 
 /**
@@ -161,7 +161,7 @@ struct BalanceInfo {
  * and streaming payments with proper error handling and validation.
  */
 class Payments {
- public:
+public:
   /**
    * @brief Construct Payments with client
    * @param client Client instance for blockchain operations
@@ -194,8 +194,9 @@ class Payments {
    * @return Payment ID and transaction signature
    * @throws PaymentException if payment creation fails
    */
-  std::pair<PublicKey, Signature> create_prepayment(
-      const PrepayParams &params, const std::vector<uint8_t> &payer_keypair);
+  std::pair<PublicKey, Signature>
+  create_prepayment(const PrepayParams &params,
+                    const std::vector<uint8_t> &payer_keypair);
 
   /**
    * @brief Execute a pay-as-you-go payment
@@ -204,9 +205,9 @@ class Payments {
    * @return Payment ID and transaction signature
    * @throws PaymentException if payment fails
    */
-  std::pair<PublicKey, Signature> pay_as_you_go(
-      const PayAsYouGoParams &params,
-      const std::vector<uint8_t> &payer_keypair);
+  std::pair<PublicKey, Signature>
+  pay_as_you_go(const PayAsYouGoParams &params,
+                const std::vector<uint8_t> &payer_keypair);
 
   /**
    * @brief Create a subscription
@@ -215,9 +216,9 @@ class Payments {
    * @return Subscription ID and initial payment signature
    * @throws PaymentException if subscription creation fails
    */
-  std::pair<PublicKey, Signature> create_subscription(
-      const SubscriptionParams &params,
-      const std::vector<uint8_t> &payer_keypair);
+  std::pair<PublicKey, Signature>
+  create_subscription(const SubscriptionParams &params,
+                      const std::vector<uint8_t> &payer_keypair);
 
   /**
    * @brief Start a stream payment
@@ -226,8 +227,9 @@ class Payments {
    * @return Stream ID and transaction signature
    * @throws PaymentException if stream creation fails
    */
-  std::pair<PublicKey, Signature> start_stream(
-      const StreamParams &params, const std::vector<uint8_t> &payer_keypair);
+  std::pair<PublicKey, Signature>
+  start_stream(const StreamParams &params,
+               const std::vector<uint8_t> &payer_keypair);
 
   /**
    * @brief Stop a stream payment
@@ -265,9 +267,9 @@ class Payments {
    * @return List of matching payments
    * @throws PaymentException if search fails
    */
-  std::vector<PaymentInfo> search_payments(
-      const PaymentSearchFilters &filters = {}, size_t limit = 100,
-      size_t offset = 0);
+  std::vector<PaymentInfo>
+  search_payments(const PaymentSearchFilters &filters = {}, size_t limit = 100,
+                  size_t offset = 0);
 
   /**
    * @brief Get account balance for different payment methods
@@ -367,9 +369,9 @@ class Payments {
    */
   static void validate_stream_params(const StreamParams &params);
 
- private:
+private:
   class Impl;
   std::unique_ptr<Impl> pimpl_;
 };
 
-}  // namespace SolanaAiRegistries
+} // namespace SolanaAiRegistries

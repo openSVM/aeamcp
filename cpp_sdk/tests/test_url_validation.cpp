@@ -14,7 +14,7 @@
 using namespace SolanaAiRegistries;
 
 class UrlValidationTest : public ::testing::Test {
- protected:
+protected:
   void SetUp() override {
     // Create a client for testing
     ClientConfig config;
@@ -98,61 +98,61 @@ TEST_F(UrlValidationTest, ValidHttpUrls) {
 // Test invalid HTTP URLs
 TEST_F(UrlValidationTest, InvalidHttpUrls) {
   std::vector<std::string> invalid_http_urls = {
-      "",                           // Empty string
-      "not-a-url",                  // No protocol
-      "ftp://example.com",          // Wrong protocol
-      "mailto:user@example.com",    // Wrong protocol
-      "httpfoo://example.com",      // Invalid protocol
-      "https://",                   // No domain
-      "http://",                    // No domain
-      "http:// example.com",        // Space in URL
-      "https:// example.com",       // Space in URL
-      "http://example .com",        // Space in domain
-      "https://example .com",       // Space in domain
-      "http://example.com ",        // Trailing space
-      "https://example.com ",       // Trailing space
-      " http://example.com",        // Leading space
-      " https://example.com",       // Leading space
-      "http://exa mple.com",        // Space in domain
-      "https://exa mple.com",       // Space in domain
-      "http://example.com/pa th",   // Space in path
-      "https://example.com/pa th",  // Space in path
-      "http://example.com:abc",     // Invalid port
-      "https://example.com:abc",    // Invalid port
-      "http://example.com:99999",   // Port too high
-      "https://example.com:99999",  // Port too high
-      "http://.example.com",        // Invalid domain start
-      "https://.example.com",       // Invalid domain start
-      "http://example..com",        // Double dots
-      "https://example..com",       // Double dots
-      "http://example.com.",        // Trailing dot
-      "https://example.com.",       // Trailing dot
-      "http://example.com:-1",      // Negative port
-      "https://example.com:-1",     // Negative port
-      "http://[invalid",            // Invalid IPv6 bracket
-      "https://[invalid",           // Invalid IPv6 bracket
-      "http://example.com/path?",   // Incomplete query
-      "https://example.com/path?",  // Incomplete query
-      "http://example.com/path#",   // Incomplete fragment
-      "https://example.com/path#",  // Incomplete fragment
-      "http://exam<ple.com",        // Invalid characters
-      "https://exam<ple.com",       // Invalid characters
-      "http://exam>ple.com",        // Invalid characters
-      "https://exam>ple.com",       // Invalid characters
-      "http://exam\"ple.com",       // Invalid characters
-      "https://exam\"ple.com",      // Invalid characters
-      "http://exam|ple.com",        // Invalid characters
-      "https://exam|ple.com",       // Invalid characters
-      "http://exam\\ple.com",       // Invalid characters
-      "https://exam\\ple.com",      // Invalid characters
-      "http://exam^ple.com",        // Invalid characters
-      "https://exam^ple.com",       // Invalid characters
-      "http://exam`ple.com",        // Invalid characters
-      "https://exam`ple.com",       // Invalid characters
-      "http://exam{ple.com",        // Invalid characters
-      "https://exam{ple.com",       // Invalid characters
-      "http://exam}ple.com",        // Invalid characters
-      "https://exam}ple.com",       // Invalid characters
+      "",                          // Empty string
+      "not-a-url",                 // No protocol
+      "ftp://example.com",         // Wrong protocol
+      "mailto:user@example.com",   // Wrong protocol
+      "httpfoo://example.com",     // Invalid protocol
+      "https://",                  // No domain
+      "http://",                   // No domain
+      "http:// example.com",       // Space in URL
+      "https:// example.com",      // Space in URL
+      "http://example .com",       // Space in domain
+      "https://example .com",      // Space in domain
+      "http://example.com ",       // Trailing space
+      "https://example.com ",      // Trailing space
+      " http://example.com",       // Leading space
+      " https://example.com",      // Leading space
+      "http://exa mple.com",       // Space in domain
+      "https://exa mple.com",      // Space in domain
+      "http://example.com/pa th",  // Space in path
+      "https://example.com/pa th", // Space in path
+      "http://example.com:abc",    // Invalid port
+      "https://example.com:abc",   // Invalid port
+      "http://example.com:99999",  // Port too high
+      "https://example.com:99999", // Port too high
+      "http://.example.com",       // Invalid domain start
+      "https://.example.com",      // Invalid domain start
+      "http://example..com",       // Double dots
+      "https://example..com",      // Double dots
+      "http://example.com.",       // Trailing dot
+      "https://example.com.",      // Trailing dot
+      "http://example.com:-1",     // Negative port
+      "https://example.com:-1",    // Negative port
+      "http://[invalid",           // Invalid IPv6 bracket
+      "https://[invalid",          // Invalid IPv6 bracket
+      "http://example.com/path?",  // Incomplete query
+      "https://example.com/path?", // Incomplete query
+      "http://example.com/path#",  // Incomplete fragment
+      "https://example.com/path#", // Incomplete fragment
+      "http://exam<ple.com",       // Invalid characters
+      "https://exam<ple.com",      // Invalid characters
+      "http://exam>ple.com",       // Invalid characters
+      "https://exam>ple.com",      // Invalid characters
+      "http://exam\"ple.com",      // Invalid characters
+      "https://exam\"ple.com",     // Invalid characters
+      "http://exam|ple.com",       // Invalid characters
+      "https://exam|ple.com",      // Invalid characters
+      "http://exam\\ple.com",      // Invalid characters
+      "https://exam\\ple.com",     // Invalid characters
+      "http://exam^ple.com",       // Invalid characters
+      "https://exam^ple.com",      // Invalid characters
+      "http://exam`ple.com",       // Invalid characters
+      "https://exam`ple.com",      // Invalid characters
+      "http://exam{ple.com",       // Invalid characters
+      "https://exam{ple.com",      // Invalid characters
+      "http://exam}ple.com",       // Invalid characters
+      "https://exam}ple.com",      // Invalid characters
   };
 
   Agent agent(*client_);
@@ -232,60 +232,60 @@ TEST_F(UrlValidationTest, ValidWebSocketUrls) {
 // Test invalid WebSocket URLs
 TEST_F(UrlValidationTest, InvalidWebSocketUrls) {
   std::vector<std::string> invalid_ws_urls = {
-      "",                         // Empty string
-      "not-a-url",                // No protocol
-      "http://example.com",       // Wrong protocol
-      "https://example.com",      // Wrong protocol
-      "ftp://example.com",        // Wrong protocol
-      "wsfoo://example.com",      // Invalid protocol
-      "ws://",                    // No domain
-      "wss://",                   // No domain
-      "ws:// example.com",        // Space in URL
-      "wss:// example.com",       // Space in URL
-      "ws://example .com",        // Space in domain
-      "wss://example .com",       // Space in domain
-      "ws://example.com ",        // Trailing space
-      "wss://example.com ",       // Trailing space
-      " ws://example.com",        // Leading space
-      " wss://example.com",       // Leading space
-      "ws://exa mple.com",        // Space in domain
-      "wss://exa mple.com",       // Space in domain
-      "ws://example.com/pa th",   // Space in path
-      "wss://example.com/pa th",  // Space in path
-      "ws://example.com:abc",     // Invalid port
-      "wss://example.com:abc",    // Invalid port
-      "ws://example.com:99999",   // Port too high
-      "wss://example.com:99999",  // Port too high
-      "ws://.example.com",        // Invalid domain start
-      "wss://.example.com",       // Invalid domain start
-      "ws://example..com",        // Double dots
-      "wss://example..com",       // Double dots
-      "ws://example.com.",        // Trailing dot
-      "wss://example.com.",       // Trailing dot
-      "ws://example.com:-1",      // Negative port
-      "wss://example.com:-1",     // Negative port
-      "ws://[invalid",            // Invalid IPv6 bracket
-      "wss://[invalid",           // Invalid IPv6 bracket
-      "ws://example.com/path?",   // Incomplete query
-      "wss://example.com/path?",  // Incomplete query
-      "ws://exam<ple.com",        // Invalid characters
-      "wss://exam<ple.com",       // Invalid characters
-      "ws://exam>ple.com",        // Invalid characters
-      "wss://exam>ple.com",       // Invalid characters
-      "ws://exam\"ple.com",       // Invalid characters
-      "wss://exam\"ple.com",      // Invalid characters
-      "ws://exam|ple.com",        // Invalid characters
-      "wss://exam|ple.com",       // Invalid characters
-      "ws://exam\\ple.com",       // Invalid characters
-      "wss://exam\\ple.com",      // Invalid characters
-      "ws://exam^ple.com",        // Invalid characters
-      "wss://exam^ple.com",       // Invalid characters
-      "ws://exam`ple.com",        // Invalid characters
-      "wss://exam`ple.com",       // Invalid characters
-      "ws://exam{ple.com",        // Invalid characters
-      "wss://exam{ple.com",       // Invalid characters
-      "ws://exam}ple.com",        // Invalid characters
-      "wss://exam}ple.com",       // Invalid characters
+      "",                        // Empty string
+      "not-a-url",               // No protocol
+      "http://example.com",      // Wrong protocol
+      "https://example.com",     // Wrong protocol
+      "ftp://example.com",       // Wrong protocol
+      "wsfoo://example.com",     // Invalid protocol
+      "ws://",                   // No domain
+      "wss://",                  // No domain
+      "ws:// example.com",       // Space in URL
+      "wss:// example.com",      // Space in URL
+      "ws://example .com",       // Space in domain
+      "wss://example .com",      // Space in domain
+      "ws://example.com ",       // Trailing space
+      "wss://example.com ",      // Trailing space
+      " ws://example.com",       // Leading space
+      " wss://example.com",      // Leading space
+      "ws://exa mple.com",       // Space in domain
+      "wss://exa mple.com",      // Space in domain
+      "ws://example.com/pa th",  // Space in path
+      "wss://example.com/pa th", // Space in path
+      "ws://example.com:abc",    // Invalid port
+      "wss://example.com:abc",   // Invalid port
+      "ws://example.com:99999",  // Port too high
+      "wss://example.com:99999", // Port too high
+      "ws://.example.com",       // Invalid domain start
+      "wss://.example.com",      // Invalid domain start
+      "ws://example..com",       // Double dots
+      "wss://example..com",      // Double dots
+      "ws://example.com.",       // Trailing dot
+      "wss://example.com.",      // Trailing dot
+      "ws://example.com:-1",     // Negative port
+      "wss://example.com:-1",    // Negative port
+      "ws://[invalid",           // Invalid IPv6 bracket
+      "wss://[invalid",          // Invalid IPv6 bracket
+      "ws://example.com/path?",  // Incomplete query
+      "wss://example.com/path?", // Incomplete query
+      "ws://exam<ple.com",       // Invalid characters
+      "wss://exam<ple.com",      // Invalid characters
+      "ws://exam>ple.com",       // Invalid characters
+      "wss://exam>ple.com",      // Invalid characters
+      "ws://exam\"ple.com",      // Invalid characters
+      "wss://exam\"ple.com",     // Invalid characters
+      "ws://exam|ple.com",       // Invalid characters
+      "wss://exam|ple.com",      // Invalid characters
+      "ws://exam\\ple.com",      // Invalid characters
+      "wss://exam\\ple.com",     // Invalid characters
+      "ws://exam^ple.com",       // Invalid characters
+      "wss://exam^ple.com",      // Invalid characters
+      "ws://exam`ple.com",       // Invalid characters
+      "wss://exam`ple.com",      // Invalid characters
+      "ws://exam{ple.com",       // Invalid characters
+      "wss://exam{ple.com",      // Invalid characters
+      "ws://exam}ple.com",       // Invalid characters
+      "wss://exam}ple.com",      // Invalid characters
   };
 
   Mcp mcp(*client_);
@@ -480,10 +480,10 @@ TEST_F(UrlValidationTest, PerformanceTest) {
 #if defined(IS_ASAN_BUILD) || defined(DEBUG) || !defined(NDEBUG)
   // Debug builds, sanitizer builds, or CI environment - be very generous
   int timeout_ms = is_ci ? (duration.count() * 6)
-                         : 10000;  // 6x current time on CI, 10s locally
+                         : 10000; // 6x current time on CI, 10s locally
   // Ensure minimum reasonable timeout even if calculation goes wrong
   timeout_ms =
-      std::max(timeout_ms, is_ci ? 90000 : 10000);  // 90s CI min, 10s local min
+      std::max(timeout_ms, is_ci ? 90000 : 10000); // 90s CI min, 10s local min
   EXPECT_LT(duration.count(), timeout_ms)
       << "URL validation should complete within reasonable time for "
          "debug/sanitizer builds";
@@ -491,7 +491,7 @@ TEST_F(UrlValidationTest, PerformanceTest) {
   // Release builds should validate 10,000 URLs in under 2 seconds (relaxed from
   // 1s)
   int timeout_ms =
-      is_ci ? 5000 : 2000;  // More generous timeout even for release builds
+      is_ci ? 5000 : 2000; // More generous timeout even for release builds
   EXPECT_LT(duration.count(), timeout_ms)
       << "URL validation should be fast in release builds";
 #endif

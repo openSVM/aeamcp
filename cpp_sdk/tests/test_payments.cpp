@@ -11,7 +11,7 @@
 using namespace SolanaAiRegistries;
 
 class PaymentsTest : public ::testing::Test {
- protected:
+protected:
   void SetUp() override {
     ClientConfig config;
     config.cluster = Cluster::Devnet;
@@ -60,14 +60,14 @@ TEST_F(PaymentsTest, PaymentTypeConversion) {
 TEST_F(PaymentsTest, PrepayParameterValidation) {
   PrepayParams params;
   params.recipient = PublicKey("11111111111111111111111111111112");
-  params.amount = 1000000;  // 1 SOL in lamports
+  params.amount = 1000000; // 1 SOL in lamports
   params.method = PaymentMethod::Sol;
 
   // Valid parameters should not throw
   EXPECT_NO_THROW(Payments::validate_prepay_params(params));
 
   // Invalid parameters should throw
-  params.amount = 0;  // Zero amount
+  params.amount = 0; // Zero amount
   EXPECT_THROW(Payments::validate_prepay_params(params), std::invalid_argument);
 
   params.amount = 1000000;
@@ -86,7 +86,7 @@ TEST_F(PaymentsTest, PayAsYouGoParameterValidation) {
   EXPECT_NO_THROW(Payments::validate_pay_as_you_go_params(params));
 
   // Invalid parameters should throw
-  params.amount_per_request = 0;  // Zero amount
+  params.amount_per_request = 0; // Zero amount
   EXPECT_THROW(Payments::validate_pay_as_you_go_params(params),
                std::invalid_argument);
 }
@@ -95,14 +95,14 @@ TEST_F(PaymentsTest, SubscriptionParameterValidation) {
   SubscriptionParams params;
   params.service_provider = PublicKey("11111111111111111111111111111112");
   params.amount_per_period = 1000000;
-  params.billing_period = std::chrono::seconds{86400};  // 1 day
+  params.billing_period = std::chrono::seconds{86400}; // 1 day
   params.method = PaymentMethod::Sol;
 
   // Valid parameters should not throw
   EXPECT_NO_THROW(Payments::validate_subscription_params(params));
 
   // Invalid parameters should throw
-  params.billing_period = std::chrono::seconds{0};  // Zero period
+  params.billing_period = std::chrono::seconds{0}; // Zero period
   EXPECT_THROW(Payments::validate_subscription_params(params),
                std::invalid_argument);
 }
@@ -111,14 +111,14 @@ TEST_F(PaymentsTest, StreamParameterValidation) {
   StreamParams params;
   params.recipient = PublicKey("11111111111111111111111111111112");
   params.rate_per_second = 100;
-  params.duration = std::chrono::seconds{3600};  // 1 hour
+  params.duration = std::chrono::seconds{3600}; // 1 hour
   params.method = PaymentMethod::Sol;
 
   // Valid parameters should not throw
   EXPECT_NO_THROW(Payments::validate_stream_params(params));
 
   // Invalid parameters should throw
-  params.rate_per_second = 0;  // Zero rate
+  params.rate_per_second = 0; // Zero rate
   EXPECT_THROW(Payments::validate_stream_params(params), std::invalid_argument);
 }
 

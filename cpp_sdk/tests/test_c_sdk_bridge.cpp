@@ -13,7 +13,7 @@
 using namespace SolanaAiRegistries;
 
 class CSdkBridgeTest : public ::testing::Test {
- protected:
+protected:
   void SetUp() override {
     // Test setup
   }
@@ -189,16 +189,16 @@ TEST_F(CSdkBridgeTest, MoveSemantics) {
 
   // Test move constructor
   auto moved_client = std::move(client);
-  EXPECT_EQ(client.get(), nullptr);        // Original should be null
-  EXPECT_NE(moved_client.get(), nullptr);  // Moved should be valid
+  EXPECT_EQ(client.get(), nullptr);       // Original should be null
+  EXPECT_NE(moved_client.get(), nullptr); // Moved should be valid
 
   // Test move assignment
   auto another_client = Bridge::make_client("https://api.devnet.solana.com", 0);
   ASSERT_NE(another_client.get(), nullptr);
 
   another_client = std::move(moved_client);
-  EXPECT_EQ(moved_client.get(), nullptr);    // Original should be null
-  EXPECT_NE(another_client.get(), nullptr);  // Assigned should be valid
+  EXPECT_EQ(moved_client.get(), nullptr);   // Original should be null
+  EXPECT_NE(another_client.get(), nullptr); // Assigned should be valid
 }
 
 /**

@@ -145,8 +145,8 @@ void aireg_client_destroy(aireg_client_t *client) {
 }
 
 // Transaction builder functions
-aireg_transaction_builder_t *aireg_transaction_builder_create(
-    aireg_client_t *client) {
+aireg_transaction_builder_t *
+aireg_transaction_builder_create(aireg_client_t *client) {
   if (!client) {
     return nullptr;
   }
@@ -354,4 +354,4 @@ void aireg_balance_info_destroy(aireg_balance_info_t *info) {
   }
 }
 
-}  // extern "C"
+} // extern "C"
