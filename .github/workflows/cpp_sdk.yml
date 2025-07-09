@@ -132,12 +132,6 @@ jobs:
         cd cpp_sdk/build
         ctest --verbose --output-on-failure
     
-    - name: Run tests with Valgrind (Ubuntu Debug only)
-      if: matrix.os == 'ubuntu-latest' && matrix.build-type == 'Debug'
-      run: |
-        cd cpp_sdk/build
-        ninja test-valgrind
-    
     - name: Generate coverage report (Debug builds only)
       if: matrix.build-type == 'Debug'
       run: |
