@@ -145,16 +145,20 @@ set(GCOV_TOOL ${GCOV_EXECUTABLE})
 add_custom_target(coverage
     # Clean any existing coverage data
     COMMAND ${CMAKE_COMMAND} -E remove -f coverage.info coverage_filtered.info
-    # Run tests to generate .gcda files (no need to zero counters since we clean .gcda)
+    # Initialize coverage counters to ensure clean state
+    COMMAND lcov --gcov-tool ${GCOV_TOOL} --zerocounters --directory . || true
+    # Run tests to generate .gcda files
     COMMAND tests/aireg++_tests
-    # Capture coverage data from all .gcno/.gcda files with error handling
-    COMMAND lcov --gcov-tool ${GCOV_TOOL} --capture --directory . --output-file coverage.info --ignore-errors mismatch,gcov,source --rc geninfo_unexecuted_blocks=1
+    # Capture coverage data from all .gcno/.gcda files with comprehensive error handling
+    COMMAND lcov --gcov-tool ${GCOV_TOOL} --capture --directory . --output-file coverage.info --ignore-errors mismatch,gcov,source,unused --rc geninfo_unexecuted_blocks=1 --rc lcov_branch_coverage=0
+    # Verify coverage.info was created
+    COMMAND test -f coverage.info || (echo "ERROR: coverage.info not created" && exit 1)
     # Filter out system headers and test files
     COMMAND lcov --remove coverage.info '/usr/*' '*/tests/*' '*/examples/*' '*/googletest/*' --output-file coverage_filtered.info --ignore-errors mismatch,source,unused
     # Create output directory
     COMMAND ${CMAKE_COMMAND} -E make_directory coverage_html
     # Generate HTML report (ignore exit code since warnings can cause non-zero exit)
-    COMMAND genhtml coverage_filtered.info --output-directory coverage_html --ignore-errors source,mismatch || true
+    COMMAND genhtml coverage_filtered.info --output-directory coverage_html --ignore-errors source,mismatch,unused || true
     # Print summary
     COMMAND lcov --summary coverage_filtered.info
     DEPENDS aireg++_tests

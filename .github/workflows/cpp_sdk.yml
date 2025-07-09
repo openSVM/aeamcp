@@ -139,9 +139,17 @@ jobs:
       run: |
         cd cpp_sdk/build
         ninja coverage
-    
+
+    - name: Debug coverage files
+      if: matrix.build-type == 'Debug' && matrix.os == 'ubuntu-latest' && matrix.compiler == 'gcc'
+      run: |
+        echo "Listing files in cpp_sdk/build:"
+        ls -la cpp_sdk/build/
+        echo "Looking for coverage files:"
+        find cpp_sdk/build/ -name "*.info" -o -name "*.gcno" -o -name "*.gcda" | head -20
+
     - name: Upload coverage to Codecov
-      if: matrix.build-type == 'Debug' && matrix.os == 'ubuntu-latest'
+      if: matrix.build-type == 'Debug' && matrix.os == 'ubuntu-latest' && matrix.compiler == 'gcc'
       uses: codecov/codecov-action@v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
