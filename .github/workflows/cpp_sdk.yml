@@ -152,6 +152,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - name: Clean build directories
+      run: |
+        cd cpp_sdk
+        rm -rf build-asan build-valgrind
+    
     - name: Install libsodium
       run: sudo apt-get update && sudo apt-get install -y libsodium-dev lcov
     
@@ -172,7 +177,7 @@ jobs:
     - name: Configure with AddressSanitizer
       run: |
         cd cpp_sdk
-        mkdir build-asan && cd build-asan
+        mkdir -p build-asan && cd build-asan
         cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug -DENABLE_SANITIZERS=ON
     
     - name: Build with AddressSanitizer
@@ -188,7 +193,7 @@ jobs:
     - name: Configure with Valgrind
       run: |
         cd cpp_sdk
-        mkdir build-valgrind && cd build-valgrind
+        mkdir -p build-valgrind && cd build-valgrind
         cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug -DENABLE_VALGRIND=ON
     
     - name: Build with Valgrind
