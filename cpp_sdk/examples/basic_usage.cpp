@@ -126,7 +126,7 @@ int main() {
 
     PublicKey payer("11111111111111111111111111111112");
     std::vector<PublicKey> accounts = {payer};
-    std::vector<uint8_t> instruction_data = {0x00}; // Minimal instruction
+    std::vector<uint8_t> instruction_data = {0x00};  // Minimal instruction
 
     auto transaction_data =
         builder.set_payer(payer)

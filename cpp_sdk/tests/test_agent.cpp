@@ -3,14 +3,15 @@
  * @brief Tests for the Agent class
  */
 
+#include <gtest/gtest.h>
+
 #include <aireg++/agent.hpp>
 #include <aireg++/client.hpp>
-#include <gtest/gtest.h>
 
 using namespace SolanaAiRegistries;
 
 class AgentTest : public ::testing::Test {
-protected:
+ protected:
   void SetUp() override {
     ClientConfig config;
     config.cluster = Cluster::Devnet;
@@ -73,12 +74,12 @@ TEST_F(AgentTest, ParameterValidation) {
   EXPECT_NO_THROW(Agent::validate_registration_params(params));
 
   // Invalid parameters should throw
-  params.name = ""; // Empty name
+  params.name = "";  // Empty name
   EXPECT_THROW(Agent::validate_registration_params(params),
                std::invalid_argument);
 
   params.name = "Test Agent";
-  params.api_endpoint = "invalid-url"; // Invalid URL
+  params.api_endpoint = "invalid-url";  // Invalid URL
   EXPECT_THROW(Agent::validate_registration_params(params),
                std::invalid_argument);
 }

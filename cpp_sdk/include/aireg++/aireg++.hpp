@@ -34,9 +34,9 @@ namespace SolanaAiRegistries {
  * @brief SDK version information
  */
 struct Version {
-  static constexpr int major = 1; ///< Major version number
-  static constexpr int minor = 0; ///< Minor version number
-  static constexpr int patch = 0; ///< Patch version number
+  static constexpr int major = 1;  ///< Major version number
+  static constexpr int minor = 0;  ///< Minor version number
+  static constexpr int patch = 0;  ///< Patch version number
 
   /**
    * @brief Get version string
@@ -66,4 +66,4 @@ void initialize();
  */
 void cleanup() noexcept;
 
-} // namespace SolanaAiRegistries
+}  // namespace SolanaAiRegistries

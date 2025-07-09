@@ -3,8 +3,9 @@
  * @brief Main test file for the C++ SDK
  */
 
-#include <aireg++/aireg++.hpp>
 #include <gtest/gtest.h>
+
+#include <aireg++/aireg++.hpp>
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);

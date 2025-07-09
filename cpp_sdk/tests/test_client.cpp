@@ -3,13 +3,14 @@
  * @brief Tests for the Client class
  */
 
-#include <aireg++/client.hpp>
 #include <gtest/gtest.h>
+
+#include <aireg++/client.hpp>
 
 using namespace SolanaAiRegistries;
 
 class ClientTest : public ::testing::Test {
-protected:
+ protected:
   void SetUp() override {
     config_.cluster = Cluster::Devnet;
     config_.timeout = std::chrono::milliseconds{10000};
@@ -121,7 +122,7 @@ TEST_F(ClientTest, ErrorHandling) {
 }
 
 class ClientIntegrationTest : public ::testing::Test {
-protected:
+ protected:
   void SetUp() override {
     config_.cluster = Cluster::Devnet;
     config_.timeout = std::chrono::milliseconds{30000};
@@ -139,6 +140,6 @@ TEST_F(ClientIntegrationTest, DevnetConnectivity) {
   // Test actual devnet call
   EXPECT_NO_THROW({
     std::string blockhash = client.get_latest_blockhash();
-    EXPECT_EQ(blockhash.length(), 44); // Base58 encoded 32 bytes
+    EXPECT_EQ(blockhash.length(), 44);  // Base58 encoded 32 bytes
   });
 }

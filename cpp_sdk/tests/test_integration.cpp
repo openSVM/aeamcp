@@ -3,18 +3,19 @@
  * @brief Integration tests for the C++ SDK
  */
 
-#include <aireg++/aireg++.hpp>
 #include <gtest/gtest.h>
+
+#include <aireg++/aireg++.hpp>
 
 using namespace SolanaAiRegistries;
 
 class IntegrationTest : public ::testing::Test {
-protected:
+ protected:
   void SetUp() override {
     ClientConfig config;
     config.cluster = Cluster::Devnet;
     config.timeout = std::chrono::milliseconds{
-        60000}; // Longer timeout for integration tests
+        60000};  // Longer timeout for integration tests
 
     client_ = std::make_unique<Client>(config);
     agent_ = std::make_unique<Agent>(*client_);
@@ -111,7 +112,7 @@ TEST_F(IntegrationTest, TransactionBuilding) {
 
   PublicKey payer("11111111111111111111111111111112");
   std::vector<PublicKey> accounts = {payer};
-  std::vector<uint8_t> data = {0x00}; // Minimal instruction data
+  std::vector<uint8_t> data = {0x00};  // Minimal instruction data
 
   EXPECT_NO_THROW({
     auto transaction_data =

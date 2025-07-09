@@ -3,13 +3,14 @@
  * @brief Tests for common utilities and error handling
  */
 
-#include <aireg++/common.hpp>
 #include <gtest/gtest.h>
+
+#include <aireg++/common.hpp>
 
 using namespace SolanaAiRegistries;
 
 class CommonTest : public ::testing::Test {
-protected:
+ protected:
   void SetUp() override {}
   void TearDown() override {}
 };
@@ -52,8 +53,9 @@ TEST_F(CommonTest, SignatureCreation) {
   EXPECT_FALSE(base58_str.empty()) << "Base58 string should not be empty";
 
   // Test base58 constructor
-  std::string sig_str = "5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBg"
-                        "mQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW";
+  std::string sig_str =
+      "5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBg"
+      "mQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW";
   Signature test_sig(sig_str);
   EXPECT_EQ(test_sig.to_base58(), sig_str);
 }

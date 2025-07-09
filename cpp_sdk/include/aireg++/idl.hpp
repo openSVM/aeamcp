@@ -26,142 +26,142 @@ namespace SolanaAiRegistries {
  * @brief IDL field types
  */
 enum class IdlType {
-  Bool,      ///< Boolean type
-  U8,        ///< 8-bit unsigned integer
-  I8,        ///< 8-bit signed integer
-  U16,       ///< 16-bit unsigned integer
-  I16,       ///< 16-bit signed integer
-  U32,       ///< 32-bit unsigned integer
-  I32,       ///< 32-bit signed integer
-  U64,       ///< 64-bit unsigned integer
-  I64,       ///< 64-bit signed integer
-  U128,      ///< 128-bit unsigned integer
-  I128,      ///< 128-bit signed integer
-  Bytes,     ///< Byte array
-  String,    ///< UTF-8 string
-  PublicKey, ///< Solana public key
-  Array,     ///< Fixed-size array
-  Vec,       ///< Variable-size vector
-  Option,    ///< Optional type
-  Struct,    ///< Custom struct
-  Enum       ///< Custom enum
+  Bool,       ///< Boolean type
+  U8,         ///< 8-bit unsigned integer
+  I8,         ///< 8-bit signed integer
+  U16,        ///< 16-bit unsigned integer
+  I16,        ///< 16-bit signed integer
+  U32,        ///< 32-bit unsigned integer
+  I32,        ///< 32-bit signed integer
+  U64,        ///< 64-bit unsigned integer
+  I64,        ///< 64-bit signed integer
+  U128,       ///< 128-bit unsigned integer
+  I128,       ///< 128-bit signed integer
+  Bytes,      ///< Byte array
+  String,     ///< UTF-8 string
+  PublicKey,  ///< Solana public key
+  Array,      ///< Fixed-size array
+  Vec,        ///< Variable-size vector
+  Option,     ///< Optional type
+  Struct,     ///< Custom struct
+  Enum        ///< Custom enum
 };
 
 /**
  * @brief IDL field definition
  */
 struct IdlField {
-  std::string name;                       ///< Field name
-  IdlType type;                           ///< Field type
-  std::optional<size_t> array_size;       ///< Array size (for Array type)
-  std::optional<std::string> struct_name; ///< Struct name (for Struct type)
-  std::optional<std::string> enum_name;   ///< Enum name (for Enum type)
-  std::optional<IdlType> inner_type;      ///< Inner type (for Vec, Option)
-  std::optional<std::string> docs;        ///< Documentation
+  std::string name;                        ///< Field name
+  IdlType type;                            ///< Field type
+  std::optional<size_t> array_size;        ///< Array size (for Array type)
+  std::optional<std::string> struct_name;  ///< Struct name (for Struct type)
+  std::optional<std::string> enum_name;    ///< Enum name (for Enum type)
+  std::optional<IdlType> inner_type;       ///< Inner type (for Vec, Option)
+  std::optional<std::string> docs;         ///< Documentation
 };
 
 /**
  * @brief IDL struct definition
  */
 struct IdlStruct {
-  std::string name;                ///< Struct name
-  std::vector<IdlField> fields;    ///< Struct fields
-  std::optional<std::string> docs; ///< Documentation
+  std::string name;                 ///< Struct name
+  std::vector<IdlField> fields;     ///< Struct fields
+  std::optional<std::string> docs;  ///< Documentation
 };
 
 /**
  * @brief IDL enum variant
  */
 struct IdlEnumVariant {
-  std::string name; ///< Variant name
+  std::string name;  ///< Variant name
   std::optional<std::vector<IdlField>>
-      fields; ///< Variant fields (for struct-like variants)
-  std::optional<std::string> docs; ///< Documentation
+      fields;  ///< Variant fields (for struct-like variants)
+  std::optional<std::string> docs;  ///< Documentation
 };
 
 /**
  * @brief IDL enum definition
  */
 struct IdlEnum {
-  std::string name;                     ///< Enum name
-  std::vector<IdlEnumVariant> variants; ///< Enum variants
-  std::optional<std::string> docs;      ///< Documentation
+  std::string name;                      ///< Enum name
+  std::vector<IdlEnumVariant> variants;  ///< Enum variants
+  std::optional<std::string> docs;       ///< Documentation
 };
 
 /**
  * @brief IDL instruction argument
  */
 struct IdlInstructionArg {
-  std::string name;                       ///< Argument name
-  IdlType type;                           ///< Argument type
-  std::optional<std::string> struct_name; ///< Struct name (for Struct type)
-  std::optional<std::string> enum_name;   ///< Enum name (for Enum type)
-  std::optional<std::string> docs;        ///< Documentation
+  std::string name;                        ///< Argument name
+  IdlType type;                            ///< Argument type
+  std::optional<std::string> struct_name;  ///< Struct name (for Struct type)
+  std::optional<std::string> enum_name;    ///< Enum name (for Enum type)
+  std::optional<std::string> docs;         ///< Documentation
 };
 
 /**
  * @brief IDL account info
  */
 struct IdlAccount {
-  std::string name;                ///< Account name
-  bool is_mut;                     ///< Whether account is mutable
-  bool is_signer;                  ///< Whether account is signer
-  std::optional<std::string> docs; ///< Documentation
+  std::string name;                 ///< Account name
+  bool is_mut;                      ///< Whether account is mutable
+  bool is_signer;                   ///< Whether account is signer
+  std::optional<std::string> docs;  ///< Documentation
 };
 
 /**
  * @brief IDL instruction definition
  */
 struct IdlInstruction {
-  std::string name;                    ///< Instruction name
-  std::vector<IdlAccount> accounts;    ///< Required accounts
-  std::vector<IdlInstructionArg> args; ///< Instruction arguments
-  std::optional<std::string> docs;     ///< Documentation
+  std::string name;                     ///< Instruction name
+  std::vector<IdlAccount> accounts;     ///< Required accounts
+  std::vector<IdlInstructionArg> args;  ///< Instruction arguments
+  std::optional<std::string> docs;      ///< Documentation
 };
 
 /**
  * @brief IDL error definition
  */
 struct IdlError {
-  uint32_t code;                  ///< Error code
-  std::string name;               ///< Error name
-  std::optional<std::string> msg; ///< Error message
+  uint32_t code;                   ///< Error code
+  std::string name;                ///< Error name
+  std::optional<std::string> msg;  ///< Error message
 };
 
 /**
  * @brief Complete IDL definition
  */
 struct IdlDefinition {
-  std::string version;                      ///< IDL version
-  std::string name;                         ///< Program name
-  PublicKey program_id;                     ///< Program ID
-  std::vector<IdlInstruction> instructions; ///< Program instructions
-  std::vector<IdlStruct> accounts;          ///< Account structs
-  std::vector<IdlStruct> types;             ///< Custom types
-  std::vector<IdlEnum> enums;               ///< Custom enums
-  std::vector<IdlError> errors;             ///< Error definitions
-  std::optional<std::string> docs;          ///< Documentation
+  std::string version;                       ///< IDL version
+  std::string name;                          ///< Program name
+  PublicKey program_id;                      ///< Program ID
+  std::vector<IdlInstruction> instructions;  ///< Program instructions
+  std::vector<IdlStruct> accounts;           ///< Account structs
+  std::vector<IdlStruct> types;              ///< Custom types
+  std::vector<IdlEnum> enums;                ///< Custom enums
+  std::vector<IdlError> errors;              ///< Error definitions
+  std::optional<std::string> docs;           ///< Documentation
 };
 
 /**
  * @brief Code generation options
  */
 struct CodeGenOptions {
-  std::string namespace_name = "Generated"; ///< Generated namespace name
-  bool generate_serializers = true;         ///< Generate serialization code
-  bool generate_builders = true;            ///< Generate builder patterns
-  bool generate_validators = true;          ///< Generate validation code
-  bool use_exceptions = true;               ///< Use exceptions for errors
-  std::string header_guard_prefix = "AIREG_GENERATED"; ///< Header guard prefix
+  std::string namespace_name = "Generated";  ///< Generated namespace name
+  bool generate_serializers = true;          ///< Generate serialization code
+  bool generate_builders = true;             ///< Generate builder patterns
+  bool generate_validators = true;           ///< Generate validation code
+  bool use_exceptions = true;                ///< Use exceptions for errors
+  std::string header_guard_prefix = "AIREG_GENERATED";  ///< Header guard prefix
 };
 
 /**
  * @brief Generated code information
  */
 struct GeneratedCode {
-  std::string header_content; ///< Generated header file content
-  std::string source_content; ///< Generated source file content (if needed)
-  std::vector<std::string> dependencies; ///< Required dependencies
+  std::string header_content;  ///< Generated header file content
+  std::string source_content;  ///< Generated source file content (if needed)
+  std::vector<std::string> dependencies;  ///< Required dependencies
 };
 
 /**
@@ -172,7 +172,7 @@ struct GeneratedCode {
  * interacting with Solana programs.
  */
 class Idl {
-public:
+ public:
   /**
    * @brief Default constructor
    */
@@ -240,9 +240,8 @@ public:
    * @return Generated instruction builder code
    * @throws SdkException if generation fails
    */
-  static std::string
-  generate_instruction_builders(const IdlDefinition &idl,
-                                const CodeGenOptions &options = {});
+  static std::string generate_instruction_builders(
+      const IdlDefinition &idl, const CodeGenOptions &options = {});
 
   /**
    * @brief Generate account deserializers from IDL
@@ -251,9 +250,8 @@ public:
    * @return Generated deserializer code
    * @throws SdkException if generation fails
    */
-  static std::string
-  generate_account_deserializers(const IdlDefinition &idl,
-                                 const CodeGenOptions &options = {});
+  static std::string generate_account_deserializers(
+      const IdlDefinition &idl, const CodeGenOptions &options = {});
 
   /**
    * @brief Validate IDL definition
@@ -280,9 +278,8 @@ public:
    * @param array_size Array size (for Array type)
    * @return Size in bytes, or nullopt for variable-size types
    */
-  static std::optional<size_t>
-  get_serialization_size(IdlType type,
-                         std::optional<size_t> array_size = std::nullopt);
+  static std::optional<size_t> get_serialization_size(
+      IdlType type, std::optional<size_t> array_size = std::nullopt);
 
   /**
    * @brief Convert IDL type to string
@@ -306,9 +303,9 @@ public:
    * @return Serialized instruction data
    * @throws SdkException if serialization fails
    */
-  static std::vector<uint8_t>
-  create_instruction_data(const IdlInstruction &instruction,
-                          const std::vector<std::vector<uint8_t>> &args);
+  static std::vector<uint8_t> create_instruction_data(
+      const IdlInstruction &instruction,
+      const std::vector<std::vector<uint8_t>> &args);
 
   /**
    * @brief Deserialize account data according to IDL struct
@@ -339,9 +336,9 @@ public:
    */
   static IdlDefinition load_svmai_token_idl();
 
-private:
+ private:
   class Impl;
   std::unique_ptr<Impl> pimpl_;
 };
 
-} // namespace SolanaAiRegistries
+}  // namespace SolanaAiRegistries

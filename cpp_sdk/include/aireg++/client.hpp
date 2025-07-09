@@ -30,36 +30,37 @@ struct SolanaInstruction;
  * @brief Configuration for the Solana client
  */
 struct ClientConfig {
-  Cluster cluster = Cluster::Devnet; ///< Solana cluster to connect to
+  Cluster cluster = Cluster::Devnet;  ///< Solana cluster to connect to
   std::optional<std::string>
-      custom_rpc_url; ///< Custom RPC URL (overrides cluster)
-  std::chrono::milliseconds timeout{30000}; ///< Request timeout in milliseconds
+      custom_rpc_url;  ///< Custom RPC URL (overrides cluster)
+  std::chrono::milliseconds timeout{
+      30000};  ///< Request timeout in milliseconds
   std::optional<std::string> commitment =
-      "confirmed";          ///< Transaction commitment level
-  bool enable_retry = true; ///< Enable automatic retries
-  int max_retries = 3;      ///< Maximum number of retries
+      "confirmed";           ///< Transaction commitment level
+  bool enable_retry = true;  ///< Enable automatic retries
+  int max_retries = 3;       ///< Maximum number of retries
 };
 
 /**
  * @brief Information about a Solana account
  */
 struct AccountInfo {
-  uint64_t lamports;         ///< Account balance in lamports
-  PublicKey owner;           ///< Account owner program
-  std::vector<uint8_t> data; ///< Account data
-  bool executable;           ///< Whether account is executable
-  uint64_t rent_epoch;       ///< Rent epoch
+  uint64_t lamports;          ///< Account balance in lamports
+  PublicKey owner;            ///< Account owner program
+  std::vector<uint8_t> data;  ///< Account data
+  bool executable;            ///< Whether account is executable
+  uint64_t rent_epoch;        ///< Rent epoch
 };
 
 /**
  * @brief Transaction result information
  */
 struct TransactionResult {
-  Signature signature;              ///< Transaction signature
-  bool success;                     ///< Whether transaction succeeded
-  std::optional<std::string> error; ///< Error message if failed
-  uint64_t slot; ///< Slot number where transaction was processed
-  std::optional<uint64_t> block_time; ///< Block time (Unix timestamp)
+  Signature signature;               ///< Transaction signature
+  bool success;                      ///< Whether transaction succeeded
+  std::optional<std::string> error;  ///< Error message if failed
+  uint64_t slot;  ///< Slot number where transaction was processed
+  std::optional<uint64_t> block_time;  ///< Block time (Unix timestamp)
 };
 
 /**
@@ -71,7 +72,7 @@ struct TransactionResult {
  * error handling.
  */
 class Client {
-public:
+ public:
   /**
    * @brief Construct client with configuration
    * @param config Client configuration
@@ -135,8 +136,8 @@ public:
    * @return Transaction result
    * @throws TransactionException if transaction fails or times out
    */
-  TransactionResult
-  send_and_confirm_transaction(const std::vector<uint8_t> &transaction_data);
+  TransactionResult send_and_confirm_transaction(
+      const std::vector<uint8_t> &transaction_data);
 
   /**
    * @brief Send transaction without waiting for confirmation
@@ -177,7 +178,7 @@ public:
    */
   bool is_connected() const;
 
-private:
+ private:
   class Impl;
   std::unique_ptr<Impl> pimpl_;
 
@@ -195,7 +196,7 @@ private:
  * with proper instruction sequencing and fee calculation.
  */
 class TransactionBuilder {
-public:
+ public:
   /**
    * @brief Construct transaction builder
    * @param client Client to use for transaction operations
@@ -274,9 +275,9 @@ public:
    */
   TransactionBuilder &clear();
 
-private:
+ private:
   class Impl;
   std::unique_ptr<Impl> pimpl_;
 };
 
-} // namespace SolanaAiRegistries
+}  // namespace SolanaAiRegistries

@@ -3,13 +3,14 @@
  * @brief Tests for the IDL class
  */
 
-#include <aireg++/idl.hpp>
 #include <gtest/gtest.h>
+
+#include <aireg++/idl.hpp>
 
 using namespace SolanaAiRegistries;
 
 class IdlTest : public ::testing::Test {
-protected:
+ protected:
   void SetUp() override {}
   void TearDown() override {}
 };
