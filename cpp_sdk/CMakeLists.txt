@@ -138,14 +138,9 @@ add_custom_target(test-integration
     COMMENT "Running integration tests"
 )
 
-# Check for specific gcov version for coverage
-find_program(GCOV_8_EXECUTABLE gcov-8)
-if(GCOV_8_EXECUTABLE)
-    set(GCOV_TOOL ${GCOV_8_EXECUTABLE})
-else()
-    find_program(GCOV_EXECUTABLE gcov)
-    set(GCOV_TOOL ${GCOV_EXECUTABLE})
-endif()
+# Find gcov for coverage
+find_program(GCOV_EXECUTABLE gcov)
+set(GCOV_TOOL ${GCOV_EXECUTABLE})
 
 add_custom_target(coverage
     # Clean any existing coverage data
