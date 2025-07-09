@@ -25,7 +25,9 @@ int main() {
     std::cout << "\n1. Searching for existing agents..." << std::endl;
     AgentSearchFilters filters;
     filters.active_only = true;
-    filters.capabilities = {AgentCapability::TextGeneration};
+    std::vector<AgentCapability> caps;
+    caps.push_back(AgentCapability::TextGeneration);
+    filters.capabilities = caps;
 
     auto agents = agent.search_agents(filters, 10, 0);
     std::cout << "Found " << agents.size() << " text generation agents"
@@ -68,8 +70,9 @@ int main() {
     valid_params.name = "Example Text Agent";
     valid_params.description = "An example agent for text generation";
     valid_params.version = "1.0.0";
-    valid_params.capabilities = {AgentCapability::TextGeneration,
-                                 AgentCapability::CodeGeneration};
+    valid_params.capabilities.clear();
+    valid_params.capabilities.push_back(AgentCapability::TextGeneration);
+    valid_params.capabilities.push_back(AgentCapability::CodeGeneration);
     valid_params.api_endpoint = "https://api.example.com/agent";
     valid_params.pricing_model = PricingModel::PerRequest;
     valid_params.price_per_request = 1000;
@@ -108,7 +111,9 @@ int main() {
 
     // Search by capability
     AgentSearchFilters capability_filters;
-    capability_filters.capabilities = {AgentCapability::ImageGeneration};
+    std::vector<AgentCapability> capability_caps;
+    capability_caps.push_back(AgentCapability::ImageGeneration);
+    capability_filters.capabilities = capability_caps;
     capability_filters.active_only = true;
 
     auto image_agents = agent.search_agents(capability_filters, 5, 0);

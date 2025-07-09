@@ -80,7 +80,8 @@ TEST_F(McpTest, ParameterValidation) {
   params.version = "1.0.0";
   params.protocol = McpProtocol::Http;
   params.endpoint = "https://api.example.com";
-  params.capabilities = {McpCapability::Resources};
+  params.capabilities.clear();
+  params.capabilities.push_back(McpCapability::Resources);
 
   // Valid parameters should not throw
   EXPECT_NO_THROW(Mcp::validate_registration_params(params));
@@ -99,7 +100,10 @@ TEST_F(McpTest, ParameterValidation) {
 TEST_F(McpTest, SearchFilters) {
   McpSearchFilters filters;
   filters.protocol = McpProtocol::Http;
-  filters.capabilities = {McpCapability::Resources, McpCapability::Tools};
+  std::vector<McpCapability> caps;
+  caps.push_back(McpCapability::Resources);
+  caps.push_back(McpCapability::Tools);
+  filters.capabilities = caps;
   filters.active_only = true;
 
   // Search should not throw even with no results

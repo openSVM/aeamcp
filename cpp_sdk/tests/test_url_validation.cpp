@@ -86,7 +86,8 @@ TEST_F(UrlValidationTest, ValidHttpUrls) {
     params.name = "Test Agent";
     params.description = "Test Description";
     params.version = "1.0.0";
-    params.capabilities = {AgentCapability::TextGeneration};
+    params.capabilities.clear();
+    params.capabilities.push_back(AgentCapability::TextGeneration);
     params.api_endpoint = url;
     params.pricing_model = PricingModel::Free;
 
@@ -162,7 +163,8 @@ TEST_F(UrlValidationTest, InvalidHttpUrls) {
     params.name = "Test Agent";
     params.description = "Test Description";
     params.version = "1.0.0";
-    params.capabilities = {AgentCapability::TextGeneration};
+    params.capabilities.clear();
+    params.capabilities.push_back(AgentCapability::TextGeneration);
     params.api_endpoint = url;
     params.pricing_model = PricingModel::Free;
 
@@ -352,7 +354,8 @@ TEST_F(UrlValidationTest, EdgeCases) {
   params.name = "Test Agent";
   params.description = "Test Description";
   params.version = "1.0.0";
-  params.capabilities = {AgentCapability::TextGeneration};
+  params.capabilities.clear();
+  params.capabilities.push_back(AgentCapability::TextGeneration);
   params.api_endpoint = very_long_url;
   params.pricing_model = PricingModel::Free;
 
@@ -415,7 +418,8 @@ TEST_F(UrlValidationTest, CaseSensitivity) {
     params.name = "Test Agent";
     params.description = "Test Description";
     params.version = "1.0.0";
-    params.capabilities = {AgentCapability::TextGeneration};
+    params.capabilities.clear();
+    params.capabilities.push_back(AgentCapability::TextGeneration);
     params.api_endpoint = url;
     params.pricing_model = PricingModel::Free;
 
@@ -453,7 +457,8 @@ TEST_F(UrlValidationTest, PerformanceTest) {
     params.name = "Test Agent";
     params.description = "Test Description";
     params.version = "1.0.0";
-    params.capabilities = {AgentCapability::TextGeneration};
+    params.capabilities.clear();
+    params.capabilities.push_back(AgentCapability::TextGeneration);
     params.api_endpoint = url;
     params.pricing_model = PricingModel::Free;
 

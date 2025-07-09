@@ -65,7 +65,8 @@ TEST_F(AgentTest, ParameterValidation) {
   params.name = "Test Agent";
   params.description = "A test agent";
   params.version = "1.0.0";
-  params.capabilities = {AgentCapability::TextGeneration};
+  params.capabilities.clear();
+  params.capabilities.push_back(AgentCapability::TextGeneration);
   params.api_endpoint = "https://api.example.com";
   params.pricing_model = PricingModel::PerRequest;
   params.price_per_request = 1000;
@@ -86,8 +87,10 @@ TEST_F(AgentTest, ParameterValidation) {
 
 TEST_F(AgentTest, SearchFilters) {
   AgentSearchFilters filters;
-  filters.capabilities = {AgentCapability::TextGeneration,
-                          AgentCapability::CodeGeneration};
+  std::vector<AgentCapability> caps;
+  caps.push_back(AgentCapability::TextGeneration);
+  caps.push_back(AgentCapability::CodeGeneration);
+  filters.capabilities = caps;
   filters.pricing_model = PricingModel::PerRequest;
   filters.max_price_per_request = 5000;
   filters.active_only = true;
