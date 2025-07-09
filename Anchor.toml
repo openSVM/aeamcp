@@ -10,7 +10,7 @@ members = [
 [programs.devnet]
 agent_registry = "2CyuaQMyxJNg637bYSR1ZhwfDFd3ssCvTJHMBTbCH8D4"
 mcp_server_registry = "FYu2V5y6vGjsra7rqCKs5Z4paMLQB2mT4iTc9KABGCSM"
-access_control = "ACTRLxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+access_control = "AccessCtr1111111111111111111111111111111111"
 
 [features]
 skip-lint = false
