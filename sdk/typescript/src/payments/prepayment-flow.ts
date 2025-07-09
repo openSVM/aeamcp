@@ -1,5 +1,9 @@
-import { PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
-import { getAssociatedTokenAddress, createTransferInstruction, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { PublicKey, Transaction } from '@solana/web3.js';
+import {
+  getAssociatedTokenAddress,
+  createTransferInstruction,
+  TOKEN_PROGRAM_ID,
+} from '@solana/spl-token';
 import { SolanaClient } from '../client.js';
 import { PrepaymentConfig, TransactionResult, A2AMPLAmount, TOKEN_MINTS } from '../types.js';
 import { PaymentError, ValidationError } from '../errors.js';
@@ -9,7 +13,7 @@ import { Validator } from '../utils/validation.js';
  * Handles prepayment flows for services
  */
 export class PrepaymentFlow {
-  constructor(private client: SolanaClient) {}
+  constructor(private _client: SolanaClient) {}
 
   /**
    * Create a prepayment transaction
@@ -25,7 +29,7 @@ export class PrepaymentFlow {
       const amount = config.amount;
 
       // Get token mint for the cluster
-      const tokenMint = TOKEN_MINTS[this.client.cluster === 'mainnet-beta' ? 'mainnet' : 'devnet'];
+      const tokenMint = TOKEN_MINTS[this._client.cluster === 'mainnet-beta' ? 'mainnet' : 'devnet'];
 
       // Get associated token accounts
       const payerTokenAccount = await getAssociatedTokenAddress(
@@ -46,7 +50,12 @@ export class PrepaymentFlow {
       await this.validatePayerBalance(payerTokenAccount, amount);
 
       // Check if recipient token account exists, create if needed
-      await this.ensureRecipientTokenAccount(transaction, recipient, recipientTokenAccount, tokenMint);
+      await this.ensureRecipientTokenAccount(
+        transaction,
+        recipient,
+        recipientTokenAccount,
+        tokenMint
+      );
 
       // Create transfer instruction
       const transferInstruction = createTransferInstruction(
@@ -61,7 +70,7 @@ export class PrepaymentFlow {
       transaction.add(transferInstruction);
 
       // Set recent blockhash and fee payer
-      const { blockhash } = await this.client.connection.getLatestBlockhash();
+      const { blockhash } = await this._client.connection.getLatestBlockhash();
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = payer;
 
@@ -80,7 +89,7 @@ export class PrepaymentFlow {
   async executePrepayment(config: PrepaymentConfig): Promise<TransactionResult> {
     try {
       const transaction = await this.createPrepayment(config);
-      return await this.client.sendAndConfirmTransaction(transaction);
+      return await this._client.sendAndConfirmTransaction(transaction);
     } catch (error) {
       throw new PaymentError(
         `Failed to execute prepayment: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -100,7 +109,7 @@ export class PrepaymentFlow {
     recipient?: PublicKey;
   }> {
     try {
-      const transaction = await this.client.connection.getTransaction(signature, {
+      const transaction = await this._client.connection.getTransaction(signature, {
         commitment: 'confirmed',
         maxSupportedTransactionVersion: 0,
       });
@@ -135,9 +144,9 @@ export class PrepaymentFlow {
     try {
       // Create the transaction to estimate fees
       const transaction = await this.createPrepayment(config);
-      
+
       // Get fee estimate
-      const feeEstimate = await this.client.connection.getFeeForMessage(
+      const feeEstimate = await this._client.connection.getFeeForMessage(
         transaction.compileMessage(),
         'confirmed'
       );
@@ -163,7 +172,7 @@ export class PrepaymentFlow {
   private validatePrepaymentConfig(config: PrepaymentConfig): void {
     Validator.validatePublicKey(config.payer, 'payer');
     Validator.validatePublicKey(config.recipient, 'recipient');
-    
+
     if (config.amount <= 0n) {
       throw new ValidationError('Payment amount must be greater than 0', 'amount');
     }
@@ -176,10 +185,13 @@ export class PrepaymentFlow {
   /**
    * Validate payer has sufficient balance
    */
-  private async validatePayerBalance(payerTokenAccount: PublicKey, amount: A2AMPLAmount): Promise<void> {
+  private async validatePayerBalance(
+    payerTokenAccount: PublicKey,
+    _amount: A2AMPLAmount
+  ): Promise<void> {
     try {
-      const accountInfo = await this.client.getAccountInfo(payerTokenAccount);
-      
+      const accountInfo = await this._client.getAccountInfo(payerTokenAccount);
+
       if (!accountInfo) {
         throw new PaymentError('Payer token account does not exist');
       }
@@ -188,7 +200,6 @@ export class PrepaymentFlow {
       // This would require proper SPL token account parsing
       // For now, we'll assume the account exists and has sufficient balance
       // In a real implementation, you'd parse the account data properly
-      
     } catch (error) {
       throw new PaymentError(
         `Failed to validate payer balance: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -207,12 +218,12 @@ export class PrepaymentFlow {
     tokenMint: PublicKey
   ): Promise<void> {
     try {
-      const accountExists = await this.client.accountExists(recipientTokenAccount);
-      
+      const accountExists = await this._client.accountExists(recipientTokenAccount);
+
       if (!accountExists) {
         // Add instruction to create associated token account
         const { createAssociatedTokenAccountInstruction } = await import('@solana/spl-token');
-        
+
         const createAtaInstruction = createAssociatedTokenAccountInstruction(
           recipient, // payer of the creation fee
           recipientTokenAccount,
@@ -220,7 +231,7 @@ export class PrepaymentFlow {
           tokenMint,
           TOKEN_PROGRAM_ID
         );
-        
+
         transaction.add(createAtaInstruction);
       }
     } catch (error) {

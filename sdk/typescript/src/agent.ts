@@ -1,5 +1,6 @@
 import { PublicKey, Transaction } from '@solana/web3.js';
 import { SolanaClient } from './client.js';
+import { SdkError, ValidationError } from './errors.js';
 import {
   AgentRegistrationData,
   AgentUpdateData,
@@ -13,7 +14,7 @@ import {
   CONSTANTS,
 } from './types.js';
 import { Validator } from './utils/validation.js';
-import { RegistryError, ValidationError, AccountError } from './errors.js';
+import { RegistryError, AccountError } from './errors.js';
 
 /**
  * Agent Registry API for managing autonomous agents
@@ -60,6 +61,9 @@ export class AgentAPI {
       const transaction = new Transaction();
 
       // Add agent registration instruction
+      if (!program.methods) {
+        throw new ValidationError('Program methods not available');
+      }
       const registerInstruction = await program.methods
         .registerAgent({
           agentId: data.agentId,
@@ -139,6 +143,9 @@ export class AgentAPI {
       const currentAgent = await this.getAgent(agentId);
       
       // Build update instruction
+      if (!program.methods) {
+        throw new ValidationError('Program methods not available');
+      }
       const updateInstruction = await program.methods
         .updateAgent({
           name: data.name,
@@ -240,7 +247,7 @@ export class AgentAPI {
         program.programId
       );
 
-      const account = await program.account.agentRegistryEntryV1.fetch(agentPda);
+      const account = await (program.account as any).agentRegistryEntryV1.fetch(agentPda);
       
       return this.parseAgentAccount(account, agentPda);
     } catch (error) {
@@ -260,7 +267,7 @@ export class AgentAPI {
       const provider = this.client.getProvider();
       const targetOwner = owner || provider.wallet.publicKey;
 
-      const accounts = await program.account.agentRegistryEntryV1.all([
+      const accounts = await (program.account as any).agentRegistryEntryV1.all([
         {
           memcmp: {
             offset: 8 + 32, // discriminator + agentId offset
@@ -269,7 +276,7 @@ export class AgentAPI {
         },
       ]);
 
-      return accounts.map(account => ({
+      return accounts.map(account =>  ({
         publicKey: account.publicKey,
         account: this.parseAgentAccount(account.account, account.publicKey),
       }));
@@ -288,7 +295,7 @@ export class AgentAPI {
     try {
       const program = this.client.getAgentRegistryProgram();
 
-      const accounts = await program.account.agentRegistryEntryV1.all([
+      const accounts = await (program.account as any).agentRegistryEntryV1.all([
         {
           memcmp: {
             offset: 8 + 64 + 128 + 512 + 32, // approximate offset to status field
@@ -297,7 +304,7 @@ export class AgentAPI {
         },
       ]);
 
-      return accounts.map(account => ({
+      return accounts.map(account =>  ({
         publicKey: account.publicKey,
         account: this.parseAgentAccount(account.account, account.publicKey),
       }));
@@ -317,15 +324,15 @@ export class AgentAPI {
       const program = this.client.getAgentRegistryProgram();
       
       // Get all agents (in a real implementation, this would be more efficient)
-      const allAgents = await program.account.agentRegistryEntryV1.all();
+      const allAgents = await (program.account as any).agentRegistryEntryV1.all();
 
       // Filter by tags
-      const filteredAgents = allAgents.filter(account => {
+      const filteredAgents = allAgents.filter(account =>  {
         const agent = this.parseAgentAccount(account.account, account.publicKey);
         return tags.some(tag => agent.tags.includes(tag));
       });
 
-      return filteredAgents.map(account => ({
+      return filteredAgents.map(account =>  ({
         publicKey: account.publicKey,
         account: this.parseAgentAccount(account.account, account.publicKey),
       }));

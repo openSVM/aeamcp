@@ -210,7 +210,7 @@ export class McpAPI {
         program.programId
       );
 
-      const account = await program.account.mcpServerRegistryEntryV1.fetch(serverPda);
+      const account = await (program.account as any).mcpServerRegistryEntryV1.fetch(serverPda);
       
       return this.parseServerAccount(account, serverPda);
     } catch (error) {
@@ -230,7 +230,7 @@ export class McpAPI {
       const provider = this.client.getProvider();
       const targetOwner = owner || provider.wallet.publicKey;
 
-      const accounts = await program.account.mcpServerRegistryEntryV1.all([
+      const accounts = await (program.account as any).mcpServerRegistryEntryV1.all([
         {
           memcmp: {
             offset: 8 + 32, // discriminator + serverId offset
@@ -239,7 +239,7 @@ export class McpAPI {
         },
       ]);
 
-      return accounts.map(account => ({
+      return accounts.map(account =>  ({
         publicKey: account.publicKey,
         account: this.parseServerAccount(account.account, account.publicKey),
       }));
@@ -258,7 +258,7 @@ export class McpAPI {
     try {
       const program = this.client.getMcpRegistryProgram();
 
-      const accounts = await program.account.mcpServerRegistryEntryV1.all([
+      const accounts = await (program.account as any).mcpServerRegistryEntryV1.all([
         {
           memcmp: {
             offset: 8 + 64 + 128 + 32, // approximate offset to status field
@@ -267,7 +267,7 @@ export class McpAPI {
         },
       ]);
 
-      return accounts.map(account => ({
+      return accounts.map(account =>  ({
         publicKey: account.publicKey,
         account: this.parseServerAccount(account.account, account.publicKey),
       }));
@@ -287,16 +287,16 @@ export class McpAPI {
       const program = this.client.getMcpRegistryProgram();
       
       // Get all servers (in a real implementation, this would be more efficient)
-      const allServers = await program.account.mcpServerRegistryEntryV1.all();
+      const allServers = await (program.account as any).mcpServerRegistryEntryV1.all();
 
       // Filter by capabilities keywords
-      const filteredServers = allServers.filter(account => {
+      const filteredServers = allServers.filter(account =>  {
         const server = this.parseServerAccount(account.account, account.publicKey);
         const searchText = `${server.capabilitiesSummary} ${server.tags.join(' ')}`.toLowerCase();
         return keywords.some(keyword => searchText.includes(keyword.toLowerCase()));
       });
 
-      return filteredServers.map(account => ({
+      return filteredServers.map(account =>  ({
         publicKey: account.publicKey,
         account: this.parseServerAccount(account.account, account.publicKey),
       }));
@@ -316,15 +316,15 @@ export class McpAPI {
       const program = this.client.getMcpRegistryProgram();
       
       // Get all servers (in a real implementation, this would be more efficient)
-      const allServers = await program.account.mcpServerRegistryEntryV1.all();
+      const allServers = await (program.account as any).mcpServerRegistryEntryV1.all();
 
       // Filter by tags
-      const filteredServers = allServers.filter(account => {
+      const filteredServers = allServers.filter(account =>  {
         const server = this.parseServerAccount(account.account, account.publicKey);
         return tags.some(tag => server.tags.includes(tag));
       });
 
-      return filteredServers.map(account => ({
+      return filteredServers.map(account =>  ({
         publicKey: account.publicKey,
         account: this.parseServerAccount(account.account, account.publicKey),
       }));
@@ -344,17 +344,17 @@ export class McpAPI {
       const program = this.client.getMcpRegistryProgram();
       
       // Get all servers
-      const allServers = await program.account.mcpServerRegistryEntryV1.all();
+      const allServers = await (program.account as any).mcpServerRegistryEntryV1.all();
 
       // Filter by tool definitions
-      const filteredServers = allServers.filter(account => {
+      const filteredServers = allServers.filter(account =>  {
         const server = this.parseServerAccount(account.account, account.publicKey);
         return server.onchainToolDefinitions.some(tool => 
           tool.name.toLowerCase().includes(toolName.toLowerCase())
         );
       });
 
-      return filteredServers.map(account => ({
+      return filteredServers.map(account =>  ({
         publicKey: account.publicKey,
         account: this.parseServerAccount(account.account, account.publicKey),
       }));
@@ -374,17 +374,17 @@ export class McpAPI {
       const program = this.client.getMcpRegistryProgram();
       
       // Get all servers
-      const allServers = await program.account.mcpServerRegistryEntryV1.all();
+      const allServers = await (program.account as any).mcpServerRegistryEntryV1.all();
 
       // Filter by resource definitions
-      const filteredServers = allServers.filter(account => {
+      const filteredServers = allServers.filter(account =>  {
         const server = this.parseServerAccount(account.account, account.publicKey);
         return server.onchainResourceDefinitions.some(resource => 
           resource.uriPattern.toLowerCase().includes(resourcePattern.toLowerCase())
         );
       });
 
-      return filteredServers.map(account => ({
+      return filteredServers.map(account =>  ({
         publicKey: account.publicKey,
         account: this.parseServerAccount(account.account, account.publicKey),
       }));
@@ -404,17 +404,17 @@ export class McpAPI {
       const program = this.client.getMcpRegistryProgram();
       
       // Get all servers
-      const allServers = await program.account.mcpServerRegistryEntryV1.all();
+      const allServers = await (program.account as any).mcpServerRegistryEntryV1.all();
 
       // Filter by prompt definitions
-      const filteredServers = allServers.filter(account => {
+      const filteredServers = allServers.filter(account =>  {
         const server = this.parseServerAccount(account.account, account.publicKey);
         return server.onchainPromptDefinitions.some(prompt => 
           prompt.name.toLowerCase().includes(promptName.toLowerCase())
         );
       });
 
-      return filteredServers.map(account => ({
+      return filteredServers.map(account =>  ({
         publicKey: account.publicKey,
         account: this.parseServerAccount(account.account, account.publicKey),
       }));

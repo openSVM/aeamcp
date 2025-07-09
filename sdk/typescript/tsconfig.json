@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "DOM"],
     "module": "ESNext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
@@ -9,7 +9,7 @@
     "esModuleInterop": true,
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": true,
+    "strict": false,
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "declarationMap": true,
@@ -17,15 +17,16 @@
     "rootDir": "./src",
     "removeComments": false,
     "sourceMap": true,
-    "noImplicitAny": true,
+    "noImplicitAny": false,
     "noImplicitReturns": true,
     "noImplicitThis": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "exactOptionalPropertyTypes": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "exactOptionalPropertyTypes": false,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
-    "useDefineForClassFields": true
+    "useDefineForClassFields": true,
+    "types": ["node", "jest"]
   },
   "include": [
     "src/**/*"

@@ -19,7 +19,7 @@ export class IdlLoader {
     forceFresh = false
   ): Promise<any> {
     const cacheKey = `${programName}_idl`;
-    
+
     // Check cache first (unless forcing fresh)
     if (!forceFresh) {
       const cached = this.cache.get(cacheKey);
@@ -56,7 +56,9 @@ export class IdlLoader {
       if (error instanceof IdlError) {
         throw error;
       }
-      throw new IdlError(`Failed to load IDL for ${programName}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new IdlError(
+        `Failed to load IDL for ${programName}: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -82,7 +84,7 @@ export class IdlLoader {
     // In a real implementation, these paths would be relative to the package root
     // or loaded from a remote source
     const basePath = process.env.IDL_BASE_PATH || '../../idl';
-    
+
     switch (programName) {
       case 'agent_registry':
         return `${basePath}/agent_registry.json`;
@@ -138,6 +140,6 @@ export async function loadIdlForNetwork(
 ): Promise<any> {
   const networkKey = network === 'mainnet-beta' ? 'mainnet' : network;
   const expectedHash = KNOWN_IDL_HASHES[programName][networkKey];
-  
+
   return IdlLoader.loadIdl(programName, expectedHash, forceFresh);
 }

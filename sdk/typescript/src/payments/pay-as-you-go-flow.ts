@@ -1,5 +1,9 @@
 import { PublicKey, Transaction } from '@solana/web3.js';
-import { getAssociatedTokenAddress, createTransferInstruction, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import {
+  getAssociatedTokenAddress,
+  createTransferInstruction,
+  TOKEN_PROGRAM_ID,
+} from '@solana/spl-token';
 import { SolanaClient } from '../client.js';
 import { PayAsYouGoConfig, TransactionResult, A2AMPLAmount, TOKEN_MINTS } from '../types.js';
 import { PaymentError, ValidationError } from '../errors.js';
@@ -22,7 +26,7 @@ export interface UsageRecord {
 export class PayAsYouGoFlow {
   private usageRecords: Map<string, UsageRecord[]> = new Map();
 
-  constructor(private client: SolanaClient) {}
+  constructor(private _client: SolanaClient) {}
 
   /**
    * Record usage for billing
@@ -38,7 +42,7 @@ export class PayAsYouGoFlow {
       serviceId,
       userId,
       amount,
-      metadata,
+      metadata: metadata ?? {},
     };
 
     const existing = this.usageRecords.get(serviceId) || [];
@@ -51,11 +55,11 @@ export class PayAsYouGoFlow {
    */
   getUsageRecords(serviceId: string, fromTimestamp?: number): UsageRecord[] {
     const records = this.usageRecords.get(serviceId) || [];
-    
+
     if (fromTimestamp) {
       return records.filter(record => record.timestamp >= fromTimestamp);
     }
-    
+
     return records;
   }
 
@@ -91,7 +95,7 @@ export class PayAsYouGoFlow {
       const recipient = config.recipient;
 
       // Get token mint for the cluster
-      const tokenMint = TOKEN_MINTS[this.client.cluster === 'mainnet-beta' ? 'mainnet' : 'devnet'];
+      const tokenMint = TOKEN_MINTS[this._client.cluster === 'mainnet-beta' ? 'mainnet' : 'devnet'];
 
       // Get associated token accounts
       const payerTokenAccount = await getAssociatedTokenAddress(
@@ -112,7 +116,12 @@ export class PayAsYouGoFlow {
       await this.validatePayerBalance(payerTokenAccount, totalAmount);
 
       // Check if recipient token account exists, create if needed
-      await this.ensureRecipientTokenAccount(transaction, recipient, recipientTokenAccount, tokenMint);
+      await this.ensureRecipientTokenAccount(
+        transaction,
+        recipient,
+        recipientTokenAccount,
+        tokenMint
+      );
 
       // Create transfer instruction
       const transferInstruction = createTransferInstruction(
@@ -127,7 +136,7 @@ export class PayAsYouGoFlow {
       transaction.add(transferInstruction);
 
       // Set recent blockhash and fee payer
-      const { blockhash } = await this.client.connection.getLatestBlockhash();
+      const { blockhash } = await this._client.connection.getLatestBlockhash();
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = payer;
 
@@ -159,7 +168,7 @@ export class PayAsYouGoFlow {
         fromTimestamp
       );
 
-      const result = await this.client.sendAndConfirmTransaction(transaction);
+      const result = await this._client.sendAndConfirmTransaction(transaction);
 
       // Clear paid usage records
       this.clearPaidUsage(serviceId, fromTimestamp);
@@ -187,7 +196,7 @@ export class PayAsYouGoFlow {
       const amount = config.perUsePrice;
 
       // Get token mint for the cluster
-      const tokenMint = TOKEN_MINTS[this.client.cluster === 'mainnet-beta' ? 'mainnet' : 'devnet'];
+      const tokenMint = TOKEN_MINTS[this._client.cluster === 'mainnet-beta' ? 'mainnet' : 'devnet'];
 
       // Get associated token accounts
       const payerTokenAccount = await getAssociatedTokenAddress(
@@ -208,7 +217,12 @@ export class PayAsYouGoFlow {
       await this.validatePayerBalance(payerTokenAccount, amount);
 
       // Check if recipient token account exists, create if needed
-      await this.ensureRecipientTokenAccount(transaction, recipient, recipientTokenAccount, tokenMint);
+      await this.ensureRecipientTokenAccount(
+        transaction,
+        recipient,
+        recipientTokenAccount,
+        tokenMint
+      );
 
       // Create transfer instruction
       const transferInstruction = createTransferInstruction(
@@ -223,7 +237,7 @@ export class PayAsYouGoFlow {
       transaction.add(transferInstruction);
 
       // Set recent blockhash and fee payer
-      const { blockhash } = await this.client.connection.getLatestBlockhash();
+      const { blockhash } = await this._client.connection.getLatestBlockhash();
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = payer;
 
@@ -242,7 +256,7 @@ export class PayAsYouGoFlow {
   async executeInstantPayment(config: PayAsYouGoConfig): Promise<TransactionResult> {
     try {
       const transaction = await this.createInstantPayment(config);
-      return await this.client.sendAndConfirmTransaction(transaction);
+      return await this._client.sendAndConfirmTransaction(transaction);
     } catch (error) {
       throw new PaymentError(
         `Failed to execute instant payment: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -254,7 +268,10 @@ export class PayAsYouGoFlow {
   /**
    * Get usage summary for a service
    */
-  getUsageSummary(serviceId: string, fromTimestamp?: number): {
+  getUsageSummary(
+    serviceId: string,
+    fromTimestamp?: number
+  ): {
     totalCost: A2AMPLAmount;
     usageCount: number;
     averageCost: A2AMPLAmount;
@@ -262,7 +279,7 @@ export class PayAsYouGoFlow {
     lastUsage?: number;
   } {
     const records = this.getUsageRecords(serviceId, fromTimestamp);
-    
+
     if (records.length === 0) {
       return {
         totalCost: 0n,
@@ -301,7 +318,7 @@ export class PayAsYouGoFlow {
 
     const records = this.usageRecords.get(serviceId) || [];
     const remainingRecords = records.filter(record => record.timestamp < fromTimestamp);
-    
+
     if (remainingRecords.length === 0) {
       this.usageRecords.delete(serviceId);
     } else {
@@ -315,7 +332,7 @@ export class PayAsYouGoFlow {
   private validatePayAsYouGoConfig(config: PayAsYouGoConfig): void {
     Validator.validatePublicKey(config.payer, 'payer');
     Validator.validatePublicKey(config.recipient, 'recipient');
-    
+
     if (config.perUsePrice <= 0n) {
       throw new ValidationError('Per-use price must be greater than 0', 'perUsePrice');
     }
@@ -328,10 +345,13 @@ export class PayAsYouGoFlow {
   /**
    * Validate payer has sufficient balance
    */
-  private async validatePayerBalance(payerTokenAccount: PublicKey, amount: A2AMPLAmount): Promise<void> {
+  private async validatePayerBalance(
+    payerTokenAccount: PublicKey,
+    _amount: A2AMPLAmount
+  ): Promise<void> {
     try {
-      const accountInfo = await this.client.getAccountInfo(payerTokenAccount);
-      
+      const accountInfo = await this._client.getAccountInfo(payerTokenAccount);
+
       if (!accountInfo) {
         throw new PaymentError('Payer token account does not exist');
       }
@@ -339,7 +359,6 @@ export class PayAsYouGoFlow {
       // Parse token account data to get balance
       // This would require proper SPL token account parsing
       // For now, we'll assume the account exists and has sufficient balance
-      
     } catch (error) {
       throw new PaymentError(
         `Failed to validate payer balance: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -358,12 +377,12 @@ export class PayAsYouGoFlow {
     tokenMint: PublicKey
   ): Promise<void> {
     try {
-      const accountExists = await this.client.accountExists(recipientTokenAccount);
-      
+      const accountExists = await this._client.accountExists(recipientTokenAccount);
+
       if (!accountExists) {
         // Add instruction to create associated token account
         const { createAssociatedTokenAccountInstruction } = await import('@solana/spl-token');
-        
+
         const createAtaInstruction = createAssociatedTokenAccountInstruction(
           recipient, // payer of the creation fee
           recipientTokenAccount,
@@ -371,7 +390,7 @@ export class PayAsYouGoFlow {
           tokenMint,
           TOKEN_PROGRAM_ID
         );
-        
+
         transaction.add(createAtaInstruction);
       }
     } catch (error) {

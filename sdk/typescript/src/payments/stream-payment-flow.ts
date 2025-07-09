@@ -1,7 +1,17 @@
 import { PublicKey, Transaction } from '@solana/web3.js';
-import { getAssociatedTokenAddress, createTransferInstruction, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import {
+  getAssociatedTokenAddress,
+  createTransferInstruction,
+  TOKEN_PROGRAM_ID,
+} from '@solana/spl-token';
 import { SolanaClient } from '../client.js';
-import { StreamConfig, TransactionResult, A2AMPLAmount, TOKEN_MINTS } from '../types.js';
+import {
+  StreamConfig,
+  TransactionResult,
+  A2AMPLAmount,
+  TOKEN_MINTS,
+  PaymentMethod,
+} from '../types.js';
 import { PaymentError, ValidationError } from '../errors.js';
 import { Validator } from '../utils/validation.js';
 
@@ -26,20 +36,22 @@ export interface StreamState {
  */
 export class StreamPaymentFlow {
   private streams: Map<string, StreamState> = new Map();
-  private timers: Map<string, NodeJS.Timeout> = new Map();
+  private timers: Map<string, any> = new Map();
 
-  constructor(private client: SolanaClient) {}
+  constructor(private _client: SolanaClient) {}
 
   /**
    * Create a new payment stream
    */
-  async createStream(config: StreamConfig): Promise<{ streamId: string; initialTransaction: Transaction }> {
+  async createStream(
+    config: StreamConfig
+  ): Promise<{ streamId: string; initialTransaction: Transaction }> {
     // Validate inputs
     this.validateStreamConfig(config);
 
     const streamId = this.generateStreamId();
     const startTime = Date.now();
-    const endTime = startTime + (config.duration * 1000);
+    const endTime = startTime + config.duration * 1000;
     const totalAmount = config.ratePerSecond * BigInt(config.duration);
 
     try {
@@ -88,7 +100,7 @@ export class StreamPaymentFlow {
       // Execute initial payment
       const transaction = await this.createPaymentTransaction(
         {
-          method: 'stream' as const,
+          method: PaymentMethod.Stream,
           payer: stream.payer,
           recipient: stream.recipient,
           ratePerSecond: stream.ratePerSecond,
@@ -98,7 +110,7 @@ export class StreamPaymentFlow {
         stream.totalAmount
       );
 
-      const result = await this.client.sendAndConfirmTransaction(transaction);
+      const result = await this._client.sendAndConfirmTransaction(transaction);
 
       // Mark stream as active
       stream.active = true;
@@ -120,7 +132,9 @@ export class StreamPaymentFlow {
   /**
    * Stop a payment stream
    */
-  async stopStream(streamId: string): Promise<{ refund?: TransactionResult; finalAmount: A2AMPLAmount }> {
+  async stopStream(
+    streamId: string
+  ): Promise<{ refund?: TransactionResult; finalAmount: A2AMPLAmount }> {
     const stream = this.streams.get(streamId);
     if (!stream) {
       throw new PaymentError(`Stream not found: ${streamId}`);
@@ -132,7 +146,10 @@ export class StreamPaymentFlow {
 
     try {
       const currentTime = Date.now();
-      const elapsedTime = Math.min(currentTime - stream.startTime, stream.endTime - stream.startTime);
+      const elapsedTime = Math.min(
+        currentTime - stream.startTime,
+        stream.endTime - stream.startTime
+      );
       const actualAmount = stream.ratePerSecond * BigInt(Math.floor(elapsedTime / 1000));
       const refundAmount = stream.totalAmount - actualAmount;
 
@@ -147,11 +164,11 @@ export class StreamPaymentFlow {
       // Create refund transaction if there's excess payment
       if (refundAmount > 0n) {
         const refundTransaction = await this.createRefundTransaction(stream, refundAmount);
-        refundResult = await this.client.sendAndConfirmTransaction(refundTransaction);
+        refundResult = await this._client.sendAndConfirmTransaction(refundTransaction);
       }
 
       return {
-        refund: refundResult,
+        refund: refundResult ?? undefined,
         finalAmount: actualAmount,
       };
     } catch (error) {
@@ -224,7 +241,8 @@ export class StreamPaymentFlow {
     let cleaned = 0;
 
     for (const [streamId, stream] of this.streams.entries()) {
-      if (!stream.active && currentTime > stream.endTime + 3600000) { // 1 hour after end
+      if (!stream.active && currentTime > stream.endTime + 3600000) {
+        // 1 hour after end
         this.streams.delete(streamId);
         this.stopStreamMonitoring(streamId);
         cleaned++;
@@ -247,7 +265,7 @@ export class StreamPaymentFlow {
   private validateStreamConfig(config: StreamConfig): void {
     Validator.validatePublicKey(config.payer, 'payer');
     Validator.validatePublicKey(config.recipient, 'recipient');
-    
+
     if (config.ratePerSecond <= 0n) {
       throw new ValidationError('Rate per second must be greater than 0', 'ratePerSecond');
     }
@@ -256,7 +274,8 @@ export class StreamPaymentFlow {
       throw new ValidationError('Duration must be greater than 0', 'duration');
     }
 
-    if (config.duration > 86400) { // 24 hours max
+    if (config.duration > 86400) {
+      // 24 hours max
       throw new ValidationError('Duration cannot exceed 24 hours', 'duration');
     }
 
@@ -268,14 +287,17 @@ export class StreamPaymentFlow {
   /**
    * Create payment transaction
    */
-  private async createPaymentTransaction(config: StreamConfig, amount: A2AMPLAmount): Promise<Transaction> {
+  private async createPaymentTransaction(
+    config: StreamConfig,
+    amount: A2AMPLAmount
+  ): Promise<Transaction> {
     try {
       const transaction = new Transaction();
       const payer = config.payer;
       const recipient = config.recipient;
 
       // Get token mint for the cluster
-      const tokenMint = TOKEN_MINTS[this.client.cluster === 'mainnet-beta' ? 'mainnet' : 'devnet'];
+      const tokenMint = TOKEN_MINTS[this._client.cluster === 'mainnet-beta' ? 'mainnet' : 'devnet'];
 
       // Get associated token accounts
       const payerTokenAccount = await getAssociatedTokenAddress(
@@ -296,7 +318,12 @@ export class StreamPaymentFlow {
       await this.validatePayerBalance(payerTokenAccount, amount);
 
       // Check if recipient token account exists, create if needed
-      await this.ensureRecipientTokenAccount(transaction, recipient, recipientTokenAccount, tokenMint);
+      await this.ensureRecipientTokenAccount(
+        transaction,
+        recipient,
+        recipientTokenAccount,
+        tokenMint
+      );
 
       // Create transfer instruction
       const transferInstruction = createTransferInstruction(
@@ -311,7 +338,7 @@ export class StreamPaymentFlow {
       transaction.add(transferInstruction);
 
       // Set recent blockhash and fee payer
-      const { blockhash } = await this.client.connection.getLatestBlockhash();
+      const { blockhash } = await this._client.connection.getLatestBlockhash();
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = payer;
 
@@ -327,12 +354,15 @@ export class StreamPaymentFlow {
   /**
    * Create refund transaction
    */
-  private async createRefundTransaction(stream: StreamState, refundAmount: A2AMPLAmount): Promise<Transaction> {
+  private async createRefundTransaction(
+    stream: StreamState,
+    refundAmount: A2AMPLAmount
+  ): Promise<Transaction> {
     try {
       const transaction = new Transaction();
 
       // Get token mint for the cluster
-      const tokenMint = TOKEN_MINTS[this.client.cluster === 'mainnet-beta' ? 'mainnet' : 'devnet'];
+      const tokenMint = TOKEN_MINTS[this._client.cluster === 'mainnet-beta' ? 'mainnet' : 'devnet'];
 
       // Get associated token accounts (reverse direction for refund)
       const recipientTokenAccount = await getAssociatedTokenAddress(
@@ -362,7 +392,7 @@ export class StreamPaymentFlow {
       transaction.add(transferInstruction);
 
       // Set recent blockhash and fee payer
-      const { blockhash } = await this.client.connection.getLatestBlockhash();
+      const { blockhash } = await this._client.connection.getLatestBlockhash();
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = stream.recipient;
 
@@ -406,17 +436,19 @@ export class StreamPaymentFlow {
   /**
    * Validate payer has sufficient balance
    */
-  private async validatePayerBalance(payerTokenAccount: PublicKey, amount: A2AMPLAmount): Promise<void> {
+  private async validatePayerBalance(
+    payerTokenAccount: PublicKey,
+    _amount: A2AMPLAmount
+  ): Promise<void> {
     try {
-      const accountInfo = await this.client.getAccountInfo(payerTokenAccount);
-      
+      const accountInfo = await this._client.getAccountInfo(payerTokenAccount);
+
       if (!accountInfo) {
         throw new PaymentError('Payer token account does not exist');
       }
 
       // Parse token account data to get balance
       // This would require proper SPL token account parsing
-      
     } catch (error) {
       throw new PaymentError(
         `Failed to validate payer balance: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -435,12 +467,12 @@ export class StreamPaymentFlow {
     tokenMint: PublicKey
   ): Promise<void> {
     try {
-      const accountExists = await this.client.accountExists(recipientTokenAccount);
-      
+      const accountExists = await this._client.accountExists(recipientTokenAccount);
+
       if (!accountExists) {
         // Add instruction to create associated token account
         const { createAssociatedTokenAccountInstruction } = await import('@solana/spl-token');
-        
+
         const createAtaInstruction = createAssociatedTokenAccountInstruction(
           recipient, // payer of the creation fee
           recipientTokenAccount,
@@ -448,7 +480,7 @@ export class StreamPaymentFlow {
           tokenMint,
           TOKEN_PROGRAM_ID
         );
-        
+
         transaction.add(createAtaInstruction);
       }
     } catch (error) {

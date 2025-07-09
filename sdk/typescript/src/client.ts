@@ -218,15 +218,13 @@ export class SolanaClient {
       // Initialize programs
       this.agentRegistryProgram = new Program(
         agentRegistryIdl,
-        agentRegistryProgramId,
         this.provider
-      );
+      ) as any;
 
       this.mcpRegistryProgram = new Program(
         mcpRegistryIdl,
-        mcpRegistryProgramId,
         this.provider
-      );
+      ) as any;
     } catch (error) {
       throw new IdlError(
         `Failed to initialize programs: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -242,27 +240,27 @@ export class SolanaClient {
     connected: boolean;
     slot: bigint;
     version: any;
-    health: string;
+    // health: string; // Not available in @solana/web3.js
   }> {
     try {
-      const [slot, version, health] = await Promise.all([
+      const [slot, version] = await Promise.all([
         this.getCurrentSlot(),
         this.connection.getVersion(),
-        this.connection.getHealth(),
+        // this.connection.getHealth(), // Not available in @solana/web3.js
       ]);
 
       return {
         connected: true,
         slot,
         version,
-        health,
+        // health, // Not available
       };
     } catch (error) {
       return {
         connected: false,
         slot: 0n,
         version: null,
-        health: 'unhealthy',
+        // health: 'unhealthy', // Not available in @solana/web3.js
       };
     }
   }

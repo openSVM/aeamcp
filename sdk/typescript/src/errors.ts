@@ -7,15 +7,15 @@ export abstract class SdkError extends Error {
   public readonly code: string;
   public readonly programErrorCode?: number;
   public readonly transactionSignature?: string;
-  public readonly cause?: Error;
+  public override readonly cause?: Error;
 
   constructor(details: SdkErrorDetails) {
     super(details.message);
     this.name = this.constructor.name;
     this.code = details.code;
-    this.programErrorCode = details.programErrorCode;
-    this.transactionSignature = details.transactionSignature;
-    this.cause = details.cause;
+    this.programErrorCode = details.programErrorCode ?? undefined;
+    this.transactionSignature = details.transactionSignature ?? undefined;
+    this.cause = details.cause ?? undefined;
 
     // Maintains proper stack trace for where our error was thrown (only available on V8)
     if (Error.captureStackTrace) {

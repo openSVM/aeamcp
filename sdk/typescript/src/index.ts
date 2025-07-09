@@ -12,8 +12,9 @@ export * from './errors.js';
 // Payment flow exports
 export * from './payments/index.js';
 
-// IDL exports
-export * from './idl/index.js';
+// IDL exports - specific exports to avoid conflicts
+export { IdlLoader, KNOWN_IDL_HASHES, loadIdlForNetwork } from './idl/index.js';
+export type { Idl, AgentRegistryIdl, McpServerRegistryIdl } from './idl/index.js';
 
 // Utility exports
 export { Validator } from './utils/validation.js';
