@@ -30,8 +30,8 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang
         add_link_options(--coverage)
     endif()
     
-    # Enable sanitizers if requested
-    if(ENABLE_SANITIZERS)
+    # Enable sanitizers if requested (not supported on Windows/MinGW)
+    if(ENABLE_SANITIZERS AND NOT WIN32)
         add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
         add_link_options(-fsanitize=address,undefined)
     endif()
@@ -194,7 +194,7 @@ add_custom_target(docs
 )
 
 # Memory safety targets
-if(ENABLE_SANITIZERS)
+if(ENABLE_SANITIZERS AND NOT WIN32)
     add_custom_target(test-sanitizers
         COMMAND ${CMAKE_CTEST_COMMAND} --verbose
         COMMENT "Running tests with sanitizers"
