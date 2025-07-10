@@ -26,9 +26,9 @@ protected:
   // Generate random bytes
   std::vector<uint8_t> generate_random_bytes(size_t size) {
     std::vector<uint8_t> bytes(size);
-    std::uniform_int_distribution<uint8_t> dist(0, 255);
+    std::uniform_int_distribution<int> dist(0, 255);
     for (size_t i = 0; i < size; ++i) {
-      bytes[i] = dist(generator_);
+      bytes[i] = static_cast<uint8_t>(dist(generator_));
     }
     return bytes;
   }
@@ -267,7 +267,7 @@ TEST_F(Base58Test, PerformanceTest) {
     test_keys.push_back(generate_random_bytes(32));
   }
 
-  auto start = std::chrono::high_resolution_clock::now();
+  auto start = std::chrono::steady_clock::now();
 
   // Encode all keys
   std::vector<std::string> encoded_keys;
@@ -276,7 +276,7 @@ TEST_F(Base58Test, PerformanceTest) {
     encoded_keys.push_back(key.to_base58());
   }
 
-  auto encode_end = std::chrono::high_resolution_clock::now();
+  auto encode_end = std::chrono::steady_clock::now();
 
   // Decode all keys
   std::vector<PublicKey> decoded_keys;
@@ -284,7 +284,7 @@ TEST_F(Base58Test, PerformanceTest) {
     decoded_keys.emplace_back(encoded);
   }
 
-  auto decode_end = std::chrono::high_resolution_clock::now();
+  auto decode_end = std::chrono::steady_clock::now();
 
   auto encode_time =
       std::chrono::duration_cast<std::chrono::microseconds>(encode_end - start);

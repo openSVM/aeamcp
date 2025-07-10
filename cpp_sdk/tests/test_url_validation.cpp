@@ -450,7 +450,7 @@ TEST_F(UrlValidationTest, PerformanceTest) {
                         ".com/api/v1/endpoint");
   }
 
-  auto start = std::chrono::high_resolution_clock::now();
+  auto start = std::chrono::steady_clock::now();
 
   for (const auto &url : test_urls) {
     AgentRegistrationParams params;
@@ -465,7 +465,7 @@ TEST_F(UrlValidationTest, PerformanceTest) {
     EXPECT_NO_THROW(agent.validate_registration_params(params));
   }
 
-  auto end = std::chrono::high_resolution_clock::now();
+  auto end = std::chrono::steady_clock::now();
   auto duration =
       std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 

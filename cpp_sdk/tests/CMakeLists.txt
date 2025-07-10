@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
 
-# Find Google Test
-find_package(GTest REQUIRED)
+# Find Google Test - handle vcpkg on Windows
+if(WIN32)
+    find_package(GTest CONFIG REQUIRED)
+else()
+    find_package(GTest REQUIRED)
+endif()
 include(GoogleTest)
 
 # Create test executable
