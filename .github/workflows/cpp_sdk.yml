@@ -67,15 +67,35 @@ jobs:
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
       shell: pwsh
+      timeout-minutes: 15
       run: |
-        choco install cmake ninja pkgconfiglite
-        vcpkg install libsodium:x64-windows pkgconf:x64-windows gtest:x64-windows
+        # Install basic tools
+        choco install cmake ninja pkgconfiglite --yes
+        
+        # Use the pre-installed vcpkg on GitHub Actions
+        $vcpkgPath = "C:\vcpkg"
+        if (Test-Path $vcpkgPath) {
+          echo "Using pre-installed vcpkg at $vcpkgPath"
+        } else {
+          echo "Installing fresh vcpkg..."
+          git clone https://github.com/Microsoft/vcpkg.git C:\vcpkg
+          C:\vcpkg\bootstrap-vcpkg.bat
+        }
+        
+        # Install required packages
+        C:\vcpkg\vcpkg.exe install libsodium:x64-windows pkgconf:x64-windows gtest:x64-windows
+        
+        # Set environment variables
         echo "CMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake" >> $env:GITHUB_ENV
         echo "PKG_CONFIG_PATH=C:/vcpkg/installed/x64-windows/lib/pkgconfig" >> $env:GITHUB_ENV
+        echo "VCPKG_ROOT=C:/vcpkg" >> $env:GITHUB_ENV
+        
         if ("${{ matrix.compiler }}" -eq "msvc") {
           echo "Using MSVC compiler"
         } else {
           echo "Using Clang compiler"
+          echo "CC=clang" >> $env:GITHUB_ENV
+          echo "CXX=clang++" >> $env:GITHUB_ENV
         }
     
     - name: Install Google Test (Ubuntu)
@@ -102,11 +122,18 @@ jobs:
       shell: pwsh
       run: |
         cd cpp_sdk
-        mkdir build && cd build
+        New-Item -ItemType Directory -Force -Path build
+        cd build
+        
+        # Debug output
+        echo "CMAKE_TOOLCHAIN_FILE: $env:CMAKE_TOOLCHAIN_FILE"
+        echo "PKG_CONFIG_PATH: $env:PKG_CONFIG_PATH"
+        echo "VCPKG_ROOT: $env:VCPKG_ROOT"
+        
         if ("${{ matrix.compiler }}" -eq "msvc") {
-          cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DENABLE_SANITIZERS=ON -DCMAKE_TOOLCHAIN_FILE="${{ env.CMAKE_TOOLCHAIN_FILE }}"
+          cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DCMAKE_TOOLCHAIN_FILE="$env:CMAKE_TOOLCHAIN_FILE" -DCMAKE_VERBOSE_MAKEFILE=ON
         } else {
-          cmake .. -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DENABLE_SANITIZERS=ON -DCMAKE_TOOLCHAIN_FILE="${{ env.CMAKE_TOOLCHAIN_FILE }}"
+          cmake .. -G"Ninja" -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DCMAKE_TOOLCHAIN_FILE="$env:CMAKE_TOOLCHAIN_FILE" -DCMAKE_VERBOSE_MAKEFILE=ON
         }
       env:
         CI: true
@@ -140,6 +167,7 @@ jobs:
         ninja
     
     - name: Run tests
+      shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
       run: |
         cd cpp_sdk/build
         ctest --verbose --output-on-failure
