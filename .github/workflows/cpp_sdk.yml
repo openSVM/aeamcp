@@ -66,9 +66,10 @@ jobs:
     
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
+      shell: pwsh
       run: |
         choco install cmake ninja pkgconfiglite
-        vcpkg install libsodium:x64-windows pkgconf:x64-windows
+        vcpkg install libsodium:x64-windows pkgconf:x64-windows gtest:x64-windows
         echo "CMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake" >> $env:GITHUB_ENV
         echo "PKG_CONFIG_PATH=C:/vcpkg/installed/x64-windows/lib/pkgconfig" >> $env:GITHUB_ENV
         if ("${{ matrix.compiler }}" -eq "msvc") {
@@ -96,38 +97,47 @@ jobs:
         cmake --build . --config ${{ matrix.build-type }}
         sudo cmake --install . --config ${{ matrix.build-type }}
     
-    - name: Install Google Test (Windows)
+    - name: Configure CMake (Windows)
       if: matrix.os == 'windows-latest'
-      run: |
-        git clone https://github.com/google/googletest.git
-        cd googletest
-        mkdir build && cd build
-        cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DCMAKE_TOOLCHAIN_FILE=$env:CMAKE_TOOLCHAIN_FILE
-        cmake --build . --config ${{ matrix.build-type }}
-        cmake --install . --config ${{ matrix.build-type }}
-    
-    - name: Configure CMake
+      shell: pwsh
       run: |
         cd cpp_sdk
         mkdir build && cd build
-        if [[ "${{ matrix.compiler }}" == "msvc" ]]; then
-          cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DENABLE_SANITIZERS=ON -DCMAKE_TOOLCHAIN_FILE=${{ env.CMAKE_TOOLCHAIN_FILE }}
-        else
-          cmake .. -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DENABLE_SANITIZERS=ON
-        fi
-      shell: bash
+        if ("${{ matrix.compiler }}" -eq "msvc") {
+          cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DENABLE_SANITIZERS=ON -DCMAKE_TOOLCHAIN_FILE="${{ env.CMAKE_TOOLCHAIN_FILE }}"
+        } else {
+          cmake .. -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DENABLE_SANITIZERS=ON -DCMAKE_TOOLCHAIN_FILE="${{ env.CMAKE_TOOLCHAIN_FILE }}"
+        }
       env:
         CI: true
     
-    - name: Build
+    - name: Configure CMake (Unix)
+      if: matrix.os != 'windows-latest'
+      shell: bash
+      run: |
+        cd cpp_sdk
+        mkdir build && cd build
+        cmake .. -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DENABLE_SANITIZERS=ON
+      env:
+        CI: true
+    
+    - name: Build (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: pwsh
       run: |
         cd cpp_sdk/build
-        if [[ "${{ matrix.compiler }}" == "msvc" ]]; then
+        if ("${{ matrix.compiler }}" -eq "msvc") {
           cmake --build . --config ${{ matrix.build-type }}
-        else
+        } else {
           ninja
-        fi
+        }
+    
+    - name: Build (Unix)
+      if: matrix.os != 'windows-latest'
       shell: bash
+      run: |
+        cd cpp_sdk/build
+        ninja
     
     - name: Run tests
       run: |
