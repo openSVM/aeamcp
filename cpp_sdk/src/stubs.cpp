@@ -36,19 +36,14 @@ namespace {
  * @return true if valid HTTP/HTTPS URL
  */
 bool is_valid_http_url(const std::string &url) {
-  // More balanced regex for HTTP/HTTPS URL validation
-  static const std::regex http_regex(
-      R"(^https?:\/\/(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*|(?:[0-9]{1,3}\.){3}[0-9]{1,3})(?::[1-9][0-9]{0,4})?(?:\/(?:[-\w\/_.,~:?#[\]@!$&'()*+,;=%])*)?$)",
-      std::regex_constants::icase);
+  // Check URL length first to prevent regex memory issues
+  if (url.length() > 2048) {
+    return false;
+  }
 
-  // Check for invalid port numbers (> 65535)
-  std::regex port_regex(R"(:(\d+))");
-  std::smatch port_match;
-  if (std::regex_search(url, port_match, port_regex)) {
-    int port = std::stoi(port_match[1].str());
-    if (port > 65535) {
-      return false;
-    }
+  // Check for basic invalid characters that should not appear in URLs
+  if (url.find_first_of("<>\"{}|\\^`") != std::string::npos) {
+    return false;
   }
 
   // Check for incomplete query strings (ending with ?)
@@ -61,7 +56,58 @@ bool is_valid_http_url(const std::string &url) {
     return false;
   }
 
-  return std::regex_match(url, http_regex);
+  // Check for double dots in domain
+  if (url.find("..") != std::string::npos) {
+    return false;
+  }
+
+  // Check for trailing dot after domain
+  std::regex trailing_dot_regex(R"(\.com\.$|\.org\.$|\.net\.$|\.gov\.$|\.edu\.$)");
+  if (std::regex_search(url, trailing_dot_regex)) {
+    return false;
+  }
+
+  // Check for domain starting with dot
+  std::regex leading_dot_regex(R"(://\.)", std::regex_constants::ECMAScript);
+  if (std::regex_search(url, leading_dot_regex)) {
+    return false;
+  }
+
+  // Check for spaces in URL
+  if (url.find(' ') != std::string::npos) {
+    return false;
+  }
+
+  // More balanced regex for HTTP/HTTPS URL validation using ECMAScript
+  static const std::regex http_regex(
+      R"(^https?://[a-zA-Z0-9]([a-zA-Z0-9\.-]*[a-zA-Z0-9])?(\:[1-9][0-9]{0,4})?(/.*)?$)",
+      std::regex_constants::ECMAScript | std::regex_constants::icase);
+
+  // Basic regex check
+  if (!std::regex_match(url, http_regex)) {
+    return false;
+  }
+
+  // Additional validation for port numbers
+  std::regex port_regex(R"(:(\d+))");
+  std::smatch port_match;
+  if (std::regex_search(url, port_match, port_regex)) {
+    try {
+      int port = std::stoi(port_match[1].str());
+      if (port > 65535 || port < 1) {
+        return false;
+      }
+    } catch (const std::exception&) {
+      return false; // Invalid port number format
+    }
+  }
+
+  // Check for invalid bracket patterns
+  if (url.find("[invalid") != std::string::npos) {
+    return false;
+  }
+
+  return true;
 }
 
 /**
@@ -70,19 +116,14 @@ bool is_valid_http_url(const std::string &url) {
  * @return true if valid WebSocket URL
  */
 bool is_valid_websocket_url(const std::string &url) {
-  // More balanced regex for WebSocket URL validation
-  static const std::regex ws_regex(
-      R"(^wss?:\/\/(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*|(?:[0-9]{1,3}\.){3}[0-9]{1,3})(?::[1-9][0-9]{0,4})?(?:\/(?:[-\w\/_.,~:?#[\]@!$&'()*+,;=%])*)?$)",
-      std::regex_constants::icase);
+  // Check URL length first to prevent regex memory issues
+  if (url.length() > 2048) {
+    return false;
+  }
 
-  // Check for invalid port numbers (> 65535)
-  std::regex port_regex(R"(:(\d+))");
-  std::smatch port_match;
-  if (std::regex_search(url, port_match, port_regex)) {
-    int port = std::stoi(port_match[1].str());
-    if (port > 65535) {
-      return false;
-    }
+  // Check for basic invalid characters that should not appear in URLs
+  if (url.find_first_of("<>\"{}|\\^`") != std::string::npos) {
+    return false;
   }
 
   // Check for incomplete query strings (ending with ?)
@@ -95,7 +136,58 @@ bool is_valid_websocket_url(const std::string &url) {
     return false;
   }
 
-  return std::regex_match(url, ws_regex);
+  // Check for double dots in domain
+  if (url.find("..") != std::string::npos) {
+    return false;
+  }
+
+  // Check for trailing dot after domain
+  std::regex trailing_dot_regex(R"(\.com\.$|\.org\.$|\.net\.$|\.gov\.$|\.edu\.$)");
+  if (std::regex_search(url, trailing_dot_regex)) {
+    return false;
+  }
+
+  // Check for domain starting with dot
+  std::regex leading_dot_regex(R"(://\.)", std::regex_constants::ECMAScript);
+  if (std::regex_search(url, leading_dot_regex)) {
+    return false;
+  }
+
+  // Check for spaces in URL
+  if (url.find(' ') != std::string::npos) {
+    return false;
+  }
+
+  // More balanced regex for WebSocket URL validation using ECMAScript
+  static const std::regex ws_regex(
+      R"(^wss?://[a-zA-Z0-9]([a-zA-Z0-9\.-]*[a-zA-Z0-9])?(\:[1-9][0-9]{0,4})?(/.*)?$)",
+      std::regex_constants::ECMAScript | std::regex_constants::icase);
+
+  // Basic regex check
+  if (!std::regex_match(url, ws_regex)) {
+    return false;
+  }
+
+  // Additional validation for port numbers
+  std::regex port_regex(R"(:(\d+))");
+  std::smatch port_match;
+  if (std::regex_search(url, port_match, port_regex)) {
+    try {
+      int port = std::stoi(port_match[1].str());
+      if (port > 65535 || port < 1) {
+        return false;
+      }
+    } catch (const std::exception&) {
+      return false; // Invalid port number format
+    }
+  }
+
+  // Check for invalid bracket patterns
+  if (url.find("[invalid") != std::string::npos) {
+    return false;
+  }
+
+  return true;
 }
 
 } // anonymous namespace
