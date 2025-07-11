@@ -166,8 +166,16 @@ jobs:
         cd cpp_sdk/build
         ninja
     
-    - name: Run tests
-      shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
+    - name: Run tests (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: pwsh
+      run: |
+        cd cpp_sdk/build
+        ctest --verbose --output-on-failure
+    
+    - name: Run tests (Unix)
+      if: matrix.os != 'windows-latest'
+      shell: bash
       run: |
         cd cpp_sdk/build
         ctest --verbose --output-on-failure
