@@ -11,6 +11,7 @@
  */
 
 #include <aireg++/c_sdk_bridge.hpp>
+#include <aireg++/common.hpp>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -131,7 +132,7 @@ aireg_client_t *aireg_client_create(const char *rpc_url, uint32_t cluster) {
     return nullptr;
   }
 
-  strncpy(client->rpc_url, rpc_url, strlen(rpc_url) + 1);
+  SolanaAiRegistries::safe_strncpy(client->rpc_url, strlen(rpc_url) + 1, rpc_url, SIZE_MAX);
   client->cluster = cluster;
 
   return client;

@@ -18,6 +18,10 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <cstring>
+#ifdef _WIN32
+#include <cstdlib>
+#endif
 
 namespace SolanaAiRegistries {
 
@@ -184,6 +188,56 @@ enum class Cluster {
  * @return RPC URL string
  */
 std::string cluster_to_url(Cluster cluster);
+
+/**
+ * @brief Cross-platform safe string copy
+ * @param dest Destination buffer
+ * @param destsz Size of destination buffer
+ * @param src Source string
+ * @param count Number of characters to copy, or SIZE_MAX for full string
+ * @return 0 on success, non-zero on error
+ */
+inline int safe_strncpy(char* dest, size_t destsz, const char* src, size_t count) {
+#ifdef _WIN32
+    return strncpy_s(dest, destsz, src, count == SIZE_MAX ? _TRUNCATE : count);
+#else
+    size_t copy_len = (count == SIZE_MAX) ? destsz - 1 : count;
+    if (copy_len >= destsz) copy_len = destsz - 1;
+    strncpy(dest, src, copy_len);
+    dest[copy_len] = '\0';
+    return 0;
+#endif
+}
+
+/**
+ * @brief Cross-platform safe environment variable access
+ * @param name Environment variable name
+ * @return Environment variable value, or nullptr if not found
+ * @note On Windows, caller must free the returned pointer. On other platforms, do not free.
+ */
+inline char* safe_getenv(const char* name) {
+#ifdef _WIN32
+    char* val = nullptr;
+    size_t len = 0;
+    if (_dupenv_s(&val, &len, name) == 0 && val != nullptr)
+        return val; // caller must free()
+    return nullptr;
+#else
+    return getenv(name);
+#endif
+}
+
+/**
+ * @brief Free memory returned by safe_getenv (Windows only, no-op elsewhere)
+ * @param ptr Pointer to free
+ */
+inline void safe_getenv_free(char* ptr) {
+#ifdef _WIN32
+    if (ptr) free(ptr);
+#else
+    (void)ptr; // Suppress unused parameter warning
+#endif
+}
 
 /**
  * @brief Transaction confirmation status
