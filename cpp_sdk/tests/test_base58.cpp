@@ -293,7 +293,7 @@ TEST_F(Base58Test, PerformanceTest) {
 
   // Performance expectations (adjust based on requirements and environment)
   // If CI env var set, we more chill on timing
-  char* ci_env = SolanaAiRegistries::safe_getenv("CI");
+  char *ci_env = SolanaAiRegistries::safe_getenv("CI");
   if (ci_env) {
     EXPECT_LT(encode_time.count(), 200000) // 200ms on CI
         << "Encoding 1000 keys should take < 200ms on CI";
