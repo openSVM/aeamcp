@@ -479,8 +479,9 @@ TEST_F(UrlValidationTest, PerformanceTest) {
 #endif
 #endif
 
-  const char *ci_env = std::getenv("CI");
+  char *ci_env = SolanaAiRegistries::safe_getenv("CI");
   bool is_ci = (ci_env != nullptr);
+  SolanaAiRegistries::safe_getenv_free(ci_env);
 
 #if defined(IS_ASAN_BUILD) || defined(DEBUG) || !defined(NDEBUG)
   // Debug builds, sanitizer builds, or CI environment - be very generous
