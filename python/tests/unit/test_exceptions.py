@@ -3,10 +3,18 @@
 from solana_ai_registries.exceptions import (
     AccountNotFoundError,
     AgentExistsError,
+    AgentNotFoundError,
     ConfigurationError,
+    ConnectionError,
+    IDLError,
     IdlLoadError,
     InsufficientFundsError,
+    InvalidInputError,
+    InvalidPublicKeyError,
     McpServerExistsError,
+    McpServerNotFoundError,
+    PaymentError,
+    RegistrationError,
     SolanaAIRegistriesError,
     TransactionError,
     ValidationError,
@@ -155,6 +163,122 @@ class TestIdlLoadError:
         assert error.reason == "Network timeout"
         assert error.details["program_name"] == "agent_registry"
         assert error.details["reason"] == "Network timeout"
+
+
+class TestConnectionError:
+    """Test connection error class."""
+
+    def test_init_message_only(self) -> None:
+        """Test connection error with message only."""
+        error = ConnectionError("Failed to connect to RPC")
+        assert str(error) == "Failed to connect to RPC"
+        assert error.endpoint is None
+        assert error.details == {}
+
+    def test_init_with_endpoint(self) -> None:
+        """Test connection error with endpoint."""
+        error = ConnectionError("Connection timeout", "https://api.mainnet-beta.solana.com")
+        assert str(error) == "Connection timeout"
+        assert error.endpoint == "https://api.mainnet-beta.solana.com"
+        assert error.details["endpoint"] == "https://api.mainnet-beta.solana.com"
+
+
+class TestInvalidPublicKeyError:
+    """Test invalid public key error class."""
+
+    def test_init(self) -> None:
+        """Test invalid public key error initialization."""
+        error = InvalidPublicKeyError("invalid_key")
+        assert str(error) == "Validation failed for field 'public_key': must be a valid base58 public key"
+        assert error.field == "public_key"
+        assert error.value == "invalid_key"
+        assert error.constraint == "must be a valid base58 public key"
+
+
+class TestInvalidInputError:
+    """Test invalid input error class."""
+
+    def test_init(self) -> None:
+        """Test invalid input error initialization."""
+        error = InvalidInputError("amount", -100, "must be positive")
+        assert str(error) == "Validation failed for field 'amount': must be positive"
+        assert error.field == "amount"
+        assert error.value == -100
+        assert error.constraint == "must be positive"
+
+
+class TestRegistrationError:
+    """Test registration error class."""
+
+    def test_init(self) -> None:
+        """Test registration error initialization."""
+        error = RegistrationError("Failed to register agent")
+        assert str(error) == "Failed to register agent"
+        assert error.details == {}
+
+
+class TestAgentNotFoundError:
+    """Test agent not found error class."""
+
+    def test_init_agent_only(self) -> None:
+        """Test agent not found error with agent ID only."""
+        error = AgentNotFoundError("my-agent")
+        assert str(error) == "Agent 'my-agent' not found"
+        assert error.agent_id == "my-agent"
+        assert error.owner is None
+        assert error.details["agent_id"] == "my-agent"
+        assert error.details["owner"] is None
+
+    def test_init_with_owner(self) -> None:
+        """Test agent not found error with owner."""
+        error = AgentNotFoundError("my-agent", "owner123")
+        assert str(error) == "Agent 'my-agent' not found for owner owner123"
+        assert error.agent_id == "my-agent"
+        assert error.owner == "owner123"
+        assert error.details["agent_id"] == "my-agent"
+        assert error.details["owner"] == "owner123"
+
+
+class TestMcpServerNotFoundError:
+    """Test MCP server not found error class."""
+
+    def test_init_server_only(self) -> None:
+        """Test MCP server not found error with server ID only."""
+        error = McpServerNotFoundError("my-server")
+        assert str(error) == "MCP server 'my-server' not found"
+        assert error.server_id == "my-server"
+        assert error.owner is None
+        assert error.details["server_id"] == "my-server"
+        assert error.details["owner"] is None
+
+    def test_init_with_owner(self) -> None:
+        """Test MCP server not found error with owner."""
+        error = McpServerNotFoundError("my-server", "owner123")
+        assert str(error) == "MCP server 'my-server' not found for owner owner123"
+        assert error.server_id == "my-server"
+        assert error.owner == "owner123"
+        assert error.details["server_id"] == "my-server"
+        assert error.details["owner"] == "owner123"
+
+
+class TestPaymentError:
+    """Test payment error class."""
+
+    def test_init(self) -> None:
+        """Test payment error initialization."""
+        error = PaymentError("Payment processing failed")
+        assert str(error) == "Payment processing failed"
+        assert error.details == {}
+
+
+class TestIDLError:
+    """Test IDL error class."""
+
+    def test_init(self) -> None:
+        """Test IDL error initialization."""
+        error = IDLError("Invalid IDL format")
+        assert str(error) == "Invalid IDL format"
+        assert error.details == {}
 
 
 class TestConfigurationError:
