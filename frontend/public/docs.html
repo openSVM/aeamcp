@@ -55,6 +55,7 @@
         const docFiles = [
             { id: 'readme', name: 'Overview', path: '/docs/README.md' },
             { id: 'protocol', name: 'Protocol Specification', path: '/docs/protocol-specification.md' },
+            { id: 'typescript-sdk', name: '🚀 TypeScript SDK', path: '/docs/typescript-sdk.md' },
             { id: 'svmai', name: '$SVMAI Token', path: '/docs/svmai-token.md' },
             { id: 'usecases', name: 'Use Cases', path: '/docs/use-cases.md' },
             { id: 'developer', name: 'Developer Guide', path: '/docs/developer-guide.md' }
@@ -301,6 +302,36 @@
                 docNav.appendChild(li);
             });
 
+            // Add separator for SDK section
+            const sdkSeparator = document.createElement('li');
+            sdkSeparator.innerHTML = '<hr class="my-4 border-neutral-400"><h3 class="text-lg font-bold mb-2 text-neutral-700">🔧 SDK Documentation</h3>';
+            docNav.appendChild(sdkSeparator);
+
+            // Add SDK-specific documentation
+            const sdkDocs = [
+                { id: 'sdk-roadmap', name: 'SDK Roadmap', path: '/docs/SDK_ROADMAP_DETAILED.md' },
+                { id: 'sdk-implementation', name: 'TypeScript Implementation Guide', path: '/docs/TYPESCRIPT_SDK_IMPLEMENTATION_GUIDELINES.md' }
+            ];
+
+            sdkDocs.forEach(doc => {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = `#${doc.id}`;
+                a.dataset.path = doc.path;
+                a.className = 'block p-2 hover:bg-neutral-200 rounded focus:outline-none focus:ring-2 focus:ring-neutral-400';
+                a.innerText = doc.name;
+                a.setAttribute('role', 'menuitem');
+                a.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    loadMarkdown(doc.path);
+                    currentBookChapter = null; // Reset book chapter tracking
+                    updateNavigationState(a);
+                    window.location.hash = doc.id;
+                });
+                li.appendChild(a);
+                docNav.appendChild(li);
+            });
+
             // Add separator for book section
             const separator = document.createElement('li');
             separator.innerHTML = '<hr class="my-4 border-neutral-400"><h3 class="text-lg font-bold mb-2 text-neutral-700">📚 Tutorial Book</h3>';
@@ -360,12 +391,23 @@
                     docToLoad = matchingDoc.path;
                     navItem = document.querySelector(`#doc-nav a[data-path="${docToLoad}"]`);
                 } else {
-                    // Check if it's a book chapter
-                    const matchingChapter = bookChapters.find(ch => ch.id === hash);
-                    if (matchingChapter) {
-                        loadBookChapter(matchingChapter);
-                        navItem = document.querySelector(`#doc-nav a[data-path="${matchingChapter.path}"]`);
-                        isBookChapter = true;
+                    // Check if it's an SDK doc
+                    const sdkDocs = [
+                        { id: 'sdk-roadmap', name: 'SDK Roadmap', path: '/docs/SDK_ROADMAP_DETAILED.md' },
+                        { id: 'sdk-implementation', name: 'TypeScript Implementation Guide', path: '/docs/TYPESCRIPT_SDK_IMPLEMENTATION_GUIDELINES.md' }
+                    ];
+                    const matchingSdkDoc = sdkDocs.find(doc => doc.id === hash);
+                    if (matchingSdkDoc) {
+                        docToLoad = matchingSdkDoc.path;
+                        navItem = document.querySelector(`#doc-nav a[data-path="${docToLoad}"]`);
+                    } else {
+                        // Check if it's a book chapter
+                        const matchingChapter = bookChapters.find(ch => ch.id === hash);
+                        if (matchingChapter) {
+                            loadBookChapter(matchingChapter);
+                            navItem = document.querySelector(`#doc-nav a[data-path="${matchingChapter.path}"]`);
+                            isBookChapter = true;
+                        }
                     }
                 }
             }

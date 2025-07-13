@@ -65,6 +65,10 @@ frontend/public/workbox-*.js
 
 # TypeScript
 *.tsbuildinfo
+dist/
+
+# Generated documentation (should be built during deployment)
+sdk/typescript/docs/
 
 # Vercel
 .vercel
