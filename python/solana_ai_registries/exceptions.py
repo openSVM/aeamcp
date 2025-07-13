@@ -5,7 +5,7 @@ This module defines all custom exceptions used throughout the SDK,
 providing clear error messages and proper inheritance hierarchy.
 """
 
-from typing import Optional, Any, Dict
+from typing import Any, Dict, Optional
 
 
 class SolanaAIRegistriesError(Exception):

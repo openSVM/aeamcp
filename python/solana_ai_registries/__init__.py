@@ -19,27 +19,28 @@ __version__ = "0.1.0"
 __author__ = "AEAMCP Team"
 __email__ = "dev@aeamcp.org"
 
+from .agent import AgentRegistry
+
 # Core API exports
 from .client import SolanaAIRegistriesClient
-from .agent import AgentRegistry
+from .exceptions import (
+    AgentExistsError,
+    InsufficientFundsError,
+    McpServerExistsError,
+    SolanaAIRegistriesError,
+    TransactionError,
+    ValidationError,
+)
 from .mcp import McpServerRegistry
 from .payments import PaymentManager
 from .types import (
     AgentRegistryEntry,
-    McpServerRegistryEntry,
+    AgentSkill,
     AgentStatus,
+    McpCapabilities,
+    McpServerRegistryEntry,
     McpServerStatus,
     ServiceEndpoint,
-    AgentSkill,
-    McpCapabilities,
-)
-from .exceptions import (
-    SolanaAIRegistriesError,
-    ValidationError,
-    AgentExistsError,
-    McpServerExistsError,
-    InsufficientFundsError,
-    TransactionError,
 )
 
 __all__ = [

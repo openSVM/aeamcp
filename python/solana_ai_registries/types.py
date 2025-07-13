@@ -6,20 +6,19 @@ throughout the SDK, providing type-safe interfaces for registry operations.
 """
 
 from dataclasses import dataclass, field
-from typing import Optional, List, Dict, Any, Union
-from enum import Enum
 from decimal import Decimal
+from enum import Enum
+from typing import Any, Dict, List, Optional, Union
 
 from .constants import (
+    MAX_AGENT_DESCRIPTION_LEN,
     MAX_AGENT_ID_LEN,
     MAX_AGENT_NAME_LEN,
-    MAX_AGENT_DESCRIPTION_LEN,
     MAX_SERVER_ID_LEN,
     MAX_SERVER_NAME_LEN,
     validate_string_length,
     validate_url,
 )
-
 
 # ============================================================================
 # ENUMS
