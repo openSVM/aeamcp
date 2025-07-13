@@ -1,7 +1,5 @@
 """Basic import test to verify the package is correctly installed."""
 
-import pytest
-
 
 def test_package_imports() -> None:
     """Test that all main package components can be imported."""
@@ -18,8 +16,15 @@ def test_package_imports() -> None:
     # Type imports
     from solana_ai_registries.types import AgentStatus, McpServerStatus
 
-    # All imports successful
-    assert True
+    # Verify imports by checking they are not None
+    assert SolanaAIRegistriesClient is not None
+    assert AgentRegistry is not None
+    assert McpServerRegistry is not None
+    assert PaymentManager is not None
+    assert AGENT_REGISTRY_PROGRAM_ID is not None
+    assert SolanaAIRegistriesError is not None
+    assert AgentStatus is not None
+    assert McpServerStatus is not None
 
 
 def test_placeholder_classes_exist() -> None:

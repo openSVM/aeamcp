@@ -102,8 +102,12 @@ MCP_SERVER_REGISTRY_PDA_SEED: Final[bytes] = b"mcp_srv_reg_v1"
 # A2AMPL Token
 A2AMPL_DECIMALS: Final[int] = 9
 A2AMPL_BASE_UNIT: Final[int] = 1_000_000_000  # 1 A2AMPL = 10^9 base units
-A2AMPL_TOKEN_MINT_MAINNET: Final[str] = "Cpzvdx6pppc9TNArsGsqgShCsKC9NCCjA2gtzHvUpump"
-A2AMPL_TOKEN_MINT_DEVNET: Final[str] = "A2AMPLyncKHwfSnwRNsJ2qsjsetgo9fGkP8YZPsDZ9mE"
+A2AMPL_TOKEN_MINT_MAINNET: Final[str] = (
+    "Cpzvdx6pppc9TNArsGsqgShCsKC9NCCjA2gtzHvUpump"
+)
+A2AMPL_TOKEN_MINT_DEVNET: Final[str] = (
+    "A2AMPLyncKHwfSnwRNsJ2qsjsetgo9fGkP8YZPsDZ9mE"
+)
 
 # Agent Registry Fees (in base units)
 AGENT_REGISTRATION_FEE: Final[int] = 100_000_000_000  # 100 A2AMPL
@@ -158,7 +162,9 @@ REGISTRATION_VAULT_SEED: Final[bytes] = b"registration_vault"
 # ============================================================================
 
 # Registry Programs
-AGENT_REGISTRY_PROGRAM_ID: Final[str] = "AgentReg11111111111111111111111111111111111"
+AGENT_REGISTRY_PROGRAM_ID: Final[str] = (
+    "AgentReg11111111111111111111111111111111111"
+)
 MCP_SERVER_REGISTRY_PROGRAM_ID: Final[str] = "TBD"  # To be updated
 
 # Authorized External Programs
@@ -232,7 +238,9 @@ def get_token_mint_for_cluster(cluster: str) -> str:
         raise ValueError(f"Unsupported cluster: {cluster}")
 
 
-def validate_string_length(value: str, max_length: int, field_name: str) -> None:
+def validate_string_length(
+    value: str, max_length: int, field_name: str
+) -> None:
     """Validate string length against maximum constraint.
 
     Args:
@@ -262,5 +270,6 @@ def validate_url(url: str, field_name: str) -> None:
     allowed_schemes = ("http://", "https://", "ipfs://", "ar://")
     if not any(url.startswith(scheme) for scheme in allowed_schemes):
         raise ValueError(
-            f"{field_name} must start with one of: {', '.join(allowed_schemes)}"
+            f"{field_name} must start with one of: "
+            f"{', '.join(allowed_schemes)}"
         )

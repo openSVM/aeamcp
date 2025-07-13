@@ -14,8 +14,10 @@ from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 
 from solana_ai_registries import SolanaAIRegistriesClient
-from solana_ai_registries.constants import DEFAULT_DEVNET_RPC
-from solana_ai_registries.types import AgentRegistryEntry, McpServerRegistryEntry
+from solana_ai_registries.types import (
+    AgentRegistryEntry,
+    McpServerRegistryEntry,
+)
 
 
 @pytest.fixture(scope="session")  # type: ignore[misc]
@@ -126,7 +128,9 @@ def mock_mcp_server_data() -> Dict[str, Any]:
                     "description": "Get current weather for a location",
                     "tags": ["weather", "current"],
                     "input_schema": '{"location": "string"}',
-                    "output_schema": '{"temperature": "number", "conditions": "string"}',
+                    "output_schema": (
+                        '{"temperature": "number", "conditions": "string"}'
+                    ),
                 }
             ],
             "resources": [
@@ -164,7 +168,10 @@ def mock_mcp_server_entry(
 @pytest.fixture
 def mock_transaction_signature() -> str:
     """Mock transaction signature for testing."""
-    return "5j7XiLkBJbkzCqFbp8XjJ6Ci9k2YfRvB4Y6fJr8bNfQ9YmZrVs8P2V5zQqKpWqGrE8F4TtJzN7YzXvKgRrNfQ2"
+    return (
+        "5j7XiLkBJbkzCqFbp8XjJ6Ci9k2YfRvB4Y6fJr8bNfQ9YmZrVs8P2V5zQqKpWqGrE8F4T"
+        "tJzN7YzXvKgRrNfQ2"
+    )
 
 
 @pytest.fixture
@@ -205,7 +212,9 @@ def pytest_configure(config: Any) -> None:
     config.addinivalue_line(
         "markers", "devnet: tests specifically for devnet environment"
     )
-    config.addinivalue_line("markers", "slow: tests that take longer than 1 second")
+    config.addinivalue_line(
+        "markers", "slow: tests that take longer than 1 second"
+    )
 
 
 @pytest.fixture(autouse=True)

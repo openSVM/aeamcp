@@ -113,7 +113,9 @@ class InsufficientFundsError(SolanaAIRegistriesError):
             available: Available amount in base units
             token_mint: Token mint address
         """
-        message = f"Insufficient funds: required {required}, available {available}"
+        message = (
+            f"Insufficient funds: required {required}, available {available}"
+        )
         details = {
             "required": required,
             "available": available,
@@ -171,7 +173,8 @@ class ConfigurationError(SolanaAIRegistriesError):
             expected: Description of expected value
         """
         message = (
-            f"Invalid configuration for '{setting}': expected {expected}, got {value}"
+            f"Invalid configuration for '{setting}': "
+            f"expected {expected}, got {value}"
         )
         details = {"setting": setting, "value": value, "expected": expected}
         super().__init__(message, details)
