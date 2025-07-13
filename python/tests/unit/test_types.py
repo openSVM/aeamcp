@@ -570,3 +570,39 @@ class TestMcpCapabilities:
         assert len(caps.tools) == 1
         assert len(caps.resources) == 1
         assert len(caps.prompts) == 1
+
+
+class TestServiceEndpointProtocolDetection:
+    """Test ServiceEndpoint protocol auto-detection."""
+
+    def test_protocol_detection_unknown(self) -> None:
+        """Test protocol detection for unknown protocol."""
+        # Skip URL validation by setting protocol explicitly
+        endpoint = ServiceEndpoint(
+            url="ftp://example.com",
+            protocol="ftp"  # Set protocol explicitly to avoid validation
+        )
+        # Check that protocol detection would set to unknown for unsupported protocols
+        endpoint2 = ServiceEndpoint.__new__(ServiceEndpoint)
+        endpoint2.url = "ftp://example.com"
+        endpoint2.protocol = None
+        endpoint2.__post_init__()
+        assert endpoint2.protocol == "unknown"
+
+
+class TestMcpServerRegistryEntryTagValidation:
+    """Test MCP server registry entry tag validation."""
+
+    def test_too_many_tags(self) -> None:
+        """Test validation with too many tags."""
+        from solders.pubkey import Pubkey as PublicKey
+        
+        with pytest.raises(ValueError, match="Maximum 10 tags allowed"):
+            McpServerRegistryEntry(
+                server_id="test-server",
+                name="Test Server", 
+                description="Test description",
+                endpoint_url="https://api.example.com",
+                owner=PublicKey.from_string("11111111111111111111111111111112"),
+                tags=["tag" + str(i) for i in range(11)]  # 11 tags
+            )
