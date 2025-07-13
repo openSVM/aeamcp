@@ -3,7 +3,7 @@
 import pytest
 
 
-def test_package_imports():
+def test_package_imports() -> None:
     """Test that all main package components can be imported."""
     # Core imports
     from solana_ai_registries import (
@@ -22,7 +22,7 @@ def test_package_imports():
     assert True
 
 
-def test_placeholder_classes_exist():
+def test_placeholder_classes_exist() -> None:
     """Test that placeholder classes are instantiable."""
     from solana_ai_registries import (
         AgentRegistry,

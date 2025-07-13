@@ -18,8 +18,8 @@ from solana_ai_registries.constants import DEFAULT_DEVNET_RPC
 from solana_ai_registries.types import AgentRegistryEntry, McpServerRegistryEntry
 
 
-@pytest.fixture(scope="session")
-def event_loop():
+@pytest.fixture(scope="session")  # type: ignore[misc]
+def event_loop() -> Any:
     """Create an instance of the default event loop for the test session."""
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
@@ -53,10 +53,10 @@ def mock_client() -> Mock:
 @pytest.fixture
 async def devnet_client() -> AsyncGenerator[SolanaAIRegistriesClient, None]:
     """Create a real client connected to devnet for integration tests."""
-    client = SolanaAIRegistriesClient(DEFAULT_DEVNET_RPC)
+    client = SolanaAIRegistriesClient()
     yield client
-    # Cleanup if needed
-    await client.close()
+    # Cleanup if needed - client currently has no close method
+    # await client.close()
 
 
 @pytest.fixture
@@ -194,7 +194,7 @@ def mock_token_balance() -> Dict[str, Any]:
 pytest_plugins = ["pytest_asyncio"]
 
 
-def pytest_configure(config):
+def pytest_configure(config: Any) -> None:
     """Configure pytest with custom markers."""
     config.addinivalue_line(
         "markers", "unit: fast unit tests that don't require network"
@@ -209,7 +209,7 @@ def pytest_configure(config):
 
 
 @pytest.fixture(autouse=True)
-def reset_environment_variables(monkeypatch):
+def reset_environment_variables(monkeypatch: Any) -> None:
     """Reset environment variables for each test."""
     # Clear any environment variables that might affect tests
     monkeypatch.delenv("SOLANA_RPC_URL", raising=False)
@@ -217,14 +217,14 @@ def reset_environment_variables(monkeypatch):
 
 
 # Helper functions for tests
-def assert_valid_signature(signature: str):
+def assert_valid_signature(signature: str) -> None:
     """Assert that a signature is valid format."""
     assert isinstance(signature, str)
     assert len(signature) >= 87  # Minimum length for base58 signature
     assert len(signature) <= 88  # Maximum length for base58 signature
 
 
-def assert_valid_pubkey(pubkey: str):
+def assert_valid_pubkey(pubkey: str) -> None:
     """Assert that a public key is valid format."""
     assert isinstance(pubkey, str)
     assert len(pubkey) == 44  # Standard length for base58 public key

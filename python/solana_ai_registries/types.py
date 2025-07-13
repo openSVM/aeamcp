@@ -73,7 +73,7 @@ class ServiceEndpoint:
     url: str
     description: Optional[str] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate endpoint data after initialization."""
         validate_string_length(self.protocol, 64, "protocol")
         validate_string_length(self.url, 256, "endpoint URL")
@@ -91,7 +91,7 @@ class AgentSkill:
     tags: List[str] = field(default_factory=list)
     metadata: Optional[Dict[str, Any]] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate skill data after initialization."""
         validate_string_length(self.skill_id, 64, "skill ID")
         validate_string_length(self.name, 128, "skill name")
@@ -129,7 +129,7 @@ class AgentRegistryEntry:
     updated_at: int = 0
     state_version: int = 1
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate agent data after initialization."""
         # Validate required fields
         validate_string_length(self.agent_id, MAX_AGENT_ID_LEN, "agent_id")
@@ -213,7 +213,7 @@ class McpTool:
     input_schema: Optional[str] = None
     output_schema: Optional[str] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate tool data after initialization."""
         validate_string_length(self.name, 64, "tool name")
         if len(self.tags) > 3:
@@ -231,7 +231,7 @@ class McpResource:
     description: Optional[str] = None
     tags: List[str] = field(default_factory=list)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate resource data after initialization."""
         validate_string_length(self.uri_pattern, 128, "URI pattern")
         if len(self.tags) > 3:
@@ -248,7 +248,7 @@ class McpPrompt:
     description: Optional[str] = None
     tags: List[str] = field(default_factory=list)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate prompt data after initialization."""
         validate_string_length(self.name, 64, "prompt name")
         if len(self.tags) > 3:
@@ -290,7 +290,7 @@ class McpServerRegistryEntry:
     updated_at: int = 0
     state_version: int = 1
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate MCP server data after initialization."""
         validate_string_length(self.server_id, MAX_SERVER_ID_LEN, "server_id")
         validate_string_length(self.name, MAX_SERVER_NAME_LEN, "name")

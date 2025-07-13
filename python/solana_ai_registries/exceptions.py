@@ -5,7 +5,7 @@ This module defines all custom exceptions used throughout the SDK,
 providing clear error messages and proper inheritance hierarchy.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 
 class SolanaAIRegistriesError(Exception):
@@ -46,7 +46,7 @@ class TransactionError(SolanaAIRegistriesError):
     """Raised when a Solana transaction fails."""
 
     def __init__(
-        self, message: str, signature: Optional[str] = None, logs: Optional[list] = None
+        self, message: str, signature: Optional[str] = None, logs: Optional[List[str]] = None
     ):
         """Initialize transaction error.
 
@@ -55,7 +55,7 @@ class TransactionError(SolanaAIRegistriesError):
             signature: Transaction signature if available
             logs: Transaction logs if available
         """
-        details = {}
+        details: Dict[str, Any] = {}
         if signature:
             details["signature"] = signature
         if logs:
