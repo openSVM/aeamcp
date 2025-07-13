@@ -4,6 +4,12 @@
 
 The `aea-sdk` TypeScript SDK provides comprehensive access to the Solana AI Registries ecosystem, including Agent Registry and MCP Server Registry functionality.
 
+## 🚀 Quick Access
+
+**[📖 Complete TypeScript SDK Documentation](/docs.html#typescript-sdk)**
+
+Click the link above to access the full TypeScript SDK documentation through our interactive documentation portal.
+
 ## SDK Location
 
 The TypeScript SDK is located at: [`sdk/typescript/`](../sdk/typescript/)
@@ -29,6 +35,7 @@ This will generate HTML documentation in the `docs/` folder that you can open in
 When the SDK is published to npm, the API documentation will be available at:
 - npm package: `aea-sdk`
 - Repository: [TypeScript SDK](../sdk/typescript/)
+- **[Interactive Docs](/docs.html#typescript-sdk)**: Complete documentation with examples
 
 ## Quick Start
 
@@ -95,6 +102,7 @@ See the [TypeScript SDK Implementation Guidelines](./TYPESCRIPT_SDK_IMPLEMENTATI
 - [SDK Implementation Guidelines](./TYPESCRIPT_SDK_IMPLEMENTATION_GUIDELINES.md)
 - [SDK Roadmap](./SDK_ROADMAP_DETAILED.md)
 - [TypeScript SDK References](./sdk_refs/typescript_sdk_references.md)
+- **[📖 Complete Interactive Documentation](/docs.html#typescript-sdk)**
 
 ## Support
 
@@ -102,3 +110,4 @@ For issues and questions related to the TypeScript SDK:
 - Create an issue in the [GitHub repository](https://github.com/openSVM/aeamcp/issues)
 - Check the [examples](../sdk/typescript/examples/) for common patterns
 - Review the generated TypeDoc documentation for detailed API reference
+- Visit our [interactive documentation portal](/docs.html#typescript-sdk)
