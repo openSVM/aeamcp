@@ -552,6 +552,72 @@ class PaymentManager:
             data=instruction_data,
         )
 
+    async def stop_payment_stream(
+        self, payer: PublicKey, recipient: PublicKey, service_id: str
+    ) -> None:
+        """
+        Stop an active payment stream.
+
+        Args:
+            payer: Payer's public key
+            recipient: Recipient's public key
+            service_id: Service identifier
+        """
+        stream_id = f"{payer}:{recipient}:{service_id}"
+        
+        if stream_id in self._active_streams:
+            task = self._active_streams[stream_id]
+            if not task.done():
+                task.cancel()
+                logger.info(f"Stopped payment stream: {stream_id}")
+            del self._active_streams[stream_id]
+
+    def _calculate_stream_cost(self, rate_per_second: float, duration_seconds: int) -> float:
+        """
+        Calculate total cost for a payment stream.
+
+        Args:
+            rate_per_second: Payment rate per second
+            duration_seconds: Stream duration in seconds
+
+        Returns:
+            Total cost in A2AMPL units
+        """
+        return rate_per_second * duration_seconds
+
+    def _validate_payment_amount(self, amount: float) -> None:
+        """
+        Validate payment amount is positive.
+
+        Args:
+            amount: Payment amount in A2AMPL units
+
+        Raises:
+            PaymentError: If amount is invalid
+        """
+        if amount <= 0:
+            raise PaymentError("Amount must be positive")
+
+    def _generate_payment_id(
+        self, payer: PublicKey, recipient: PublicKey, service_id: str
+    ) -> str:
+        """
+        Generate unique payment ID.
+
+        Args:
+            payer: Payer's public key
+            recipient: Recipient's public key
+            service_id: Service identifier
+
+        Returns:
+            Unique payment ID
+        """
+        import hashlib
+        import time
+        
+        data = f"{payer}:{recipient}:{service_id}:{time.time()}"
+        return hashlib.sha256(data.encode()).hexdigest()[:16]
+
     async def close(self) -> None:
         """Cancel all active payment streams and cleanup."""
         for stream_id, task in self._active_streams.items():

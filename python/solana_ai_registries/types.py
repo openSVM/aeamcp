@@ -48,7 +48,17 @@ class PaymentType(Enum):
 
     PREPAY = "prepay"
     PAY_AS_YOU_GO = "pyg"
+    PAY_PER_USAGE = "ppu"  # Alias for PAY_AS_YOU_GO
     STREAM = "stream"
+
+
+class PaymentStatus(Enum):
+    """Payment transaction status."""
+
+    PENDING = 0
+    COMPLETED = 1
+    FAILED = 2
+    CANCELLED = 3
 
 
 class StakingTier(Enum):
@@ -360,6 +370,21 @@ class McpServerRegistryEntry:
 # ============================================================================
 # PAYMENT TYPES
 # ============================================================================
+
+
+@dataclass
+class PaymentRecord:
+    """Payment transaction record."""
+
+    payment_id: str
+    payer: str
+    recipient: str
+    amount: int  # Amount in base units
+    payment_type: PaymentType
+    status: PaymentStatus
+    timestamp: int
+    signature: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
 
 
 @dataclass
