@@ -200,7 +200,7 @@ Time estimates assume an experienced developer familiar with the target language
 - go:embed
 
 **Python SDK**
-- Python 3.8+
+- Python 3.9+
 - Type hints
 - pytest
 

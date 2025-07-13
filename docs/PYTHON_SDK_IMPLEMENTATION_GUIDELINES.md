@@ -360,13 +360,13 @@ authors = [
 ]
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -408,7 +408,7 @@ profile = "black"
 line_length = 88
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
@@ -432,7 +432,7 @@ exclude_lines = [
 `sdk/py/v0.1.0` (as per [`docs/SDK_ROADMAP_DETAILED.md`](./SDK_ROADMAP_DETAILED.md#L262-271))
 
 **GitHub Actions Requirements:**
-- Automated testing on Python 3.8-3.12
+- Automated testing on Python 3.9-3.12
 - Code quality checks (black, isort, mypy, flake8)
 - Coverage reporting
 - PyPI publishing on tagged releases
@@ -445,7 +445,7 @@ exclude_lines = [
 ### Type System Standards
 
 **Core Principles:**
-- Use `typing` module annotations for Python 3.8+ compatibility
+- Use `typing` module annotations for Python 3.9+ compatibility
 - Prefer `dataclasses` over plain classes for data structures
 - Use `Optional` for nullable fields
 - Use `Union` sparingly, prefer specific types
@@ -594,7 +594,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.9', '3.10', '3.11', '3.12']
     
     steps:
     - uses: actions/checkout@v4
@@ -685,7 +685,7 @@ line_length = 88
 multi_line_output = 3
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 strict = true
 warn_return_any = true
 warn_unused_configs = true

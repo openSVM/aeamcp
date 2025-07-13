@@ -6,7 +6,7 @@ This guide provides a condensed, developer-friendly overview of implementing the
 
 ## Prerequisites
 
-- Python 3.8+
+- Python 3.9+
 - Solana CLI tools
 - Access to Solana devnet
 - Basic understanding of Solana programs and transactions

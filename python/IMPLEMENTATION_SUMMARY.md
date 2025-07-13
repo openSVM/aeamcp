@@ -189,10 +189,10 @@ git push origin sdk/py/v0.1.0
 - Comprehensive type system with dataclasses
 - Runtime validation and error handling
 - Type-safe APIs throughout
-- Python 3.8+ compatibility
+- Python 3.9+ compatibility
 
 ### ✅ pytest and CI/CD Setup
-- Multi-Python version testing (3.8-3.12)
+- Multi-Python version testing (3.9-3.12)
 - Unit and integration test frameworks
 - Coverage reporting (>90% requirement)
 - Automated quality checks
