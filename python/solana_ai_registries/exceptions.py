@@ -46,7 +46,10 @@ class TransactionError(SolanaAIRegistriesError):
     """Raised when a Solana transaction fails."""
 
     def __init__(
-        self, message: str, signature: Optional[str] = None, logs: Optional[List[str]] = None
+        self,
+        message: str,
+        signature: Optional[str] = None,
+        logs: Optional[List[str]] = None,
     ):
         """Initialize transaction error.
 
