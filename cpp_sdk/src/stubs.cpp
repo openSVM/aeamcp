@@ -62,7 +62,8 @@ bool is_valid_http_url(const std::string &url) {
   }
 
   // Check for trailing dot after domain
-  std::regex trailing_dot_regex(R"(\.com\.$|\.org\.$|\.net\.$|\.gov\.$|\.edu\.$)");
+  std::regex trailing_dot_regex(
+      R"(\.com\.$|\.org\.$|\.net\.$|\.gov\.$|\.edu\.$)");
   if (std::regex_search(url, trailing_dot_regex)) {
     return false;
   }
@@ -97,7 +98,7 @@ bool is_valid_http_url(const std::string &url) {
       if (port > 65535 || port < 1) {
         return false;
       }
-    } catch (const std::exception&) {
+    } catch (const std::exception &) {
       return false; // Invalid port number format
     }
   }
@@ -142,7 +143,8 @@ bool is_valid_websocket_url(const std::string &url) {
   }
 
   // Check for trailing dot after domain
-  std::regex trailing_dot_regex(R"(\.com\.$|\.org\.$|\.net\.$|\.gov\.$|\.edu\.$)");
+  std::regex trailing_dot_regex(
+      R"(\.com\.$|\.org\.$|\.net\.$|\.gov\.$|\.edu\.$)");
   if (std::regex_search(url, trailing_dot_regex)) {
     return false;
   }
@@ -177,7 +179,7 @@ bool is_valid_websocket_url(const std::string &url) {
       if (port > 65535 || port < 1) {
         return false;
       }
-    } catch (const std::exception&) {
+    } catch (const std::exception &) {
       return false; // Invalid port number format
     }
   }
