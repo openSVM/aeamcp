@@ -401,6 +401,372 @@ class TestSolanaAIRegistriesClient:
         client = SolanaAIRegistriesClient()
         
         agent_id = "test-agent"
+        owner = Keypair().pubkey()
+        updates = {"name": "Updated Agent Name"}
+        
+        instruction = client.build_update_agent_instruction(
+            agent_id, owner, updates
+        )
+        
+        assert instruction.program_id == client.agent_program_id
+        assert len(instruction.accounts) == 2  # agent_account, owner
+        assert len(instruction.data) > 0
+
+    def test_build_register_mcp_server_instruction(self):
+        """Test building register MCP server instruction."""
+        client = SolanaAIRegistriesClient()
+        
+        server_id = "test-server"
+        name = "Test Server"
+        endpoint_url = "https://example.com/mcp"
+        owner = Keypair().pubkey()
+        
+        instruction = client.build_register_mcp_server_instruction(
+            server_id, name, endpoint_url, owner
+        )
+        
+        assert instruction.program_id == client.mcp_program_id
+        assert len(instruction.accounts) == 3  # server_account, owner, system_program
+        assert len(instruction.data) > 0
+
+    def test_build_update_mcp_server_instruction(self):
+        """Test building update MCP server instruction."""
+        client = SolanaAIRegistriesClient()
+        
+        server_id = "test-server"
+        owner = Keypair().pubkey()
+        updates = {"name": "Updated Server Name"}
+        
+        instruction = client.build_update_mcp_server_instruction(
+            server_id, owner, updates
+        )
+        
+        assert instruction.program_id == client.mcp_program_id
+        assert len(instruction.accounts) == 2  # server_account, owner
+        assert len(instruction.data) > 0
+
+    @pytest.mark.asyncio
+    async def test_send_and_confirm_transaction_success(self):
+        """Test successful transaction sending and confirmation."""
+        client = SolanaAIRegistriesClient()
+        
+        # Mock successful send
+        mock_client = AsyncMock()
+        mock_client.send_transaction.return_value.value = "mock_signature"
+        mock_client.confirm_transaction.return_value.value = [None]  # Success
+        
+        client._client = mock_client
+        
+        transaction = Transaction.new_with_payer([], Keypair().pubkey())
+        keypair = Keypair()
+        
+        signature = await client.send_and_confirm_transaction(transaction, [keypair])
+        
+        assert signature == "mock_signature"
+        mock_client.send_transaction.assert_called_once()
+        mock_client.confirm_transaction.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_send_and_confirm_transaction_failure(self):
+        """Test transaction sending failure."""
+        client = SolanaAIRegistriesClient()
+        
+        # Mock send failure
+        mock_client = AsyncMock()
+        mock_client.send_transaction.side_effect = Exception("Send failed")
+        
+        client._client = mock_client
+        
+        transaction = Transaction.new_with_payer([], Keypair().pubkey())
+        keypair = Keypair()
+        
+        with pytest.raises(TransactionError, match="Failed to send transaction"):
+            await client.send_and_confirm_transaction(transaction, [keypair])
+
+    @pytest.mark.asyncio
+    async def test_send_and_confirm_transaction_confirmation_failure(self):
+        """Test transaction confirmation failure."""
+        client = SolanaAIRegistriesClient()
+        
+        # Mock successful send but confirmation failure
+        mock_client = AsyncMock()
+        mock_client.send_transaction.return_value.value = "mock_signature"
+        mock_client.confirm_transaction.return_value.value = [{"err": "Transaction failed"}]
+        
+        client._client = mock_client
+        
+        transaction = Transaction.new_with_payer([], Keypair().pubkey())
+        keypair = Keypair()
+        
+        with pytest.raises(TransactionError, match="Transaction failed"):
+            await client.send_and_confirm_transaction(transaction, [keypair])
+
+    @pytest.mark.asyncio
+    async def test_get_multiple_accounts_success(self):
+        """Test getting multiple accounts successfully."""
+        client = SolanaAIRegistriesClient()
+        
+        mock_client = AsyncMock()
+        mock_accounts = [
+            Mock(value=Mock(data=b"account1_data")),
+            Mock(value=Mock(data=b"account2_data")),
+            None  # One account not found
+        ]
+        mock_client.get_multiple_accounts.return_value.value = mock_accounts
+        
+        client._client = mock_client
+        
+        pubkeys = [Keypair().pubkey() for _ in range(3)]
+        
+        result = await client.get_multiple_accounts(pubkeys)
+        
+        assert len(result) == 3
+        assert result[0] is not None
+        assert result[1] is not None
+        assert result[2] is None
+        mock_client.get_multiple_accounts.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_get_multiple_accounts_rpc_error(self):
+        """Test getting multiple accounts with RPC error."""
+        client = SolanaAIRegistriesClient()
+        
+        mock_client = AsyncMock()
+        mock_client.get_multiple_accounts.side_effect = Exception("RPC error")
+        
+        client._client = mock_client
+        
+        pubkeys = [Keypair().pubkey()]
+        
+        with pytest.raises(ConnectionError, match="Failed to get multiple accounts"):
+            await client.get_multiple_accounts(pubkeys)
+
+    @pytest.mark.asyncio
+    async def test_get_program_accounts_with_filters(self):
+        """Test getting program accounts with filters."""
+        client = SolanaAIRegistriesClient()
+        
+        mock_client = AsyncMock()
+        mock_accounts = [
+            Mock(pubkey=Keypair().pubkey(), account=Mock(data=b"filtered_data"))
+        ]
+        mock_client.get_program_accounts.return_value.value = mock_accounts
+        
+        client._client = mock_client
+        
+        program_id = Keypair().pubkey()
+        filters = [{"memcmp": {"offset": 0, "bytes": "test"}}]
+        
+        result = await client.get_program_accounts(program_id, filters=filters)
+        
+        assert len(result) == 1
+        assert result[0].account.data == b"filtered_data"
+        mock_client.get_program_accounts.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_get_latest_blockhash_success(self):
+        """Test getting latest blockhash successfully."""
+        client = SolanaAIRegistriesClient()
+        
+        mock_client = AsyncMock()
+        mock_hash = Hash.from_string("11111111111111111111111111111112")
+        mock_client.get_latest_blockhash.return_value.value.blockhash = mock_hash
+        
+        client._client = mock_client
+        
+        result = await client.get_latest_blockhash()
+        
+        assert result == mock_hash
+        mock_client.get_latest_blockhash.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_get_latest_blockhash_rpc_error(self):
+        """Test getting latest blockhash with RPC error."""
+        client = SolanaAIRegistriesClient()
+        
+        mock_client = AsyncMock()
+        mock_client.get_latest_blockhash.side_effect = Exception("RPC error")
+        
+        client._client = mock_client
+        
+        with pytest.raises(ConnectionError, match="Failed to get latest blockhash"):
+            await client.get_latest_blockhash()
+
+    def test_validate_transaction_success(self):
+        """Test successful transaction validation."""
+        client = SolanaAIRegistriesClient()
+        
+        transaction = Transaction.new_with_payer([], Keypair().pubkey())
+        signers = [Keypair()]
+        
+        # Should not raise an exception
+        client.validate_transaction(transaction, signers)
+
+    def test_validate_transaction_no_instructions(self):
+        """Test transaction validation with no instructions."""
+        client = SolanaAIRegistriesClient()
+        
+        transaction = Transaction.new_with_payer([], Keypair().pubkey())
+        signers = [Keypair()]
+        
+        with pytest.raises(TransactionError, match="Transaction must contain at least one instruction"):
+            client.validate_transaction(transaction, signers)
+
+    def test_validate_transaction_no_signers(self):
+        """Test transaction validation with no signers."""
+        client = SolanaAIRegistriesClient()
+        
+        instruction = client.build_register_agent_instruction(
+            "test", "Test", "Description", "https://example.com", Keypair().pubkey()
+        )
+        transaction = Transaction.new_with_payer([instruction], Keypair().pubkey())
+        
+        with pytest.raises(TransactionError, match="Transaction must have at least one signer"):
+            client.validate_transaction(transaction, [])
+
+    def test_estimate_transaction_fee(self):
+        """Test transaction fee estimation."""
+        client = SolanaAIRegistriesClient()
+        
+        instruction = client.build_register_agent_instruction(
+            "test", "Test", "Description", "https://example.com", Keypair().pubkey()
+        )
+        transaction = Transaction.new_with_payer([instruction], Keypair().pubkey())
+        
+        fee = client.estimate_transaction_fee(transaction)
+        
+        assert isinstance(fee, int)
+        assert fee > 0
+
+    @pytest.mark.asyncio
+    async def test_build_and_send_transaction_with_retry_success(self):
+        """Test building and sending transaction with retry logic."""
+        client = SolanaAIRegistriesClient()
+        
+        # Mock successful transaction on first try
+        with patch.object(client, 'get_latest_blockhash') as mock_blockhash:
+            with patch.object(client, 'send_and_confirm_transaction') as mock_send:
+                mock_blockhash.return_value = Hash.from_string("11111111111111111111111111111112")
+                mock_send.return_value = "mock_signature"
+                
+                instruction = client.build_register_agent_instruction(
+                    "test", "Test", "Description", "https://example.com", Keypair().pubkey()
+                )
+                signers = [Keypair()]
+                
+                signature = await client.build_and_send_transaction([instruction], signers)
+                
+                assert signature == "mock_signature"
+                mock_send.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_build_and_send_transaction_with_retry_failure(self):
+        """Test building and sending transaction with retry exhaustion."""
+        client = SolanaAIRegistriesClient()
+        
+        # Mock transaction failure on all retries
+        with patch.object(client, 'get_latest_blockhash') as mock_blockhash:
+            with patch.object(client, 'send_and_confirm_transaction') as mock_send:
+                mock_blockhash.return_value = Hash.from_string("11111111111111111111111111111112")
+                mock_send.side_effect = TransactionError("Transaction failed")
+                
+                instruction = client.build_register_agent_instruction(
+                    "test", "Test", "Description", "https://example.com", Keypair().pubkey()
+                )
+                signers = [Keypair()]
+                
+                with pytest.raises(TransactionError, match="Transaction failed after 3 retries"):
+                    await client.build_and_send_transaction([instruction], signers, max_retries=3)
+
+    def test_instruction_encoding_edge_cases(self):
+        """Test instruction encoding with edge case values."""
+        client = SolanaAIRegistriesClient()
+        
+        # Test with maximum length strings
+        long_agent_id = "a" * 64  # MAX_AGENT_ID_LEN
+        long_name = "n" * 100
+        long_description = "d" * 500
+        long_url = "https://example.com/" + "x" * 200
+        
+        instruction = client.build_register_agent_instruction(
+            long_agent_id, long_name, long_description, long_url, Keypair().pubkey()
+        )
+        
+        assert len(instruction.data) > 0
+        assert instruction.program_id == client.agent_program_id
+
+    def test_pda_derivation_consistency(self):
+        """Test that PDA derivation is consistent across calls."""
+        client = SolanaAIRegistriesClient()
+        
+        agent_id = "test-agent"
+        owner = Keypair().pubkey()
+        
+        # Generate PDA multiple times
+        pda1 = client.derive_agent_pda(agent_id, owner)
+        pda2 = client.derive_agent_pda(agent_id, owner)
+        pda3 = client.derive_agent_pda(agent_id, owner)
+        
+        # All should be identical
+        assert pda1 == pda2 == pda3
+
+    def test_error_handling_edge_cases(self):
+        """Test error handling with various edge cases."""
+        client = SolanaAIRegistriesClient()
+        
+        # Test with None values
+        with pytest.raises((TypeError, AttributeError)):
+            client.derive_agent_pda(None, Keypair().pubkey())
+        
+        with pytest.raises((TypeError, AttributeError)):
+            client.derive_agent_pda("test", None)
+
+    @pytest.mark.asyncio
+    async def test_connection_lifecycle(self):
+        """Test complete connection lifecycle."""
+        client = SolanaAIRegistriesClient()
+        
+        # Initial state
+        assert client._client is None
+        
+        # Access client property
+        async_client = client.client
+        assert async_client is not None
+        assert client._client is async_client
+        
+        # Close connection
+        await client.close()
+        assert client._client is None
+
+    def test_commitment_parameter_handling(self):
+        """Test that commitment parameters are handled correctly."""
+        client = SolanaAIRegistriesClient()
+        
+        # Test with string commitment
+        client_with_commitment = SolanaAIRegistriesClient(
+            commitment="confirmed"
+        )
+        assert client_with_commitment.commitment == "confirmed"
+        
+        # Test with Commitment enum
+        client_with_enum = SolanaAIRegistriesClient(
+            commitment=Commitment("finalized")
+        )
+        assert client_with_enum.commitment == Commitment("finalized")
+
+    def test_program_id_constants(self):
+        """Test that program ID constants are properly set."""
+        client = SolanaAIRegistriesClient()
+        
+        # Program IDs should be valid Pubkey objects
+        assert isinstance(client.agent_program_id, PublicKey)
+        assert isinstance(client.mcp_program_id, PublicKey)
+        
+        # They should be different
+        assert client.agent_program_id != client.mcp_program_id
+        client = SolanaAIRegistriesClient()
+        
+        agent_id = "test-agent"
         name = "Updated Agent"
         description = "An updated test agent"
         url = "https://example.com/updated-agent"

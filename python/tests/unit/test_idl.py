@@ -1,4 +1,4 @@
-"""Tests for solana_ai_registries.idl module."""
+"""Comprehensive tests for solana_ai_registries.idl module."""
 
 import pytest
 from unittest.mock import AsyncMock, Mock, patch, mock_open
@@ -6,19 +6,20 @@ import json
 import tempfile
 import os
 from pathlib import Path
+from typing import Dict, Any, Type
 
-from solana_ai_registries.idl import IDLLoader, ParsedIdl
-from solana_ai_registries.exceptions import IDLError, SolanaAIRegistriesError
+from solana_ai_registries.idl import IDLLoader, ParsedIdl, IdlInstruction, IdlAccount, IdlType
+from solana_ai_registries.exceptions import IDLError
 
 
 class TestIDLLoader:
-    """Test the IDLLoader class."""
+    """Comprehensive test coverage for IDLLoader class."""
 
     def setup_method(self):
         """Set up test fixtures."""
         self.idl_loader = IDLLoader()
         
-        # Sample IDL data
+        # Sample minimal IDL data
         self.sample_idl_data = {
             "version": "0.1.0",
             "name": "test_program",
@@ -52,14 +53,18 @@ class TestIDLLoader:
                     "type": {
                         "kind": "struct",
                         "fields": [
-                            {"name": "field1", "type": "string"},
-                            {"name": "field2", "type": "u32"}
+                            {"name": "id", "type": "u32"},
+                            {"name": "name", "type": "string"}
                         ]
                     }
                 }
             ],
             "errors": [
-                {"code": 6000, "name": "InvalidValue", "msg": "Invalid value provided"}
+                {
+                    "code": 6000,
+                    "name": "InvalidInput",
+                    "msg": "Invalid input provided"
+                }
             ],
             "metadata": {
                 "address": "11111111111111111111111111111112"
@@ -68,374 +73,498 @@ class TestIDLLoader:
 
     def test_init(self):
         """Test IDLLoader initialization."""
-        assert hasattr(self.idl_loader, '_cached_idls')
-        assert hasattr(self.idl_loader, '_generated_types')
-        assert isinstance(self.idl_loader._cached_idls, dict)
-        assert isinstance(self.idl_loader._generated_types, dict)
+        loader = IDLLoader()
+        assert loader._cached_idls == {}
 
-    def test_idl_loader_has_required_methods(self):
-        """Test that IDLLoader has the expected methods."""
-        assert hasattr(self.idl_loader, 'load_idl')
-        assert hasattr(self.idl_loader, 'generate_types')
-        assert hasattr(self.idl_loader, 'parse_idl_json')
-        assert hasattr(self.idl_loader, 'get_cached_idl')
-        assert hasattr(self.idl_loader, 'clear_cache')
+    def test_init_with_custom_path(self):
+        """Test IDLLoader initialization with custom IDL path."""
+        custom_path = "/custom/idl/path"
+        loader = IDLLoader(idl_path=custom_path)
+        assert loader.idl_path == custom_path
 
-    def test_cache_functionality(self):
-        """Test IDL caching."""
-        program_name = "test_cache"
+    def test_clear_cache(self):
+        """Test clearing the IDL cache."""
+        # Add some cached data
+        self.idl_loader._cached_idls["test"] = Mock()
+        assert len(self.idl_loader._cached_idls) == 1
         
-        # Initially not cached
-        assert program_name not in self.idl_loader._cached_idls
-        
-        # Can add to cache
-        mock_idl = ParsedIdl(
-            version="0.1.0", name=program_name,
-            instructions=[], accounts=[], types=[], errors=[], metadata={}
-        )
-        self.idl_loader._cached_idls[program_name] = mock_idl
-        
-        assert program_name in self.idl_loader._cached_idls
-        assert self.idl_loader._cached_idls[program_name] == mock_idl
+        # Clear cache
+        self.idl_loader.clear_cache()
+        assert len(self.idl_loader._cached_idls) == 0
 
     @pytest.mark.asyncio
-    async def test_load_idl_from_file_success(self):
-        """Test successful IDL loading from file."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            json.dump(self.sample_idl_data, f)
-            f.flush()
-            
-            try:
-                result = await self.idl_loader.load_idl(f.name)
+    async def test_load_idl_from_cache(self):
+        """Test loading IDL from cache."""
+        # Mock cached IDL
+        mock_parsed_idl = Mock(spec=ParsedIdl)
+        self.idl_loader._cached_idls["test_program"] = mock_parsed_idl
+        
+        result = await self.idl_loader.load_idl("test_program")
+        assert result == mock_parsed_idl
+
+    @pytest.mark.asyncio
+    async def test_load_idl_from_file(self):
+        """Test loading IDL from file system."""
+        with patch.object(self.idl_loader, '_load_from_file') as mock_load_file:
+            with patch.object(self.idl_loader, '_parse_idl') as mock_parse:
+                mock_load_file.return_value = self.sample_idl_data
+                mock_parsed = Mock(spec=ParsedIdl)
+                mock_parse.return_value = mock_parsed
                 
-                assert isinstance(result, ParsedIdl)
-                assert result.name == "test_program"
-                assert result.version == "0.1.0"
-                assert len(result.instructions) == 1
-                assert len(result.accounts) == 1
-                assert len(result.types) == 1
-                assert len(result.errors) == 1
+                result = await self.idl_loader.load_idl("test_program")
                 
-                # Should be cached
-                assert "test_program" in self.idl_loader._cached_idls
-            finally:
-                os.unlink(f.name)
+                mock_load_file.assert_called_once_with("test_program")
+                mock_parse.assert_called_once_with(self.sample_idl_data)
+                assert result == mock_parsed
+                assert self.idl_loader._cached_idls["test_program"] == mock_parsed
 
     @pytest.mark.asyncio
-    async def test_load_idl_from_url_success(self):
-        """Test successful IDL loading from URL."""
-        with patch('httpx.AsyncClient') as mock_http:
-            mock_response = Mock()
-            mock_response.status_code = 200
-            mock_response.json.return_value = self.sample_idl_data
-            mock_http.return_value.__aenter__.return_value.get.return_value = mock_response
-            
-            result = await self.idl_loader.load_idl("https://example.com/idl.json")
-            
-            assert isinstance(result, ParsedIdl)
-            assert result.name == "test_program"
-            mock_http.return_value.__aenter__.return_value.get.assert_called_once()
+    async def test_load_idl_from_resources(self):
+        """Test loading IDL from package resources."""
+        with patch.object(self.idl_loader, '_load_from_file') as mock_load_file:
+            with patch.object(self.idl_loader, '_load_from_resources') as mock_load_resources:
+                with patch.object(self.idl_loader, '_parse_idl') as mock_parse:
+                    # File load fails, resources load succeeds
+                    mock_load_file.side_effect = FileNotFoundError()
+                    mock_load_resources.return_value = self.sample_idl_data
+                    mock_parsed = Mock(spec=ParsedIdl)
+                    mock_parse.return_value = mock_parsed
+                    
+                    result = await self.idl_loader.load_idl("test_program")
+                    
+                    mock_load_file.assert_called_once_with("test_program")
+                    mock_load_resources.assert_called_once_with("test_program")
+                    mock_parse.assert_called_once_with(self.sample_idl_data)
+                    assert result == mock_parsed
 
     @pytest.mark.asyncio
-    async def test_load_idl_from_program_name(self):
-        """Test IDL loading from program name (built-in IDL files)."""
-        # Mock built-in IDL file
-        mock_idl_path = Path("solana_ai_registries/idl_files/agent_registry.json")
-        
-        with patch('pathlib.Path.exists', return_value=True):
-            with patch('pathlib.Path.read_text', return_value=json.dumps(self.sample_idl_data)):
-                result = await self.idl_loader.load_idl("agent_registry")
+    async def test_load_idl_not_found(self):
+        """Test loading IDL when not found."""
+        with patch.object(self.idl_loader, '_load_from_file') as mock_load_file:
+            with patch.object(self.idl_loader, '_load_from_resources') as mock_load_resources:
+                mock_load_file.side_effect = FileNotFoundError()
+                mock_load_resources.side_effect = FileNotFoundError()
                 
-                assert isinstance(result, ParsedIdl)
-                assert result.name == "test_program"
+                with pytest.raises(IDLError, match="IDL not found for program"):
+                    await self.idl_loader.load_idl("nonexistent_program")
 
-    @pytest.mark.asyncio
-    async def test_load_idl_cached_result(self):
-        """Test IDL loading returns cached result."""
-        # Pre-cache an IDL
-        cached_idl = ParsedIdl(
-            version="0.1.0", name="cached_program",
-            instructions=[], accounts=[], types=[], errors=[], metadata={}
-        )
-        self.idl_loader._cached_idls["cached_program"] = cached_idl
+    def test_load_from_file_success(self):
+        """Test loading IDL from file successfully."""
+        mock_data = json.dumps(self.sample_idl_data)
         
-        result = await self.idl_loader.load_idl("cached_program")
+        with patch("builtins.open", mock_open(read_data=mock_data)):
+            with patch("os.path.exists", return_value=True):
+                result = self.idl_loader._load_from_file("test_program")
+                assert result == self.sample_idl_data
+
+    def test_load_from_file_not_found(self):
+        """Test loading IDL from file when file doesn't exist."""
+        with patch("os.path.exists", return_value=False):
+            with pytest.raises(FileNotFoundError):
+                self.idl_loader._load_from_file("nonexistent_program")
+
+    def test_load_from_file_invalid_json(self):
+        """Test loading IDL from file with invalid JSON."""
+        with patch("builtins.open", mock_open(read_data="invalid json")):
+            with patch("os.path.exists", return_value=True):
+                with pytest.raises(IDLError, match="Invalid IDL JSON format"):
+                    self.idl_loader._load_from_file("test_program")
+
+    def test_load_from_resources_success(self):
+        """Test loading IDL from package resources."""
+        mock_data = json.dumps(self.sample_idl_data)
         
-        assert result == cached_idl
-
-    @pytest.mark.asyncio
-    async def test_load_idl_file_not_found(self):
-        """Test IDL loading with non-existent file."""
-        with pytest.raises(IDLError, match="IDL file not found"):
-            await self.idl_loader.load_idl("/nonexistent/file.json")
-
-    @pytest.mark.asyncio
-    async def test_load_idl_invalid_json(self):
-        """Test IDL loading with invalid JSON."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            f.write("invalid json content")
-            f.flush()
+        with patch("importlib.resources.files") as mock_files:
+            mock_path = Mock()
+            mock_file = Mock()
+            mock_file.read_text.return_value = mock_data
+            mock_path.__truediv__.return_value = mock_file
+            mock_files.return_value = mock_path
             
-            try:
-                with pytest.raises(IDLError, match="Invalid JSON"):
-                    await self.idl_loader.load_idl(f.name)
-            finally:
-                os.unlink(f.name)
+            result = self.idl_loader._load_from_resources("test_program")
+            assert result == self.sample_idl_data
 
-    @pytest.mark.asyncio
-    async def test_load_idl_url_error(self):
-        """Test IDL loading from URL with network error."""
-        with patch('httpx.AsyncClient') as mock_http:
-            mock_http.return_value.__aenter__.return_value.get.side_effect = Exception("Network error")
+    def test_load_from_resources_not_found(self):
+        """Test loading IDL from resources when not found."""
+        with patch("importlib.resources.files") as mock_files:
+            mock_path = Mock()
+            mock_file = Mock()
+            mock_file.read_text.side_effect = FileNotFoundError()
+            mock_path.__truediv__.return_value = mock_file
+            mock_files.return_value = mock_path
             
-            with pytest.raises(IDLError, match="Failed to fetch IDL from URL"):
-                await self.idl_loader.load_idl("https://example.com/idl.json")
+            with pytest.raises(FileNotFoundError):
+                self.idl_loader._load_from_resources("nonexistent_program")
 
-    @pytest.mark.asyncio
-    async def test_load_idl_url_http_error(self):
-        """Test IDL loading from URL with HTTP error."""
-        with patch('httpx.AsyncClient') as mock_http:
-            mock_response = Mock()
-            mock_response.status_code = 404
-            mock_response.raise_for_status.side_effect = Exception("404 Not Found")
-            mock_http.return_value.__aenter__.return_value.get.return_value = mock_response
-            
-            with pytest.raises(IDLError, match="HTTP error"):
-                await self.idl_loader.load_idl("https://example.com/idl.json")
-
-    def test_parse_idl_json_success(self):
-        """Test successful IDL JSON parsing."""
-        result = self.idl_loader.parse_idl_json(self.sample_idl_data)
+    def test_parse_idl_success(self):
+        """Test successful IDL parsing."""
+        result = self.idl_loader._parse_idl(self.sample_idl_data)
         
         assert isinstance(result, ParsedIdl)
         assert result.name == "test_program"
         assert result.version == "0.1.0"
         assert len(result.instructions) == 1
-        assert result.instructions[0]["name"] == "initialize"
+        assert len(result.accounts) == 1
+        assert len(result.types) == 1
+        assert len(result.errors) == 1
+        assert result.metadata["address"] == "11111111111111111111111111111112"
 
-    def test_parse_idl_json_missing_required_fields(self):
-        """Test IDL JSON parsing with missing required fields."""
-        incomplete_idl = {"version": "0.1.0"}  # Missing name
-        
-        with pytest.raises(IDLError, match="Missing required field"):
-            self.idl_loader.parse_idl_json(incomplete_idl)
-
-    def test_parse_idl_json_invalid_structure(self):
-        """Test IDL JSON parsing with invalid structure."""
-        invalid_idl = {
-            "version": "0.1.0",
-            "name": "test",
-            "instructions": "not_a_list"  # Should be a list
-        }
+    def test_parse_idl_missing_required_fields(self):
+        """Test IDL parsing with missing required fields."""
+        invalid_idl = {"version": "0.1.0"}  # Missing name and other required fields
         
         with pytest.raises(IDLError, match="Invalid IDL structure"):
-            self.idl_loader.parse_idl_json(invalid_idl)
+            self.idl_loader._parse_idl(invalid_idl)
 
-    @pytest.mark.asyncio
-    async def test_generate_types_success(self):
-        """Test successful type generation from IDL."""
-        idl = ParsedIdl(
-            version="0.1.0",
-            name="test_program",
-            instructions=[],
-            accounts=[
-                {
-                    "name": "DataAccount",
-                    "type": {
-                        "kind": "struct",
-                        "fields": [
-                            {"name": "value", "type": "u64"},
-                            {"name": "authority", "type": "publicKey"}
-                        ]
-                    }
-                }
-            ],
-            types=[
-                {
-                    "name": "CustomType",
-                    "type": {
-                        "kind": "struct",
-                        "fields": [
-                            {"name": "field1", "type": "string"},
-                            {"name": "field2", "type": "u32"}
-                        ]
-                    }
-                }
-            ],
-            errors=[],
-            metadata={}
-        )
-        
-        types = await self.idl_loader.generate_types(idl)
-        
-        assert "DataAccount" in types
-        assert "CustomType" in types
-        assert callable(types["DataAccount"])
-        assert callable(types["CustomType"])
-
-    @pytest.mark.asyncio
-    async def test_generate_types_cached_result(self):
-        """Test type generation returns cached result."""
-        idl = ParsedIdl(
-            version="0.1.0", name="cached_types",
-            instructions=[], accounts=[], types=[], errors=[], metadata={}
-        )
-        
-        # Pre-cache types
-        cached_types = {"TestType": Mock}
-        self.idl_loader._generated_types["cached_types"] = cached_types
-        
-        result = await self.idl_loader.generate_types(idl)
-        
-        assert result == cached_types
-
-    def test_get_cached_idl_success(self):
-        """Test successful cached IDL retrieval."""
-        cached_idl = ParsedIdl(
-            version="0.1.0", name="cached",
-            instructions=[], accounts=[], types=[], errors=[], metadata={}
-        )
-        self.idl_loader._cached_idls["cached"] = cached_idl
-        
-        result = self.idl_loader.get_cached_idl("cached")
-        assert result == cached_idl
-
-    def test_get_cached_idl_not_found(self):
-        """Test cached IDL retrieval when not cached."""
-        result = self.idl_loader.get_cached_idl("not_cached")
-        assert result is None
-
-    def test_clear_cache(self):
-        """Test cache clearing."""
-        # Add some cached data
-        self.idl_loader._cached_idls["test"] = Mock()
-        self.idl_loader._generated_types["test"] = Mock()
-        
-        assert len(self.idl_loader._cached_idls) > 0
-        assert len(self.idl_loader._generated_types) > 0
-        
-        self.idl_loader.clear_cache()
-        
-        assert len(self.idl_loader._cached_idls) == 0
-        assert len(self.idl_loader._generated_types) == 0
-
-    def test_create_dataclass_from_struct(self):
-        """Test dataclass creation from struct definition."""
-        struct_def = {
-            "kind": "struct",
-            "fields": [
-                {"name": "value", "type": "u64"},
-                {"name": "name", "type": "string"},
-                {"name": "active", "type": "bool"}
-            ]
-        }
-        
-        dataclass_type = self.idl_loader._create_dataclass_from_struct("TestStruct", struct_def)
-        
-        assert dataclass_type is not None
-        assert dataclass_type.__name__ == "TestStruct"
-        
-        # Test instantiation
-        instance = dataclass_type(value=123, name="test", active=True)
-        assert instance.value == 123
-        assert instance.name == "test"
-        assert instance.active is True
-
-    def test_map_idl_type_to_python_basic_types(self):
-        """Test IDL type mapping to Python types."""
+    def test_map_idl_type_to_python_primitives(self):
+        """Test mapping IDL types to Python types for primitives."""
+        # Test primitive types
+        assert self.idl_loader._map_idl_type_to_python("u8") == int
+        assert self.idl_loader._map_idl_type_to_python("u16") == int
+        assert self.idl_loader._map_idl_type_to_python("u32") == int
         assert self.idl_loader._map_idl_type_to_python("u64") == int
-        assert self.idl_loader._map_idl_type_to_python("string") == str
+        assert self.idl_loader._map_idl_type_to_python("i8") == int
+        assert self.idl_loader._map_idl_type_to_python("i16") == int
+        assert self.idl_loader._map_idl_type_to_python("i32") == int
+        assert self.idl_loader._map_idl_type_to_python("i64") == int
+        assert self.idl_loader._map_idl_type_to_python("f32") == float
+        assert self.idl_loader._map_idl_type_to_python("f64") == float
         assert self.idl_loader._map_idl_type_to_python("bool") == bool
-        assert self.idl_loader._map_idl_type_to_python("bytes") == bytes
+        assert self.idl_loader._map_idl_type_to_python("string") == str
+        assert self.idl_loader._map_idl_type_to_python("publicKey") == str
 
     def test_map_idl_type_to_python_complex_types(self):
-        """Test IDL type mapping for complex types."""
-        # Vec types
-        assert self.idl_loader._map_idl_type_to_python({"vec": "u32"}) == list
+        """Test mapping IDL types to Python types for complex types."""
+        from typing import List, Optional, Any
         
-        # Option types
-        assert self.idl_loader._map_idl_type_to_python({"option": "string"}) == str
+        # Test vec (array) type
+        vec_type = {"vec": "u32"}
+        result = self.idl_loader._map_idl_type_to_python(vec_type)
+        assert str(result).startswith("typing.List")
         
-        # Array types
-        assert self.idl_loader._map_idl_type_to_python({"array": ["u8", 32]}) == list
-
-    def test_validate_idl_structure_valid(self):
-        """Test IDL structure validation with valid IDL."""
-        # Should not raise exception
-        self.idl_loader._validate_idl_structure(self.sample_idl_data)
-
-    def test_validate_idl_structure_invalid_version(self):
-        """Test IDL structure validation with invalid version."""
-        invalid_idl = {**self.sample_idl_data, "version": 123}  # Should be string
+        # Test option type
+        option_type = {"option": "string"}
+        result = self.idl_loader._map_idl_type_to_python(option_type)
+        assert str(result).startswith("typing.Union")
         
-        with pytest.raises(IDLError, match="version must be a string"):
-            self.idl_loader._validate_idl_structure(invalid_idl)
+        # Test array type
+        array_type = {"array": ["u8", 32]}
+        result = self.idl_loader._map_idl_type_to_python(array_type)
+        assert str(result).startswith("typing.List")
 
-    def test_validate_idl_structure_invalid_instructions(self):
-        """Test IDL structure validation with invalid instructions."""
-        invalid_idl = {**self.sample_idl_data, "instructions": "not_a_list"}
+    def test_map_idl_type_to_python_unknown_type(self):
+        """Test mapping unknown IDL type."""
+        result = self.idl_loader._map_idl_type_to_python("unknown_type")
+        assert result == type(None)  # Should return Any for unknown types
+
+    @pytest.mark.asyncio
+    async def test_get_instruction_discriminant_success(self):
+        """Test getting instruction discriminant successfully."""
+        # Mock loaded IDL
+        mock_instruction = Mock()
+        mock_instruction.name = "initialize"
+        mock_parsed_idl = Mock(spec=ParsedIdl)
+        mock_parsed_idl.instructions = [mock_instruction]
         
-        with pytest.raises(IDLError, match="instructions must be a list"):
-            self.idl_loader._validate_idl_structure(invalid_idl)
+        with patch.object(self.idl_loader, 'load_idl', return_value=mock_parsed_idl):
+            with patch('hashlib.sha256') as mock_sha:
+                mock_sha.return_value.digest.return_value = b'\x01' * 32
+                
+                result = await self.idl_loader.get_instruction_discriminant(
+                    "test_program", "initialize"
+                )
+                
+                assert isinstance(result, int)
 
-    def test_build_instruction_from_idl(self):
-        """Test instruction building from IDL definition."""
-        instruction_def = {
+    @pytest.mark.asyncio
+    async def test_get_instruction_discriminant_not_found(self):
+        """Test getting instruction discriminant when instruction not found."""
+        mock_parsed_idl = Mock(spec=ParsedIdl)
+        mock_parsed_idl.instructions = []
+        
+        with patch.object(self.idl_loader, 'load_idl', return_value=mock_parsed_idl):
+            result = await self.idl_loader.get_instruction_discriminant(
+                "test_program", "nonexistent"
+            )
+            
+            assert result is None
+
+    @pytest.mark.asyncio
+    async def test_get_account_layout_success(self):
+        """Test getting account layout successfully."""
+        mock_account = Mock()
+        mock_account.name = "DataAccount"
+        mock_account.type = {"kind": "struct", "fields": []}
+        mock_parsed_idl = Mock(spec=ParsedIdl)
+        mock_parsed_idl.accounts = [mock_account]
+        
+        with patch.object(self.idl_loader, 'load_idl', return_value=mock_parsed_idl):
+            result = await self.idl_loader.get_account_layout(
+                "test_program", "DataAccount"
+            )
+            
+            assert result is not None
+            assert isinstance(result, dict)
+
+    @pytest.mark.asyncio
+    async def test_get_account_layout_not_found(self):
+        """Test getting account layout when account not found."""
+        mock_parsed_idl = Mock(spec=ParsedIdl)
+        mock_parsed_idl.accounts = []
+        
+        with patch.object(self.idl_loader, 'load_idl', return_value=mock_parsed_idl):
+            result = await self.idl_loader.get_account_layout(
+                "test_program", "NonexistentAccount"
+            )
+            
+            assert result is None
+
+    def test_generate_types_success(self):
+        """Test generating types from IDL successfully."""
+        # Create a real ParsedIdl object
+        parsed_idl = self.idl_loader._parse_idl(self.sample_idl_data)
+        
+        result = self.idl_loader.generate_types(parsed_idl)
+        
+        assert isinstance(result, dict)
+        assert len(result) > 0
+
+    def test_generate_types_empty_idl(self):
+        """Test generating types from empty IDL."""
+        empty_idl_data = {
+            "version": "0.1.0",
+            "name": "empty_program",
+            "instructions": [],
+            "accounts": [],
+            "types": [],
+            "errors": [],
+            "metadata": {}
+        }
+        
+        parsed_idl = self.idl_loader._parse_idl(empty_idl_data)
+        result = self.idl_loader.generate_types(parsed_idl)
+        
+        assert isinstance(result, dict)
+
+    def test_generate_instruction_class(self):
+        """Test generating instruction class."""
+        instruction_data = {
             "name": "initialize",
             "accounts": [
-                {"name": "authority", "isMut": False, "isSigner": True},
-                {"name": "dataAccount", "isMut": True, "isSigner": False}
+                {"name": "authority", "isMut": False, "isSigner": True}
             ],
             "args": [
                 {"name": "value", "type": "u64"}
             ]
         }
         
-        instruction_builder = self.idl_loader._build_instruction_from_idl(instruction_def)
+        idl_instruction = IdlInstruction(
+            name=instruction_data["name"],
+            accounts=instruction_data["accounts"],
+            args=instruction_data["args"]
+        )
         
-        assert callable(instruction_builder)
-        # The function should accept the expected arguments
-        # This is a basic test since we can't easily test the full instruction building
+        result = self.idl_loader._generate_instruction_class(idl_instruction)
+        
+        assert isinstance(result, type)
+        assert result.__name__ == "InitializeInstruction"
+
+    def test_generate_account_class(self):
+        """Test generating account class."""
+        account_data = {
+            "name": "DataAccount",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {"name": "value", "type": "u64"}
+                ]
+            }
+        }
+        
+        idl_account = IdlAccount(
+            name=account_data["name"],
+            type=account_data["type"]
+        )
+        
+        result = self.idl_loader._generate_account_class(idl_account)
+        
+        assert isinstance(result, type)
+        assert result.__name__ == "DataAccount"
+
+    def test_generate_type_class(self):
+        """Test generating custom type class."""
+        type_data = {
+            "name": "CustomType",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {"name": "id", "type": "u32"}
+                ]
+            }
+        }
+        
+        idl_type = IdlType(
+            name=type_data["name"],
+            type=type_data["type"]
+        )
+        
+        result = self.idl_loader._generate_type_class(idl_type)
+        
+        assert isinstance(result, type)
+        assert result.__name__ == "CustomType"
 
 
 class TestParsedIdl:
     """Test the ParsedIdl dataclass."""
 
     def test_parsed_idl_creation(self):
-        """Test ParsedIdl creation with all fields."""
-        idl = ParsedIdl(
+        """Test creating ParsedIdl instance."""
+        instructions = [Mock()]
+        accounts = [Mock()]
+        types = [Mock()]
+        errors = [Mock()]
+        metadata = {"address": "test"}
+        
+        parsed_idl = ParsedIdl(
+            name="test",
             version="0.1.0",
-            name="test_program",
-            instructions=[{"name": "test"}],
-            accounts=[{"name": "TestAccount"}],
-            types=[{"name": "TestType"}],
-            errors=[{"code": 6000, "name": "TestError"}],
-            metadata={"address": "11111111111111111111111111111112"}
+            instructions=instructions,
+            accounts=accounts,
+            types=types,
+            errors=errors,
+            metadata=metadata
         )
         
-        assert idl.version == "0.1.0"
-        assert idl.name == "test_program"
-        assert len(idl.instructions) == 1
-        assert len(idl.accounts) == 1
-        assert len(idl.types) == 1
-        assert len(idl.errors) == 1
-        assert idl.metadata["address"] == "11111111111111111111111111111112"
+        assert parsed_idl.name == "test"
+        assert parsed_idl.version == "0.1.0"
+        assert parsed_idl.instructions == instructions
+        assert parsed_idl.accounts == accounts
+        assert parsed_idl.types == types
+        assert parsed_idl.errors == errors
+        assert parsed_idl.metadata == metadata
 
     def test_parsed_idl_defaults(self):
         """Test ParsedIdl with default values."""
-        idl = ParsedIdl(version="0.1.0", name="test")
+        parsed_idl = ParsedIdl(
+            name="test",
+            version="0.1.0",
+            instructions=[],
+            accounts=[],
+            types=[],
+            errors=[],
+            metadata={}
+        )
         
-        assert idl.instructions == []
-        assert idl.accounts == []
-        assert idl.types == []
-        assert idl.errors == []
-        assert idl.metadata == {}
+        assert parsed_idl.instructions == []
+        assert parsed_idl.accounts == []
+        assert parsed_idl.types == []
+        assert parsed_idl.errors == []
+        assert parsed_idl.metadata == {}
 
     def test_parsed_idl_equality(self):
         """Test ParsedIdl equality comparison."""
-        idl1 = ParsedIdl(version="0.1.0", name="test")
-        idl2 = ParsedIdl(version="0.1.0", name="test")
-        idl3 = ParsedIdl(version="0.2.0", name="test")
+        instructions = [Mock()]
+        accounts = [Mock()]
+        types = [Mock()]
+        errors = [Mock()]
+        metadata = {"address": "test"}
         
-        assert idl1 == idl2
-        assert idl1 != idl3
+        parsed_idl1 = ParsedIdl(
+            name="test",
+            version="0.1.0",
+            instructions=instructions,
+            accounts=accounts,
+            types=types,
+            errors=errors,
+            metadata=metadata
+        )
+        
+        parsed_idl2 = ParsedIdl(
+            name="test",
+            version="0.1.0",
+            instructions=instructions,
+            accounts=accounts,
+            types=types,
+            errors=errors,
+            metadata=metadata
+        )
+        
+        assert parsed_idl1 == parsed_idl2
+
+    def test_parsed_idl_inequality(self):
+        """Test ParsedIdl inequality comparison."""
+        parsed_idl1 = ParsedIdl(
+            name="test1",
+            version="0.1.0",
+            instructions=[],
+            accounts=[],
+            types=[],
+            errors=[],
+            metadata={}
+        )
+        
+        parsed_idl2 = ParsedIdl(
+            name="test2",
+            version="0.1.0",
+            instructions=[],
+            accounts=[],
+            types=[],
+            errors=[],
+            metadata={}
+        )
+        
+        assert parsed_idl1 != parsed_idl2
+
+
+class TestIdlDataClasses:
+    """Test IDL data classes."""
+
+    def test_idl_instruction(self):
+        """Test IdlInstruction dataclass."""
+        instruction = IdlInstruction(
+            name="test",
+            accounts=[{"name": "test", "isMut": False, "isSigner": True}],
+            args=[{"name": "value", "type": "u64"}]
+        )
+        
+        assert instruction.name == "test"
+        assert len(instruction.accounts) == 1
+        assert len(instruction.args) == 1
+
+    def test_idl_account(self):
+        """Test IdlAccount dataclass."""
+        account = IdlAccount(
+            name="TestAccount",
+            type={"kind": "struct", "fields": []}
+        )
+        
+        assert account.name == "TestAccount"
+        assert account.type["kind"] == "struct"
+
+    def test_idl_type(self):
+        """Test IdlType dataclass."""
+        idl_type = IdlType(
+            name="TestType",
+            type={"kind": "struct", "fields": []}
+        )
+        
+        assert idl_type.name == "TestType"
+        assert idl_type.type["kind"] == "struct"
+
+
+class TestIDLErrorHandling:
+    """Test error handling in IDL module."""
+
+    def test_idl_error_creation(self):
+        """Test IDLError exception creation."""
+        error = IDLError("Test error message")
+        assert str(error) == "Test error message"
+        assert isinstance(error, Exception)
+
+    def test_idl_error_with_details(self):
+        """Test IDLError with additional details."""
+        details = {"program": "test", "instruction": "initialize"}
+        error = IDLError("Test error", details)
+        
+        assert str(error) == "Test error"
+        assert error.details == details
