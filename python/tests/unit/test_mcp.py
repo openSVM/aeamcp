@@ -45,6 +45,7 @@ class TestMcpServerRegistry:
             "server_id": "test_server",
             "name": "Test MCP Server",
             "description": "A test MCP server",
+            "server_version": "1.0.0",
             "owner": self.owner_keypair.pubkey(),
             "status": McpServerStatus.ACTIVE,
             "endpoint_url": "https://api.example.com/mcp",

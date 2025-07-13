@@ -79,17 +79,30 @@ class StakingTier(Enum):
 class ServiceEndpoint:
     """Agent service endpoint definition."""
 
-    protocol: str
     url: str
+    protocol: Optional[str] = None
     description: Optional[str] = None
+    auth_type: Optional[str] = None
+    auth_config: Optional[Dict[str, Any]] = None
 
     def __post_init__(self) -> None:
         """Validate endpoint data after initialization."""
+        # Auto-detect protocol from URL if not provided
+        if not self.protocol:
+            if self.url.startswith("https://"):
+                self.protocol = "https"
+            elif self.url.startswith("http://"):
+                self.protocol = "http"
+            else:
+                self.protocol = "unknown"
+                
         validate_string_length(self.protocol, 64, "protocol")
         validate_string_length(self.url, 256, "endpoint URL")
         validate_url(self.url, "endpoint URL")
         if self.description:
             validate_string_length(self.description, 512, "endpoint description")
+        if self.auth_type:
+            validate_string_length(self.auth_type, 64, "auth_type")
 
 
 @dataclass
@@ -98,6 +111,8 @@ class AgentSkill:
 
     skill_id: str
     name: str
+    description: Optional[str] = None
+    category: Optional[str] = None
     tags: List[str] = field(default_factory=list)
     metadata: Optional[Dict[str, Any]] = None
 
@@ -105,6 +120,10 @@ class AgentSkill:
         """Validate skill data after initialization."""
         validate_string_length(self.skill_id, 64, "skill ID")
         validate_string_length(self.name, 128, "skill name")
+        if self.description:
+            validate_string_length(self.description, 256, "skill description")
+        if self.category:
+            validate_string_length(self.category, 64, "skill category")
         if len(self.tags) > 5:
             raise ValueError("Maximum 5 tags allowed per skill")
         for tag in self.tags:
@@ -190,12 +209,27 @@ class AgentRegistryEntry:
             provider_url=data.get("provider_url"),
             documentation_url=data.get("documentation_url"),
             service_endpoints=[
-                ServiceEndpoint(**ep) for ep in data.get("service_endpoints", [])
+                ServiceEndpoint(
+                    url=ep["url"],
+                    protocol=ep.get("protocol"),
+                    description=ep.get("description"),
+                    auth_type=ep.get("auth_type"),
+                    auth_config=ep.get("auth_config"),
+                ) for ep in data.get("service_endpoints", [])
             ],
             capabilities_flags=data.get("capabilities_flags", 0),
             supported_input_modes=data.get("supported_input_modes", []),
             supported_output_modes=data.get("supported_output_modes", []),
-            skills=[AgentSkill(**skill) for skill in data.get("skills", [])],
+            skills=[
+                AgentSkill(
+                    skill_id=skill.get("skill_id", ""),
+                    name=skill["name"],
+                    description=skill.get("description"),
+                    category=skill.get("category"),
+                    tags=skill.get("tags", []),
+                    metadata=skill.get("metadata"),
+                ) for skill in data.get("skills", [])
+            ],
             security_info_uri=data.get("security_info_uri"),
             aea_address=data.get("aea_address"),
             economic_intent_summary=data.get("economic_intent_summary"),
@@ -292,9 +326,11 @@ class McpServerRegistryEntry:
     endpoint_url: str
     owner: str  # PublicKey as string
     status: McpServerStatus
+    description: Optional[str] = None
     capabilities_summary: Optional[str] = None
     capabilities: Optional[McpCapabilities] = None
     full_capabilities_uri: Optional[str] = None
+    metadata_uri: Optional[str] = None
     tags: List[str] = field(default_factory=list)
     created_at: int = 0
     updated_at: int = 0
@@ -308,6 +344,8 @@ class McpServerRegistryEntry:
         validate_string_length(self.endpoint_url, 256, "endpoint_url")
         validate_url(self.endpoint_url, "endpoint_url")
 
+        if self.description:
+            validate_string_length(self.description, 512, "description")
         if self.capabilities_summary:
             validate_string_length(
                 self.capabilities_summary, 256, "capabilities_summary"
@@ -319,6 +357,13 @@ class McpServerRegistryEntry:
                 "full_capabilities_uri",
             )
             validate_url(self.full_capabilities_uri, "full_capabilities_uri")
+        if self.metadata_uri:
+            validate_string_length(
+                self.metadata_uri,
+                256,
+                "metadata_uri",
+            )
+            validate_url(self.metadata_uri, "metadata_uri")
 
         if len(self.tags) > 10:
             raise ValueError("Maximum 10 tags allowed")
@@ -357,9 +402,11 @@ class McpServerRegistryEntry:
             endpoint_url=data["endpoint_url"],
             owner=str(data["owner"]),
             status=McpServerStatus(data["status"]),
+            description=data.get("description"),
             capabilities_summary=data.get("capabilities_summary"),
             capabilities=capabilities,
             full_capabilities_uri=data.get("full_capabilities_uri"),
+            metadata_uri=data.get("metadata_uri"),
             tags=data.get("tags", []),
             created_at=data.get("created_at", 0),
             updated_at=data.get("updated_at", 0),
