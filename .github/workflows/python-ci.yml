@@ -43,6 +43,7 @@ jobs:
         # Create compatibility shim for pytest-xprocess (required by anchorpy)
         cat > pytest_xprocess.py << 'EOF'
         """Compatibility shim for pytest-xprocess."""
+
         # type: ignore
         # flake8: noqa
         from xprocess.pytest_xprocess import *  # noqa: F401, F403
@@ -95,6 +96,7 @@ jobs:
         # Create compatibility shim for pytest-xprocess (required by anchorpy)
         cat > pytest_xprocess.py << 'EOF'
         """Compatibility shim for pytest-xprocess."""
+
         # type: ignore
         # flake8: noqa
         from xprocess.pytest_xprocess import *  # noqa: F401, F403
@@ -144,6 +146,7 @@ jobs:
         # Create compatibility shim for pytest-xprocess (required by anchorpy)
         cat > pytest_xprocess.py << 'EOF'
         """Compatibility shim for pytest-xprocess."""
+
         # type: ignore
         # flake8: noqa
         from xprocess.pytest_xprocess import *  # noqa: F401, F403
@@ -184,6 +187,7 @@ jobs:
         # Create compatibility shim for pytest-xprocess (required by anchorpy)
         cat > pytest_xprocess.py << 'EOF'
         """Compatibility shim for pytest-xprocess."""
+
         # type: ignore
         # flake8: noqa
         from xprocess.pytest_xprocess import *  # noqa: F401, F403
