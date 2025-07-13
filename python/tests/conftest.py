@@ -9,8 +9,8 @@ import pytest
 import asyncio
 from typing import AsyncGenerator, Dict, Any
 from unittest.mock import Mock, AsyncMock
-from solana.keypair import Keypair
-from solana.publickey import PublicKey
+from solders.keypair import Keypair
+from solders.pubkey import Pubkey
 
 from solana_ai_registries import SolanaAIRegistriesClient
 from solana_ai_registries.constants import DEFAULT_DEVNET_RPC
@@ -32,9 +32,9 @@ def test_keypair() -> Keypair:
 
 
 @pytest.fixture
-def test_pubkey() -> PublicKey:
+def test_pubkey() -> Pubkey:
     """Generate a test public key."""
-    return Keypair().public_key
+    return Keypair().pubkey()
 
 
 @pytest.fixture
@@ -66,7 +66,7 @@ def mock_agent_data() -> Dict[str, Any]:
         "name": "Test Agent",
         "description": "An AI agent for testing purposes",
         "agent_version": "1.0.0",
-        "owner": str(Keypair().public_key),
+        "owner": str(Keypair().pubkey()),
         "status": 1,  # ACTIVE
         "provider_name": "Test Provider",
         "provider_url": "https://test-provider.com",
@@ -109,7 +109,7 @@ def mock_mcp_server_data() -> Dict[str, Any]:
         "name": "Test MCP Server",
         "server_version": "2.1.0",
         "endpoint_url": "https://mcp.test-server.com",
-        "owner": str(Keypair().public_key),
+        "owner": str(Keypair().pubkey()),
         "status": 1,  # ACTIVE
         "capabilities_summary": "Weather data and forecasts",
         "capabilities": {
@@ -219,5 +219,5 @@ def assert_valid_pubkey(pubkey: str):
     """Assert that a public key is valid format."""
     assert isinstance(pubkey, str)
     assert len(pubkey) == 44  # Standard length for base58 public key
-    # Verify it can be converted to PublicKey
-    PublicKey(pubkey)
+    # Verify it can be converted to Pubkey
+    Pubkey.from_string(pubkey)
