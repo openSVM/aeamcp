@@ -1,5 +1,5 @@
 """
-Comprehensive tests to achieve 95%+ coverage.
+Simplified comprehensive tests for core modules to achieve 95%+ coverage.
 
 This module contains extensive tests that cover all missing lines 
 in each module to reach the 95% coverage target.
@@ -16,21 +16,20 @@ from solders.pubkey import Pubkey
 
 # Import all modules to test
 from solana_ai_registries.agent import AgentRegistry
-from solana_ai_registries.mcp import McpServerRegistry
+from solana_ai_registries.mcp import MCPRegistry
 from solana_ai_registries.payments import PaymentManager
 from solana_ai_registries.client import SolanaAIRegistriesClient
-from solana_ai_registries.idl import IDLLoader
+from solana_ai_registries.idl import IDLManager
 from solana_ai_registries.types import (
-    AgentRegistryEntry, AgentStatus, McpServerRegistryEntry, 
-    McpServerStatus, ServiceEndpoint, AgentSkill,
-    McpTool, McpResource, McpPrompt, McpCapabilities
+    AgentRegistryEntry, AgentStatus, MCPServerEntry, 
+    MCPServerStatus, ServiceEndpoint, AgentSkill,
+    MCPTool, MCPResource, MCPPrompt, MCPCapabilities, PaymentFlowType
 )
 from solana_ai_registries.exceptions import (
-    RegistrationError, ValidationError, PaymentError,
-    InsufficientFundsError, SolanaAIRegistriesError,
-    AgentExistsError, AgentNotFoundError, McpServerExistsError,
-    McpServerNotFoundError, TransactionError, ConnectionError,
-    InvalidPublicKeyError, IDLError, AccountNotFoundError
+    RegistrationError, InvalidInputError, PaymentError,
+    SolanaAIRegistriesError,
+    AgentExistsError, AgentNotFoundError, MCPServerExistsError,
+    MCPServerNotFoundError, NetworkError
 )
 from solana_ai_registries.constants import (
     MAX_AGENT_ID_LEN, MAX_AGENT_NAME_LEN, MAX_AGENT_DESCRIPTION_LEN

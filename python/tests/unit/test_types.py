@@ -183,8 +183,8 @@ class TestAgentRegistryEntry:
 
     def test_full_agent(self) -> None:
         """Test creating a fully populated agent."""
-        endpoint = ServiceEndpoint("https", "https://api.example.com")
-        skill = AgentSkill("trading", "Trading Skill")
+        endpoint = ServiceEndpoint("https://api.example.com", "https")
+        skill = AgentSkill("skill_1", "trading", "Trading Skill")
 
         agent = AgentRegistryEntry(
             agent_id="full_agent",
@@ -237,11 +237,11 @@ class TestAgentRegistryEntry:
     def test_too_many_endpoints(self) -> None:
         """Test service endpoints validation - too many."""
         endpoints = [
-            ServiceEndpoint("https", "https://api1.example.com"),
-            ServiceEndpoint("grpc", "https://api2.example.com"),
-            ServiceEndpoint("ws", "https://api3.example.com"),
+            ServiceEndpoint("https://api1.example.com", "https"),
+            ServiceEndpoint("https://api2.example.com", "grpc"),
+            ServiceEndpoint("https://api3.example.com", "ws"),
             ServiceEndpoint(
-                "tcp", "https://api4.example.com"
+                "https://api4.example.com", "tcp"
             ),  # 4th endpoint - over limit
         ]
         with pytest.raises(ValueError) as exc_info:

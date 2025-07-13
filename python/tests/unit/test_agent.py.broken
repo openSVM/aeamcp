@@ -40,6 +40,17 @@ class TestAgentRegistry:
         self.mock_client.get_account_info = AsyncMock()
         self.mock_client.build_and_send_transaction = AsyncMock()
         self.mock_client.get_program_accounts = AsyncMock()
+        self.mock_client.send_transaction = AsyncMock()
+        
+        # Mock instruction building methods 
+        self.mock_client.build_register_agent_instruction = Mock()
+        self.mock_client.build_update_agent_instruction = Mock()
+        self.mock_client.build_deregister_agent_instruction = Mock()
+        
+        # Create a proper mock transaction
+        self.mock_transaction = Mock(spec=Transaction)
+        self.mock_transaction.sign = Mock()
+        self.mock_transaction.serialize = Mock(return_value=b"mock_serialized_tx")
         
         # Sample agent data
         self.sample_agent_data = {
@@ -69,24 +80,46 @@ class TestAgentRegistry:
 
     # Registration Tests
     @pytest.mark.asyncio
-    async def test_register_agent_success(self):
+    @patch('solana_ai_registries.agent.Transaction')
+    async def test_register_agent_success(self, mock_transaction):
         """Test successful agent registration."""
+        # Setup mocks - mock instruction building at the client level
+        mock_instruction = Mock()
+        self.mock_client.build_register_agent_instruction.return_value = mock_instruction
+        
+        # Mock transaction creation
+        mock_transaction_instance = Mock()
+        mock_transaction.new_with_payer.return_value = mock_transaction_instance
+        
         # Mock successful registration (account doesn't exist)
         self.mock_client.get_account_info.return_value = None
-        self.mock_client.build_and_send_transaction.return_value = "mock_tx_signature"
+        self.mock_client.send_transaction.return_value = "mock_tx_signature"
         
-        result = await self.agent_registry.register_agent(
-            agent_id="test_agent",
-            name="Test AI Agent",
-            description="A test AI agent",
-            owner=self.owner_keypair
-        )
+        # Mock get_agent to return None (agent doesn't exist)
+        with patch.object(self.agent_registry, 'get_agent', return_value=None):
+            result = await self.agent_registry.register_agent(
+                agent_id="test_agent",
+                name="Test AI Agent",
+                description="A test AI agent",
+                owner=self.owner_keypair
+            )
         
         assert result == "mock_tx_signature"
+        # Verify instruction was built correctly
+        self.mock_client.build_register_agent_instruction.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_register_agent_with_service_endpoint(self):
+    @patch('solana_ai_registries.agent.Transaction')
+    async def test_register_agent_with_service_endpoint(self, mock_transaction):
         """Test agent registration with service endpoint."""
+        # Setup mocks
+        mock_instruction = Mock()
+        self.mock_client.build_register_agent_instruction.return_value = mock_instruction
+        
+        # Mock transaction creation
+        mock_transaction_instance = Mock()
+        mock_transaction.new_with_payer.return_value = mock_transaction_instance
+        
         service_endpoint = ServiceEndpoint(
             url="https://api.example.com/agent",
             auth_type="bearer_token",
@@ -94,7 +127,7 @@ class TestAgentRegistry:
         )
         
         self.mock_client.get_account_info.return_value = None
-        self.mock_client.build_and_send_transaction.return_value = "mock_tx_signature"
+        self.mock_client.send_transaction.return_value = "mock_tx_signature"
         
         result = await self.agent_registry.register_agent(
             agent_id="test_agent",
@@ -109,13 +142,19 @@ class TestAgentRegistry:
     @pytest.mark.asyncio
     async def test_register_agent_with_skills(self):
         """Test agent registration with skills."""
+        # Setup mocks
+        mock_instruction = Mock()
+        self.mock_client.build_register_agent_instruction.return_value = mock_instruction
+        
         skills = [
             AgentSkill(
+                skill_id="skill_1",
                 name="text_generation",
                 description="Generate human-like text",
                 category="nlp"
             ),
             AgentSkill(
+                skill_id="skill_2", 
                 name="sentiment_analysis",
                 description="Analyze sentiment in text",
                 category="nlp"
@@ -123,7 +162,7 @@ class TestAgentRegistry:
         ]
         
         self.mock_client.get_account_info.return_value = None
-        self.mock_client.build_and_send_transaction.return_value = "mock_tx_signature"
+        self.mock_client.send_transaction.return_value = "mock_tx_signature"
         
         result = await self.agent_registry.register_agent(
             agent_id="test_agent",
@@ -200,10 +239,14 @@ class TestAgentRegistry:
     @pytest.mark.asyncio
     async def test_register_agent_transaction_failure(self):
         """Test agent registration when transaction fails."""
+        # Setup mocks
+        mock_instruction = Mock()
+        self.mock_client.build_register_agent_instruction.return_value = mock_instruction
+        
         # Mock account doesn't exist (new registration)
         self.mock_client.get_account_info.return_value = None
         # Mock transaction failure
-        self.mock_client.build_and_send_transaction.side_effect = Exception("Transaction failed")
+        self.mock_client.send_transaction.side_effect = Exception("Transaction failed")
         
         with pytest.raises(RegistrationError, match="Failed to register agent"):
             await self.agent_registry.register_agent(
