@@ -228,6 +228,80 @@ export class AgentAPI {
   }
 
   /**
+   * Update agent status (matches Rust SDK)
+   */
+  async updateAgentStatus(agentId: string, status: AgentStatus): Promise<TransactionResult> {
+    Validator.validateAgentId(agentId);
+
+    try {
+      const program = this.client.getAgentRegistryProgram();
+      const provider = this.client.getProvider();
+
+      // Derive PDA for agent account
+      const [agentPda] = PublicKey.findProgramAddressSync(
+        [
+          Buffer.from(CONSTANTS.AGENT_REGISTRY_PDA_SEED),
+          Buffer.from(agentId),
+          provider.wallet.publicKey.toBuffer(),
+        ],
+        program.programId
+      );
+
+      const updateStatusInstruction = await program.methods
+        .updateAgentStatus(status)
+        .accounts({
+          agentAccount: agentPda,
+          owner: provider.wallet.publicKey,
+        })
+        .instruction();
+
+      const transaction = new Transaction().add(updateStatusInstruction);
+      return await this.client.sendAndConfirmTransaction(transaction);
+    } catch (error) {
+      throw new RegistryError(
+        `Failed to update agent status: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        undefined,
+        undefined,
+        error instanceof Error ? error : undefined
+      );
+    }
+  }
+
+  /**
+   * Get agent by ID (matches Rust SDK signature with explicit owner)
+   */
+  async getAgentByOwner(owner: PublicKey, agentId: string): Promise<AgentRegistryEntry | null> {
+    Validator.validateAgentId(agentId);
+
+    try {
+      const program = this.client.getAgentRegistryProgram();
+
+      // Derive PDA for agent account
+      const [agentPda] = PublicKey.findProgramAddressSync(
+        [
+          Buffer.from(CONSTANTS.AGENT_REGISTRY_PDA_SEED),
+          Buffer.from(agentId),
+          owner.toBuffer(),
+        ],
+        program.programId
+      );
+
+      try {
+        const account = await (program.account as any).agentRegistryEntryV1.fetch(agentPda);
+        return this.parseAgentAccount(account, agentPda);
+      } catch (error) {
+        // Return null if account not found (matches Rust SDK Option<T> pattern)
+        return null;
+      }
+    } catch (error) {
+      throw new AccountError(
+        `Failed to get agent '${agentId}' for owner '${owner.toBase58()}': ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error : undefined
+      );
+    }
+  }
+
+  /**
    * Get agent by ID
    */
   async getAgent(agentId: string): Promise<AgentRegistryEntry> {

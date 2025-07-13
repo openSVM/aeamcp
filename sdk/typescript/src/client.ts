@@ -187,13 +187,9 @@ export class SolanaClient {
    */
   async accountExists(publicKey: PublicKey): Promise<boolean> {
     try {
-      const accountInfo = await this.getAccountInfo(publicKey);
+      const accountInfo = await this.connection.getAccountInfo(publicKey);
       return accountInfo !== null;
-    } catch (error) {
-      // If it's a network error, rethrow. Otherwise, assume account doesn't exist.
-      if (error instanceof NetworkError) {
-        throw error;
-      }
+    } catch {
       return false;
     }
   }
@@ -263,5 +259,50 @@ export class SolanaClient {
         // health: 'unhealthy', // Not available in @solana/web3.js
       };
     }
+  }
+
+
+  /**
+   * Get account balance in lamports (matches Rust SDK)
+   */
+  async getBalance(publicKey: PublicKey): Promise<bigint> {
+    try {
+      const balance = await this.connection.getBalance(publicKey);
+      return BigInt(balance);
+    } catch (error) {
+      throw new NetworkError(
+        `Failed to get balance: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error : undefined
+      );
+    }
+  }
+
+  /**
+   * Get minimum rent exemption for account size (matches Rust SDK)
+   */
+  async getMinimumRentExemption(size: number): Promise<bigint> {
+    try {
+      const rentExemption = await this.connection.getMinimumBalanceForRentExemption(size);
+      return BigInt(rentExemption);
+    } catch (error) {
+      throw new NetworkError(
+        `Failed to get minimum rent exemption: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error : undefined
+      );
+    }
+  }
+
+  /**
+   * Get the Agent Registry program ID
+   */
+  getAgentRegistryProgramId(): PublicKey {
+    return this.getAgentRegistryProgram().programId;
+  }
+
+  /**
+   * Get the MCP Server Registry program ID
+   */
+  getMcpRegistryProgramId(): PublicKey {
+    return this.getMcpRegistryProgram().programId;
   }
 }

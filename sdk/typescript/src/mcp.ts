@@ -191,6 +191,40 @@ export class McpAPI {
   }
 
   /**
+   * Get MCP server by ID (matches Rust SDK signature with explicit owner)
+   */
+  async getServerByOwner(owner: PublicKey, serverId: string): Promise<McpServerRegistryEntry | null> {
+    Validator.validateServerId(serverId);
+
+    try {
+      const program = this.client.getMcpRegistryProgram();
+
+      // Derive PDA for server account
+      const [serverPda] = PublicKey.findProgramAddressSync(
+        [
+          Buffer.from(CONSTANTS.MCP_SERVER_REGISTRY_PDA_SEED),
+          Buffer.from(serverId),
+          owner.toBuffer(),
+        ],
+        program.programId
+      );
+
+      try {
+        const account = await (program.account as any).mcpServerRegistryEntryV1.fetch(serverPda);
+        return this.parseServerAccount(account, serverPda);
+      } catch (error) {
+        // Return null if account not found (matches Rust SDK Option<T> pattern)
+        return null;
+      }
+    } catch (error) {
+      throw new AccountError(
+        `Failed to get MCP server '${serverId}' for owner '${owner.toBase58()}': ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error : undefined
+      );
+    }
+  }
+
+  /**
    * Get MCP server by ID
    */
   async getServer(serverId: string): Promise<McpServerRegistryEntry> {

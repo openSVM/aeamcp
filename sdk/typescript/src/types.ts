@@ -212,7 +212,7 @@ export interface StreamConfig extends PaymentFlowConfig {
 export interface SdkConfig {
   cluster: 'mainnet-beta' | 'devnet' | 'testnet';
   rpcUrl?: string;
-  commitment?: 'confirmed' | 'finalized';
+  commitment?: 'processed' | 'confirmed' | 'finalized';
   agentRegistryProgramId?: SolanaPublicKey;
   mcpRegistryProgramId?: SolanaPublicKey;
   a2amplTokenMint?: SolanaPublicKey;
