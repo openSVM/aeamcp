@@ -19,9 +19,8 @@ __version__ = "0.1.0"
 __author__ = "AEAMCP Team"
 __email__ = "dev@aeamcp.org"
 
-from .agent import AgentRegistry
-
 # Core API exports
+from .agent import AgentRegistry
 from .client import SolanaAIRegistriesClient
 from .exceptions import (
     AgentExistsError,
@@ -31,6 +30,7 @@ from .exceptions import (
     TransactionError,
     ValidationError,
 )
+from .idl import IDLLoader, idl_loader
 from .mcp import McpServerRegistry
 from .payments import PaymentManager
 from .types import (
@@ -49,6 +49,8 @@ __all__ = [
     "AgentRegistry",
     "McpServerRegistry",
     "PaymentManager",
+    "IDLLoader",
+    "idl_loader",
     # Data types
     "AgentRegistryEntry",
     "McpServerRegistryEntry",

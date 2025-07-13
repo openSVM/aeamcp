@@ -42,6 +42,116 @@ class ValidationError(SolanaAIRegistriesError):
         self.constraint = constraint
 
 
+class ConnectionError(SolanaAIRegistriesError):
+    """Raised when RPC connection fails."""
+
+    def __init__(self, message: str, endpoint: Optional[str] = None):
+        """Initialize connection error.
+
+        Args:
+            message: Error message
+            endpoint: Optional RPC endpoint that failed
+        """
+        details = {"endpoint": endpoint} if endpoint else {}
+        super().__init__(message, details)
+        self.endpoint = endpoint
+
+
+class InvalidPublicKeyError(ValidationError):
+    """Raised when a public key is invalid."""
+
+    def __init__(self, pubkey: str):
+        """Initialize invalid public key error.
+
+        Args:
+            pubkey: The invalid public key string
+        """
+        super().__init__(
+            field="public_key",
+            value=pubkey,
+            constraint="must be a valid base58 public key",
+        )
+
+
+class InvalidInputError(ValidationError):
+    """Raised when input parameters are invalid."""
+
+    def __init__(self, parameter: str, value: Any, reason: str):
+        """Initialize invalid input error.
+
+        Args:
+            parameter: Name of the invalid parameter
+            value: The invalid value
+            reason: Reason why the value is invalid
+        """
+        super().__init__(field=parameter, value=value, constraint=reason)
+
+
+class RegistrationError(SolanaAIRegistriesError):
+    """Raised when registry registration fails."""
+
+    pass
+
+
+class AgentNotFoundError(SolanaAIRegistriesError):
+    """Raised when an agent is not found in the registry."""
+
+    def __init__(self, agent_id: str, owner: Optional[str] = None):
+        """Initialize agent not found error.
+
+        Args:
+            agent_id: The agent ID that was not found
+            owner: Optional owner public key
+        """
+        message = f"Agent '{agent_id}' not found"
+        if owner:
+            message += f" for owner {owner}"
+        details = {"agent_id": agent_id, "owner": owner}
+        super().__init__(message, details)
+        self.agent_id = agent_id
+        self.owner = owner
+
+
+class McpServerNotFoundError(SolanaAIRegistriesError):
+    """Raised when an MCP server is not found in the registry."""
+
+    def __init__(self, server_id: str, owner: Optional[str] = None):
+        """Initialize MCP server not found error.
+
+        Args:
+            server_id: The server ID that was not found
+            owner: Optional owner public key
+        """
+        message = f"MCP server '{server_id}' not found"
+        if owner:
+            message += f" for owner {owner}"
+        details = {"server_id": server_id, "owner": owner}
+        super().__init__(message, details)
+        self.server_id = server_id
+        self.owner = owner
+
+
+class PaymentError(SolanaAIRegistriesError):
+    """Raised when payment operations fail."""
+
+    pass
+
+
+class IDLError(SolanaAIRegistriesError):
+    """Raised when IDL loading or parsing fails."""
+
+    def __init__(self, message: str, program_name: Optional[str] = None):
+        """Initialize IDL error.
+
+        Args:
+            message: Error message
+            program_name: Optional program name that failed
+        """
+        details = {"program_name": program_name} if program_name else {}
+        super().__init__(message, details)
+        self.program_name = program_name
+
+
 class TransactionError(SolanaAIRegistriesError):
     """Raised when a Solana transaction fails."""
 

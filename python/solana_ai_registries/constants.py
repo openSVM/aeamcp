@@ -158,8 +158,12 @@ REGISTRATION_VAULT_SEED: Final[bytes] = b"registration_vault"
 # ============================================================================
 
 # Registry Programs
-AGENT_REGISTRY_PROGRAM_ID: Final[str] = "AgentReg11111111111111111111111111111111111"
-MCP_SERVER_REGISTRY_PROGRAM_ID: Final[str] = "TBD"  # To be updated
+AGENT_REGISTRY_PROGRAM_ID: Final[str] = (
+    "11111111111111111111111111111112"  # To be updated with real program ID
+)
+MCP_SERVER_REGISTRY_PROGRAM_ID: Final[str] = (
+    "11111111111111111111111111111113"  # To be updated with real program ID
+)
 
 # Authorized External Programs
 AUTHORIZED_ESCROW_PROGRAM_ID: Final[str] = (
