@@ -1,6 +1,7 @@
 """Test suite for constants module."""
 
 import pytest
+
 from solana_ai_registries.constants import (
     A2AMPL_BASE_UNIT,
     A2AMPL_TOKEN_MINT_DEVNET,
@@ -88,7 +89,9 @@ class TestA2AMPLConversion:
         for amount in amounts:
             base_units = a2ampl_to_base_units(amount)
             converted_back = base_units_to_a2ampl(base_units)
-            assert abs(converted_back - amount) < 1e-9  # Allow for floating point precision
+            assert (
+                abs(converted_back - amount) < 1e-9
+            )  # Allow for floating point precision
 
 
 class TestClusterTokenMint:
@@ -156,7 +159,7 @@ class TestURLValidation:
             "ipfs://QmExampleHash",
             "ar://ExampleArweaveHash",
             "https://",  # Minimal valid https URL
-            "http://",   # Minimal valid http URL
+            "http://",  # Minimal valid http URL
         ]
         for url in valid_urls:
             # Should not raise exceptions

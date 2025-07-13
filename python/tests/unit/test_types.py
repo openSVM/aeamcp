@@ -1,6 +1,7 @@
 """Test suite for data types and structures."""
 
 import pytest
+
 from solana_ai_registries.types import (
     AgentRegistryEntry,
     AgentSkill,
@@ -56,7 +57,7 @@ class TestServiceEndpoint:
         endpoint = ServiceEndpoint(
             protocol="https",
             url="https://api.example.com/v1",
-            description="Test API endpoint"
+            description="Test API endpoint",
         )
         assert endpoint.protocol == "https"
         assert endpoint.url == "https://api.example.com/v1"
@@ -64,10 +65,7 @@ class TestServiceEndpoint:
 
     def test_endpoint_without_description(self) -> None:
         """Test creating endpoint without description."""
-        endpoint = ServiceEndpoint(
-            protocol="grpc",
-            url="https://grpc.example.com:443"
-        )
+        endpoint = ServiceEndpoint(protocol="grpc", url="https://grpc.example.com:443")
         assert endpoint.protocol == "grpc"
         assert endpoint.url == "https://grpc.example.com:443"
         assert endpoint.description is None
@@ -76,8 +74,7 @@ class TestServiceEndpoint:
         """Test protocol validation - too long."""
         with pytest.raises(ValueError) as exc_info:
             ServiceEndpoint(
-                protocol="x" * 65,  # Over 64 chars
-                url="https://api.example.com"
+                protocol="x" * 65, url="https://api.example.com"  # Over 64 chars
             )
         assert "protocol exceeds maximum length" in str(exc_info.value)
 
@@ -85,18 +82,14 @@ class TestServiceEndpoint:
         """Test URL validation - too long."""
         with pytest.raises(ValueError) as exc_info:
             ServiceEndpoint(
-                protocol="https",
-                url="https://" + "x" * 250 + ".com"  # Over 256 chars
+                protocol="https", url="https://" + "x" * 250 + ".com"  # Over 256 chars
             )
         assert "endpoint URL exceeds maximum length" in str(exc_info.value)
 
     def test_invalid_url(self) -> None:
         """Test URL validation - invalid format."""
         with pytest.raises(ValueError) as exc_info:
-            ServiceEndpoint(
-                protocol="https",
-                url="not-a-valid-url"
-            )
+            ServiceEndpoint(protocol="https", url="not-a-valid-url")
         assert "endpoint URL must start with one of" in str(exc_info.value)
 
     def test_description_too_long(self) -> None:
@@ -105,7 +98,7 @@ class TestServiceEndpoint:
             ServiceEndpoint(
                 protocol="https",
                 url="https://api.example.com",
-                description="x" * 513  # Over 512 chars
+                description="x" * 513,  # Over 512 chars
             )
         assert "endpoint description exceeds maximum length" in str(exc_info.value)
 
@@ -119,7 +112,7 @@ class TestAgentSkill:
             skill_id="trading",
             name="Trading Agent",
             tags=["finance", "crypto"],
-            metadata={"model": "gpt-4"}
+            metadata={"model": "gpt-4"},
         )
         assert skill.skill_id == "trading"
         assert skill.name == "Trading Agent"
@@ -128,10 +121,7 @@ class TestAgentSkill:
 
     def test_skill_without_optional_fields(self) -> None:
         """Test creating skill without optional fields."""
-        skill = AgentSkill(
-            skill_id="analysis",
-            name="Data Analysis"
-        )
+        skill = AgentSkill(skill_id="analysis", name="Data Analysis")
         assert skill.skill_id == "analysis"
         assert skill.name == "Data Analysis"
         assert skill.tags == []
@@ -140,19 +130,13 @@ class TestAgentSkill:
     def test_skill_id_too_long(self) -> None:
         """Test skill ID validation - too long."""
         with pytest.raises(ValueError) as exc_info:
-            AgentSkill(
-                skill_id="x" * 65,  # Over 64 chars
-                name="Test Skill"
-            )
+            AgentSkill(skill_id="x" * 65, name="Test Skill")  # Over 64 chars
         assert "skill ID exceeds maximum length" in str(exc_info.value)
 
     def test_skill_name_too_long(self) -> None:
         """Test skill name validation - too long."""
         with pytest.raises(ValueError) as exc_info:
-            AgentSkill(
-                skill_id="test",
-                name="x" * 129  # Over 128 chars
-            )
+            AgentSkill(skill_id="test", name="x" * 129)  # Over 128 chars
         assert "skill name exceeds maximum length" in str(exc_info.value)
 
     def test_too_many_tags(self) -> None:
@@ -161,7 +145,7 @@ class TestAgentSkill:
             AgentSkill(
                 skill_id="test",
                 name="Test Skill",
-                tags=["tag1", "tag2", "tag3", "tag4", "tag5", "tag6"]  # Over 5 tags
+                tags=["tag1", "tag2", "tag3", "tag4", "tag5", "tag6"],  # Over 5 tags
             )
         assert "Maximum 5 tags allowed per skill" in str(exc_info.value)
 
@@ -169,9 +153,7 @@ class TestAgentSkill:
         """Test individual tag validation - too long."""
         with pytest.raises(ValueError) as exc_info:
             AgentSkill(
-                skill_id="test",
-                name="Test Skill",
-                tags=["x" * 33]  # Over 32 chars
+                skill_id="test", name="Test Skill", tags=["x" * 33]  # Over 32 chars
             )
         assert "skill tag exceeds maximum length" in str(exc_info.value)
 
@@ -187,7 +169,7 @@ class TestAgentRegistryEntry:
             description="A test agent for validation",
             agent_version="1.0.0",
             owner="owner_pubkey_string",
-            status=AgentStatus.ACTIVE
+            status=AgentStatus.ACTIVE,
         )
         assert agent.agent_id == "test_agent"
         assert agent.name == "Test Agent"
@@ -203,7 +185,7 @@ class TestAgentRegistryEntry:
         """Test creating a fully populated agent."""
         endpoint = ServiceEndpoint("https", "https://api.example.com")
         skill = AgentSkill("trading", "Trading Skill")
-        
+
         agent = AgentRegistryEntry(
             agent_id="full_agent",
             name="Full Agent",
@@ -235,7 +217,7 @@ class TestAgentRegistryEntry:
                 description="Test description",
                 agent_version="1.0.0",
                 owner="owner",
-                status=AgentStatus.ACTIVE
+                status=AgentStatus.ACTIVE,
             )
         assert "agent_id exceeds maximum length" in str(exc_info.value)
 
@@ -248,7 +230,7 @@ class TestAgentRegistryEntry:
                 description="Test description",
                 agent_version="1.0.0",
                 owner="owner",
-                status=AgentStatus.ACTIVE
+                status=AgentStatus.ACTIVE,
             )
         assert "name exceeds maximum length" in str(exc_info.value)
 
@@ -258,7 +240,9 @@ class TestAgentRegistryEntry:
             ServiceEndpoint("https", "https://api1.example.com"),
             ServiceEndpoint("grpc", "https://api2.example.com"),
             ServiceEndpoint("ws", "https://api3.example.com"),
-            ServiceEndpoint("tcp", "https://api4.example.com"),  # 4th endpoint - over limit
+            ServiceEndpoint(
+                "tcp", "https://api4.example.com"
+            ),  # 4th endpoint - over limit
         ]
         with pytest.raises(ValueError) as exc_info:
             AgentRegistryEntry(
@@ -268,13 +252,15 @@ class TestAgentRegistryEntry:
                 agent_version="1.0.0",
                 owner="owner",
                 status=AgentStatus.ACTIVE,
-                service_endpoints=endpoints
+                service_endpoints=endpoints,
             )
         assert "Maximum 3 service endpoints allowed" in str(exc_info.value)
 
     def test_too_many_skills(self) -> None:
         """Test skills validation - too many."""
-        skills = [AgentSkill(f"skill_{i}", f"Skill {i}") for i in range(11)]  # 11 skills - over limit
+        skills = [
+            AgentSkill(f"skill_{i}", f"Skill {i}") for i in range(11)
+        ]  # 11 skills - over limit
         with pytest.raises(ValueError) as exc_info:
             AgentRegistryEntry(
                 agent_id="test",
@@ -283,7 +269,7 @@ class TestAgentRegistryEntry:
                 agent_version="1.0.0",
                 owner="owner",
                 status=AgentStatus.ACTIVE,
-                skills=skills
+                skills=skills,
             )
         assert "Maximum 10 skills allowed" in str(exc_info.value)
 
@@ -298,7 +284,7 @@ class TestAgentRegistryEntry:
                 agent_version="1.0.0",
                 owner="owner",
                 status=AgentStatus.ACTIVE,
-                tags=tags
+                tags=tags,
             )
         assert "Maximum 10 tags allowed" in str(exc_info.value)
 
@@ -312,7 +298,7 @@ class TestAgentRegistryEntry:
                 agent_version="1.0.0",
                 owner="owner",
                 status=AgentStatus.ACTIVE,
-                tags=["x" * 33]  # Over 32 chars
+                tags=["x" * 33],  # Over 32 chars
             )
         assert "agent tag exceeds maximum length" in str(exc_info.value)
 
@@ -345,7 +331,7 @@ class TestMcpServerRegistryEntry:
             server_version="1.0.0",
             endpoint_url="https://server.example.com",
             owner="owner_pubkey",
-            status=McpServerStatus.ACTIVE
+            status=McpServerStatus.ACTIVE,
         )
         assert server.server_id == "test_server"
         assert server.name == "Test Server"
@@ -363,7 +349,7 @@ class TestMcpServerRegistryEntry:
                 server_version="1.0.0",
                 endpoint_url="https://server.example.com",
                 owner="owner",
-                status=McpServerStatus.ACTIVE
+                status=McpServerStatus.ACTIVE,
             )
         assert "server_id exceeds maximum length" in str(exc_info.value)
 
@@ -376,7 +362,7 @@ class TestMcpServerRegistryEntry:
                 server_version="1.0.0",
                 endpoint_url="https://server.example.com",
                 owner="owner",
-                status=McpServerStatus.ACTIVE
+                status=McpServerStatus.ACTIVE,
             )
         assert "name exceeds maximum length" in str(exc_info.value)
 
@@ -389,7 +375,7 @@ class TestMcpServerRegistryEntry:
                 server_version="1.0.0",
                 endpoint_url="not-a-valid-url",
                 owner="owner",
-                status=McpServerStatus.ACTIVE
+                status=McpServerStatus.ACTIVE,
             )
         assert "endpoint_url must start with one of" in str(exc_info.value)
 
@@ -429,7 +415,7 @@ class TestMcpTool:
             description="Basic math operations",
             tags=["math", "calc"],
             input_schema='{"type": "object"}',
-            output_schema='{"type": "number"}'
+            output_schema='{"type": "number"}',
         )
         assert tool.name == "calculator"
         assert tool.description == "Basic math operations"
@@ -473,7 +459,7 @@ class TestMcpResource:
             uri_pattern="http://api.example.com/*",
             name="API Resources",
             description="External API endpoints",
-            tags=["api", "http"]
+            tags=["api", "http"],
         )
         assert resource.uri_pattern == "http://api.example.com/*"
         assert resource.name == "API Resources"
@@ -491,7 +477,7 @@ class TestMcpResource:
         with pytest.raises(ValueError) as exc_info:
             McpResource(
                 uri_pattern="test://*",
-                tags=["tag1", "tag2", "tag3", "tag4"]  # Over 3 tags
+                tags=["tag1", "tag2", "tag3", "tag4"],  # Over 3 tags
             )
         assert "Maximum 3 tags allowed per resource" in str(exc_info.value)
 
@@ -517,7 +503,7 @@ class TestMcpPrompt:
         prompt = McpPrompt(
             name="code_review",
             description="Code review assistant",
-            tags=["code", "review"]
+            tags=["code", "review"],
         )
         assert prompt.name == "code_review"
         assert prompt.description == "Code review assistant"
@@ -563,7 +549,7 @@ class TestMcpCapabilities:
         tool = McpTool(name="test_tool")
         resource = McpResource(uri_pattern="test://*")
         prompt = McpPrompt(name="test_prompt")
-        
+
         caps = McpCapabilities(
             supports_tools=True,
             supports_resources=True,
@@ -573,7 +559,7 @@ class TestMcpCapabilities:
             prompt_count=1,
             tools=[tool],
             resources=[resource],
-            prompts=[prompt]
+            prompts=[prompt],
         )
         assert caps.supports_tools is True
         assert caps.supports_resources is True

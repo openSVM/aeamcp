@@ -1,6 +1,5 @@
 """Test suite for exception classes."""
 
-import pytest
 from solana_ai_registries.exceptions import (
     AccountNotFoundError,
     AgentExistsError,
@@ -148,7 +147,9 @@ class TestIdlLoadError:
     def test_init(self) -> None:
         """Test IDL load error initialization."""
         error = IdlLoadError("agent_registry", "Network timeout")
-        expected_msg = "Failed to load IDL for program 'agent_registry': Network timeout"
+        expected_msg = (
+            "Failed to load IDL for program 'agent_registry': Network timeout"
+        )
         assert str(error) == expected_msg
         assert error.program_name == "agent_registry"
         assert error.reason == "Network timeout"
@@ -162,7 +163,10 @@ class TestConfigurationError:
     def test_init(self) -> None:
         """Test configuration error initialization."""
         error = ConfigurationError("rpc_url", "invalid-url", "valid HTTP/HTTPS URL")
-        expected_msg = "Invalid configuration for 'rpc_url': expected valid HTTP/HTTPS URL, got invalid-url"
+        expected_msg = (
+            "Invalid configuration for 'rpc_url': expected valid HTTP/HTTPS URL, "
+            "got invalid-url"
+        )
         assert str(error) == expected_msg
         assert error.setting == "rpc_url"
         assert error.value == "invalid-url"
