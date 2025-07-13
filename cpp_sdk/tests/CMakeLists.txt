@@ -48,4 +48,5 @@ add_test(NAME integration_tests
 set_tests_properties(integration_tests PROPERTIES
     LABELS "integration"
     TIMEOUT 300
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
