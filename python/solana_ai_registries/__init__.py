@@ -6,7 +6,7 @@ and MCP Server Registry programs on Solana blockchain.
 
 Modules:
     client: Low-level RPC client and transaction builder
-    agent: High-level agent registry operations  
+    agent: High-level agent registry operations
     mcp: High-level MCP server registry operations
     payments: Payment flow implementations
     idl: Dynamic IDL loading and type generation
@@ -45,24 +45,22 @@ from .exceptions import (
 __all__ = [
     # Core classes
     "SolanaAIRegistriesClient",
-    "AgentRegistry", 
+    "AgentRegistry",
     "McpServerRegistry",
     "PaymentManager",
-    
     # Data types
     "AgentRegistryEntry",
-    "McpServerRegistryEntry", 
+    "McpServerRegistryEntry",
     "AgentStatus",
     "McpServerStatus",
     "ServiceEndpoint",
-    "AgentSkill", 
+    "AgentSkill",
     "McpCapabilities",
-    
     # Exceptions
     "SolanaAIRegistriesError",
     "ValidationError",
     "AgentExistsError",
-    "McpServerExistsError", 
+    "McpServerExistsError",
     "InsufficientFundsError",
     "TransactionError",
 ]

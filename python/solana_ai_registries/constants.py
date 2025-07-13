@@ -48,7 +48,7 @@ AGENT_STATUS_DEREGISTERED: Final[int] = 3
 AGENT_REGISTRY_ENTRY_SPACE: Final[int] = 2048  # ~2048 bytes
 
 # ============================================================================
-# MCP SERVER REGISTRY CONSTANTS  
+# MCP SERVER REGISTRY CONSTANTS
 # ============================================================================
 
 # Size Limits
@@ -109,44 +109,44 @@ A2AMPL_TOKEN_MINT_DEVNET: Final[str] = "A2AMPLyncKHwfSnwRNsJ2qsjsetgo9fGkP8YZPsD
 AGENT_REGISTRATION_FEE: Final[int] = 100_000_000_000  # 100 A2AMPL
 
 # Agent Staking Tiers (in base units)
-BRONZE_TIER_STAKE: Final[int] = 1_000_000_000_000      # 1,000 A2AMPL
-SILVER_TIER_STAKE: Final[int] = 10_000_000_000_000     # 10,000 A2AMPL
-GOLD_TIER_STAKE: Final[int] = 50_000_000_000_000       # 50,000 A2AMPL
+BRONZE_TIER_STAKE: Final[int] = 1_000_000_000_000  # 1,000 A2AMPL
+SILVER_TIER_STAKE: Final[int] = 10_000_000_000_000  # 10,000 A2AMPL
+GOLD_TIER_STAKE: Final[int] = 50_000_000_000_000  # 50,000 A2AMPL
 PLATINUM_TIER_STAKE: Final[int] = 100_000_000_000_000  # 100,000 A2AMPL
 
 # Agent Lock Periods (in seconds)
-BRONZE_LOCK_PERIOD: Final[int] = 2_592_000   # 30 days
-SILVER_LOCK_PERIOD: Final[int] = 7_776_000   # 90 days
-GOLD_LOCK_PERIOD: Final[int] = 15_552_000    # 180 days
-PLATINUM_LOCK_PERIOD: Final[int] = 31_536_000 # 365 days
+BRONZE_LOCK_PERIOD: Final[int] = 2_592_000  # 30 days
+SILVER_LOCK_PERIOD: Final[int] = 7_776_000  # 90 days
+GOLD_LOCK_PERIOD: Final[int] = 15_552_000  # 180 days
+PLATINUM_LOCK_PERIOD: Final[int] = 31_536_000  # 365 days
 
 # MCP Server Registry Fees (in base units)
 MCP_REGISTRATION_FEE: Final[int] = 50_000_000_000  # 50 A2AMPL
 
 # MCP Server Verification Stakes (in base units)
-BASIC_SERVER_STAKE: Final[int] = 500_000_000_000      # 500 A2AMPL
+BASIC_SERVER_STAKE: Final[int] = 500_000_000_000  # 500 A2AMPL
 VERIFIED_SERVER_STAKE: Final[int] = 5_000_000_000_000  # 5,000 A2AMPL
 PREMIUM_SERVER_STAKE: Final[int] = 25_000_000_000_000  # 25,000 A2AMPL
 
 # Staking Limits (in base units)
 MIN_STAKE_AMOUNT: Final[int] = 500_000_000_000  # 500 A2AMPL
-MIN_LOCK_PERIOD: Final[int] = 604_800           # 7 days
-MAX_LOCK_PERIOD: Final[int] = 63_072_000        # 2 years
+MIN_LOCK_PERIOD: Final[int] = 604_800  # 7 days
+MAX_LOCK_PERIOD: Final[int] = 63_072_000  # 2 years
 
 # Service Fees (in base units)
-MIN_SERVICE_FEE: Final[int] = 1_000_000_000     # 1.0 A2AMPL
-MIN_TOOL_FEE: Final[int] = 1_000_000_000        # 1.0 A2AMPL
-MIN_RESOURCE_FEE: Final[int] = 500_000_000      # 0.5 A2AMPL
-MIN_PROMPT_FEE: Final[int] = 2_000_000_000      # 2.0 A2AMPL
-MAX_BULK_DISCOUNT: Final[int] = 50              # 50% maximum discount
+MIN_SERVICE_FEE: Final[int] = 1_000_000_000  # 1.0 A2AMPL
+MIN_TOOL_FEE: Final[int] = 1_000_000_000  # 1.0 A2AMPL
+MIN_RESOURCE_FEE: Final[int] = 500_000_000  # 0.5 A2AMPL
+MIN_PROMPT_FEE: Final[int] = 2_000_000_000  # 2.0 A2AMPL
+MAX_BULK_DISCOUNT: Final[int] = 50  # 50% maximum discount
 
 # Quality Metrics
-QUALITY_UPDATE_INTERVAL: Final[int] = 86_400    # 24 hours
-MIN_UPTIME_FOR_PREMIUM: Final[int] = 95         # 95% minimum uptime
+QUALITY_UPDATE_INTERVAL: Final[int] = 86_400  # 24 hours
+MIN_UPTIME_FOR_PREMIUM: Final[int] = 95  # 95% minimum uptime
 
 # Priority Multipliers (basis points, 100 = 1.0x)
-MIN_PRIORITY_MULTIPLIER: Final[int] = 100       # 1.0x minimum
-MAX_PRIORITY_MULTIPLIER: Final[int] = 300       # 3.0x maximum
+MIN_PRIORITY_MULTIPLIER: Final[int] = 100  # 1.0x minimum
+MAX_PRIORITY_MULTIPLIER: Final[int] = 300  # 3.0x maximum
 
 # Token Vault Seeds
 STAKING_VAULT_SEED: Final[bytes] = b"staking_vault"
@@ -162,8 +162,12 @@ AGENT_REGISTRY_PROGRAM_ID: Final[str] = "AgentReg1111111111111111111111111111111
 MCP_SERVER_REGISTRY_PROGRAM_ID: Final[str] = "TBD"  # To be updated
 
 # Authorized External Programs
-AUTHORIZED_ESCROW_PROGRAM_ID: Final[str] = "11111111111111111111111111111111"  # Placeholder
-AUTHORIZED_DDR_PROGRAM_ID: Final[str] = "11111111111111111111111111111111"     # Placeholder
+AUTHORIZED_ESCROW_PROGRAM_ID: Final[str] = (
+    "11111111111111111111111111111111"  # Placeholder
+)
+AUTHORIZED_DDR_PROGRAM_ID: Final[str] = (
+    "11111111111111111111111111111111"  # Placeholder
+)
 
 # ============================================================================
 # NETWORK CONFIGURATION
@@ -183,12 +187,13 @@ MAX_RETRIES: Final[int] = 3
 # UTILITY FUNCTIONS
 # ============================================================================
 
+
 def a2ampl_to_base_units(amount: float) -> int:
     """Convert A2AMPL decimal amount to base units.
-    
+
     Args:
         amount: Amount in A2AMPL (e.g., 100.5)
-        
+
     Returns:
         Amount in base units (e.g., 100500000000)
     """
@@ -197,10 +202,10 @@ def a2ampl_to_base_units(amount: float) -> int:
 
 def base_units_to_a2ampl(base_units: int) -> float:
     """Convert base units to A2AMPL decimal amount.
-    
+
     Args:
         base_units: Amount in base units (e.g., 100500000000)
-        
+
     Returns:
         Amount in A2AMPL (e.g., 100.5)
     """
@@ -209,13 +214,13 @@ def base_units_to_a2ampl(base_units: int) -> float:
 
 def get_token_mint_for_cluster(cluster: str) -> str:
     """Get the appropriate A2AMPL token mint for cluster.
-    
+
     Args:
         cluster: Cluster name ('mainnet', 'devnet', 'testnet')
-        
+
     Returns:
         Token mint address for the cluster
-        
+
     Raises:
         ValueError: If cluster is not supported
     """
@@ -229,12 +234,12 @@ def get_token_mint_for_cluster(cluster: str) -> str:
 
 def validate_string_length(value: str, max_length: int, field_name: str) -> None:
     """Validate string length against maximum constraint.
-    
+
     Args:
         value: String value to validate
         max_length: Maximum allowed length
         field_name: Name of the field for error messages
-        
+
     Raises:
         ValueError: If string exceeds maximum length
     """
@@ -246,11 +251,11 @@ def validate_string_length(value: str, max_length: int, field_name: str) -> None
 
 def validate_url(url: str, field_name: str) -> None:
     """Validate URL format.
-    
+
     Args:
         url: URL to validate
         field_name: Name of the field for error messages
-        
+
     Raises:
         ValueError: If URL format is invalid
     """

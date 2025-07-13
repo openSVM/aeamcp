@@ -75,7 +75,7 @@ def mock_agent_data() -> Dict[str, Any]:
             {
                 "protocol": "https",
                 "url": "https://api.test-agent.com/v1",
-                "description": "REST API endpoint"
+                "description": "REST API endpoint",
             }
         ],
         "capabilities_flags": 0,
@@ -86,7 +86,7 @@ def mock_agent_data() -> Dict[str, Any]:
                 "skill_id": "trading",
                 "name": "Cryptocurrency Trading",
                 "tags": ["crypto", "trading"],
-                "metadata": {"risk_level": "medium"}
+                "metadata": {"risk_level": "medium"},
             }
         ],
         "security_info_uri": "https://security.test-agent.com",
@@ -125,7 +125,7 @@ def mock_mcp_server_data() -> Dict[str, Any]:
                     "description": "Get current weather for a location",
                     "tags": ["weather", "current"],
                     "input_schema": '{"location": "string"}',
-                    "output_schema": '{"temperature": "number", "conditions": "string"}'
+                    "output_schema": '{"temperature": "number", "conditions": "string"}',
                 }
             ],
             "resources": [
@@ -133,10 +133,10 @@ def mock_mcp_server_data() -> Dict[str, Any]:
                     "uri_pattern": "weather://current/{location}",
                     "name": "Current Weather",
                     "description": "Current weather data",
-                    "tags": ["weather"]
+                    "tags": ["weather"],
                 }
             ],
-            "prompts": []
+            "prompts": [],
         },
         "full_capabilities_uri": "https://capabilities.test-server.com",
         "tags": ["weather", "data", "test"],
@@ -153,7 +153,9 @@ def mock_agent_entry(mock_agent_data: Dict[str, Any]) -> AgentRegistryEntry:
 
 
 @pytest.fixture
-def mock_mcp_server_entry(mock_mcp_server_data: Dict[str, Any]) -> McpServerRegistryEntry:
+def mock_mcp_server_entry(
+    mock_mcp_server_data: Dict[str, Any],
+) -> McpServerRegistryEntry:
     """Create a mock McpServerRegistryEntry instance."""
     return McpServerRegistryEntry.from_account_data(mock_mcp_server_data)
 
@@ -172,7 +174,7 @@ def mock_solana_account_info() -> Dict[str, Any]:
         "owner": "11111111111111111111111111111111",
         "executable": False,
         "rentEpoch": 361,
-        "data": ["", "base64"]
+        "data": ["", "base64"],
     }
 
 
@@ -183,7 +185,7 @@ def mock_token_balance() -> Dict[str, Any]:
         "amount": "100000000000",  # 100 A2AMPL in base units
         "decimals": 9,
         "uiAmount": 100.0,
-        "uiAmountString": "100.0"
+        "uiAmountString": "100.0",
     }
 
 
@@ -193,9 +195,15 @@ pytest_plugins = ["pytest_asyncio"]
 
 def pytest_configure(config):
     """Configure pytest with custom markers."""
-    config.addinivalue_line("markers", "unit: fast unit tests that don't require network")
-    config.addinivalue_line("markers", "integration: integration tests requiring devnet")
-    config.addinivalue_line("markers", "devnet: tests specifically for devnet environment")
+    config.addinivalue_line(
+        "markers", "unit: fast unit tests that don't require network"
+    )
+    config.addinivalue_line(
+        "markers", "integration: integration tests requiring devnet"
+    )
+    config.addinivalue_line(
+        "markers", "devnet: tests specifically for devnet environment"
+    )
     config.addinivalue_line("markers", "slow: tests that take longer than 1 second")
 
 

@@ -12,7 +12,7 @@ from decimal import Decimal
 
 from .constants import (
     MAX_AGENT_ID_LEN,
-    MAX_AGENT_NAME_LEN, 
+    MAX_AGENT_NAME_LEN,
     MAX_AGENT_DESCRIPTION_LEN,
     MAX_SERVER_ID_LEN,
     MAX_SERVER_NAME_LEN,
@@ -25,8 +25,10 @@ from .constants import (
 # ENUMS
 # ============================================================================
 
+
 class AgentStatus(Enum):
     """Agent operational status."""
+
     PENDING = 0
     ACTIVE = 1
     INACTIVE = 2
@@ -35,6 +37,7 @@ class AgentStatus(Enum):
 
 class McpServerStatus(Enum):
     """MCP server operational status."""
+
     PENDING = 0
     ACTIVE = 1
     INACTIVE = 2
@@ -43,6 +46,7 @@ class McpServerStatus(Enum):
 
 class PaymentType(Enum):
     """Payment flow types."""
+
     PREPAY = "prepay"
     PAY_AS_YOU_GO = "pyg"
     STREAM = "stream"
@@ -50,6 +54,7 @@ class PaymentType(Enum):
 
 class StakingTier(Enum):
     """Agent staking tiers."""
+
     BRONZE = "bronze"
     SILVER = "silver"
     GOLD = "gold"
@@ -60,13 +65,15 @@ class StakingTier(Enum):
 # AGENT REGISTRY TYPES
 # ============================================================================
 
+
 @dataclass
 class ServiceEndpoint:
     """Agent service endpoint definition."""
+
     protocol: str
     url: str
     description: Optional[str] = None
-    
+
     def __post_init__(self):
         """Validate endpoint data after initialization."""
         validate_string_length(self.protocol, 64, "protocol")
@@ -79,11 +86,12 @@ class ServiceEndpoint:
 @dataclass
 class AgentSkill:
     """Agent skill definition."""
+
     skill_id: str
     name: str
     tags: List[str] = field(default_factory=list)
     metadata: Optional[Dict[str, Any]] = None
-    
+
     def __post_init__(self):
         """Validate skill data after initialization."""
         validate_string_length(self.skill_id, 64, "skill ID")
@@ -97,6 +105,7 @@ class AgentSkill:
 @dataclass
 class AgentRegistryEntry:
     """Complete agent registry entry."""
+
     agent_id: str
     name: str
     description: str
@@ -120,15 +129,17 @@ class AgentRegistryEntry:
     created_at: int = 0
     updated_at: int = 0
     state_version: int = 1
-    
+
     def __post_init__(self):
         """Validate agent data after initialization."""
         # Validate required fields
         validate_string_length(self.agent_id, MAX_AGENT_ID_LEN, "agent_id")
         validate_string_length(self.name, MAX_AGENT_NAME_LEN, "name")
-        validate_string_length(self.description, MAX_AGENT_DESCRIPTION_LEN, "description")
+        validate_string_length(
+            self.description, MAX_AGENT_DESCRIPTION_LEN, "description"
+        )
         validate_string_length(self.agent_version, 32, "agent_version")
-        
+
         # Validate optional fields
         if self.provider_name:
             validate_string_length(self.provider_name, 128, "provider_name")
@@ -138,7 +149,7 @@ class AgentRegistryEntry:
         if self.documentation_url:
             validate_string_length(self.documentation_url, 256, "documentation_url")
             validate_url(self.documentation_url, "documentation_url")
-            
+
         # Validate collections
         if len(self.service_endpoints) > 3:
             raise ValueError("Maximum 3 service endpoints allowed")
@@ -148,14 +159,14 @@ class AgentRegistryEntry:
             raise ValueError("Maximum 10 tags allowed")
         for tag in self.tags:
             validate_string_length(tag, 32, "agent tag")
-    
+
     @classmethod
     def from_account_data(cls, data: Dict[str, Any]) -> "AgentRegistryEntry":
         """Create instance from on-chain account data.
-        
+
         Args:
             data: Raw account data from Solana
-            
+
         Returns:
             AgentRegistryEntry instance
         """
@@ -192,15 +203,17 @@ class AgentRegistryEntry:
 # MCP SERVER REGISTRY TYPES
 # ============================================================================
 
+
 @dataclass
 class McpTool:
     """MCP tool definition."""
+
     name: str
     description: Optional[str] = None
     tags: List[str] = field(default_factory=list)
     input_schema: Optional[str] = None
     output_schema: Optional[str] = None
-    
+
     def __post_init__(self):
         """Validate tool data after initialization."""
         validate_string_length(self.name, 64, "tool name")
@@ -213,11 +226,12 @@ class McpTool:
 @dataclass
 class McpResource:
     """MCP resource definition."""
+
     uri_pattern: str
     name: Optional[str] = None
     description: Optional[str] = None
     tags: List[str] = field(default_factory=list)
-    
+
     def __post_init__(self):
         """Validate resource data after initialization."""
         validate_string_length(self.uri_pattern, 128, "URI pattern")
@@ -230,10 +244,11 @@ class McpResource:
 @dataclass
 class McpPrompt:
     """MCP prompt definition."""
+
     name: str
     description: Optional[str] = None
     tags: List[str] = field(default_factory=list)
-    
+
     def __post_init__(self):
         """Validate prompt data after initialization."""
         validate_string_length(self.name, 64, "prompt name")
@@ -246,6 +261,7 @@ class McpPrompt:
 @dataclass
 class McpCapabilities:
     """MCP server capabilities summary."""
+
     supports_tools: bool = False
     supports_resources: bool = False
     supports_prompts: bool = False
@@ -260,6 +276,7 @@ class McpCapabilities:
 @dataclass
 class McpServerRegistryEntry:
     """Complete MCP server registry entry."""
+
     server_id: str
     name: str
     server_version: str
@@ -273,7 +290,7 @@ class McpServerRegistryEntry:
     created_at: int = 0
     updated_at: int = 0
     state_version: int = 1
-    
+
     def __post_init__(self):
         """Validate MCP server data after initialization."""
         validate_string_length(self.server_id, MAX_SERVER_ID_LEN, "server_id")
@@ -281,25 +298,29 @@ class McpServerRegistryEntry:
         validate_string_length(self.server_version, 32, "server_version")
         validate_string_length(self.endpoint_url, 256, "endpoint_url")
         validate_url(self.endpoint_url, "endpoint_url")
-        
+
         if self.capabilities_summary:
-            validate_string_length(self.capabilities_summary, 256, "capabilities_summary")
+            validate_string_length(
+                self.capabilities_summary, 256, "capabilities_summary"
+            )
         if self.full_capabilities_uri:
-            validate_string_length(self.full_capabilities_uri, 256, "full_capabilities_uri")
+            validate_string_length(
+                self.full_capabilities_uri, 256, "full_capabilities_uri"
+            )
             validate_url(self.full_capabilities_uri, "full_capabilities_uri")
-            
+
         if len(self.tags) > 10:
             raise ValueError("Maximum 10 tags allowed")
         for tag in self.tags:
             validate_string_length(tag, 32, "server tag")
-    
+
     @classmethod
     def from_account_data(cls, data: Dict[str, Any]) -> "McpServerRegistryEntry":
         """Create instance from on-chain account data.
-        
+
         Args:
             data: Raw account data from Solana
-            
+
         Returns:
             McpServerRegistryEntry instance
         """
@@ -317,7 +338,7 @@ class McpServerRegistryEntry:
                 resources=[McpResource(**res) for res in cap_data.get("resources", [])],
                 prompts=[McpPrompt(**prompt) for prompt in cap_data.get("prompts", [])],
             )
-        
+
         return cls(
             server_id=data["server_id"],
             name=data["name"],
@@ -339,9 +360,11 @@ class McpServerRegistryEntry:
 # PAYMENT TYPES
 # ============================================================================
 
+
 @dataclass
 class PaymentDetails:
     """Payment transaction details."""
+
     payment_type: PaymentType
     amount: Decimal
     token_mint: str
@@ -355,6 +378,7 @@ class PaymentDetails:
 @dataclass
 class EscrowAccount:
     """Prepaid escrow account details."""
+
     escrow_address: str
     owner: str
     service_provider: str
@@ -367,6 +391,7 @@ class EscrowAccount:
 @dataclass
 class PaymentStream:
     """Streaming payment details."""
+
     stream_id: str
     payer: str
     recipient: str
@@ -382,9 +407,11 @@ class PaymentStream:
 # TRANSACTION TYPES
 # ============================================================================
 
+
 @dataclass
 class TransactionResult:
     """Result of a blockchain transaction."""
+
     signature: str
     success: bool
     slot: Optional[int] = None
@@ -397,6 +424,7 @@ class TransactionResult:
 @dataclass
 class AccountInfo:
     """Solana account information."""
+
     address: str
     lamports: int
     owner: str
@@ -409,9 +437,11 @@ class AccountInfo:
 # UTILITY TYPES
 # ============================================================================
 
+
 @dataclass
 class PaginationOptions:
     """Pagination parameters for queries."""
+
     limit: int = 100
     offset: int = 0
     order_by: Optional[str] = None
@@ -421,6 +451,7 @@ class PaginationOptions:
 @dataclass
 class PaginatedResult:
     """Paginated query result."""
+
     items: List[Any]
     total_count: int
     has_next: bool
@@ -432,6 +463,7 @@ class PaginatedResult:
 @dataclass
 class NetworkConfig:
     """Network configuration."""
+
     rpc_url: str
     commitment: str = "confirmed"
     timeout: int = 60

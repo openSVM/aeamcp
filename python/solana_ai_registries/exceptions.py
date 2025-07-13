@@ -10,10 +10,10 @@ from typing import Optional, Any, Dict
 
 class SolanaAIRegistriesError(Exception):
     """Base exception for all Solana AI Registries SDK errors."""
-    
+
     def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
         """Initialize exception with message and optional details.
-        
+
         Args:
             message: Human-readable error message
             details: Optional dictionary of additional error details
@@ -25,10 +25,10 @@ class SolanaAIRegistriesError(Exception):
 
 class ValidationError(SolanaAIRegistriesError):
     """Raised when input validation fails."""
-    
+
     def __init__(self, field: str, value: Any, constraint: str):
         """Initialize validation error.
-        
+
         Args:
             field: Name of the field that failed validation
             value: The invalid value
@@ -44,10 +44,12 @@ class ValidationError(SolanaAIRegistriesError):
 
 class TransactionError(SolanaAIRegistriesError):
     """Raised when a Solana transaction fails."""
-    
-    def __init__(self, message: str, signature: Optional[str] = None, logs: Optional[list] = None):
+
+    def __init__(
+        self, message: str, signature: Optional[str] = None, logs: Optional[list] = None
+    ):
         """Initialize transaction error.
-        
+
         Args:
             message: Error message from transaction
             signature: Transaction signature if available
@@ -65,10 +67,10 @@ class TransactionError(SolanaAIRegistriesError):
 
 class AgentExistsError(SolanaAIRegistriesError):
     """Raised when trying to register an agent that already exists."""
-    
+
     def __init__(self, agent_id: str, owner: str):
         """Initialize agent exists error.
-        
+
         Args:
             agent_id: ID of the existing agent
             owner: Owner public key
@@ -82,10 +84,10 @@ class AgentExistsError(SolanaAIRegistriesError):
 
 class McpServerExistsError(SolanaAIRegistriesError):
     """Raised when trying to register an MCP server that already exists."""
-    
+
     def __init__(self, server_id: str, owner: str):
         """Initialize MCP server exists error.
-        
+
         Args:
             server_id: ID of the existing server
             owner: Owner public key
@@ -99,20 +101,20 @@ class McpServerExistsError(SolanaAIRegistriesError):
 
 class InsufficientFundsError(SolanaAIRegistriesError):
     """Raised when account has insufficient funds for operation."""
-    
+
     def __init__(self, required: int, available: int, token_mint: str):
         """Initialize insufficient funds error.
-        
+
         Args:
             required: Required amount in base units
-            available: Available amount in base units  
+            available: Available amount in base units
             token_mint: Token mint address
         """
         message = f"Insufficient funds: required {required}, available {available}"
         details = {
             "required": required,
-            "available": available, 
-            "token_mint": token_mint
+            "available": available,
+            "token_mint": token_mint,
         }
         super().__init__(message, details)
         self.required = required
@@ -122,10 +124,10 @@ class InsufficientFundsError(SolanaAIRegistriesError):
 
 class AccountNotFoundError(SolanaAIRegistriesError):
     """Raised when a required account is not found on-chain."""
-    
+
     def __init__(self, account_type: str, identifier: str):
         """Initialize account not found error.
-        
+
         Args:
             account_type: Type of account (e.g., 'agent', 'mcp_server')
             identifier: Account identifier
@@ -139,10 +141,10 @@ class AccountNotFoundError(SolanaAIRegistriesError):
 
 class IdlLoadError(SolanaAIRegistriesError):
     """Raised when IDL loading fails."""
-    
+
     def __init__(self, program_name: str, reason: str):
         """Initialize IDL load error.
-        
+
         Args:
             program_name: Name of the program whose IDL failed to load
             reason: Reason for the failure
@@ -156,16 +158,18 @@ class IdlLoadError(SolanaAIRegistriesError):
 
 class ConfigurationError(SolanaAIRegistriesError):
     """Raised when SDK configuration is invalid."""
-    
+
     def __init__(self, setting: str, value: Any, expected: str):
         """Initialize configuration error.
-        
+
         Args:
             setting: Name of the configuration setting
             value: Invalid value provided
             expected: Description of expected value
         """
-        message = f"Invalid configuration for '{setting}': expected {expected}, got {value}"
+        message = (
+            f"Invalid configuration for '{setting}': expected {expected}, got {value}"
+        )
         details = {"setting": setting, "value": value, "expected": expected}
         super().__init__(message, details)
         self.setting = setting
