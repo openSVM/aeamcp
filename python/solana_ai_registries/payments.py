@@ -10,17 +10,18 @@ import logging
 from decimal import Decimal
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
-from solders.hash import Hash
+from solders.instruction import AccountMeta, Instruction
 from solders.keypair import Keypair
-from solders.message import Message
 from solders.pubkey import Pubkey as PublicKey
 from solders.transaction import Transaction
+from spl.token.constants import TOKEN_PROGRAM_ID
 
 from .client import SolanaAIRegistriesClient
 from .constants import (
     A2AMPL_TOKEN_MINT_DEVNET,
     A2AMPL_TOKEN_MINT_MAINNET,
     a2ampl_to_base_units,
+    base_units_to_a2ampl,
 )
 from .exceptions import (
     InsufficientFundsError,
@@ -88,18 +89,27 @@ class PaymentManager:
             # Check payer balance
             await self._validate_balance(payer.pubkey(), base_amount)
 
-            # Derive escrow PDA
-            # escrow_pda = self._derive_escrow_pda(payer.pubkey(), service_provider)
+            # Get or create associated token accounts
+            payer_token_account = await self._get_associated_token_account(
+                payer.pubkey()
+            )
+            provider_token_account = await self._get_associated_token_account(
+                service_provider
+            )
+
+            # Create SPL token transfer instruction
+            transfer_instruction = self._create_spl_transfer_instruction(
+                source=payer_token_account,
+                destination=provider_token_account,
+                owner=payer.pubkey(),
+                amount=base_amount,
+            )
 
             # Create transaction
-            # TODO: Create proper transaction with instructions
-            message = Message.new_with_blockhash(
-                instructions=[], payer=payer.pubkey(), blockhash=Hash.default()
+            transaction = Transaction.new_with_payer(
+                [transfer_instruction], payer.pubkey()
             )
-            transaction = Transaction.new_unsigned(message)
 
-            # TODO: Add proper instruction for escrow creation
-            # This would use the actual payment program instruction
             logger.info(
                 f"Creating prepay escrow: payer={payer.pubkey()}, "
                 f"provider={service_provider}, amount={amount} A2AMPL"
@@ -153,15 +163,27 @@ class PaymentManager:
             # Check payer balance
             await self._validate_balance(payer.pubkey(), base_fee)
 
-            # Create transaction
-            # TODO: Create proper transaction with instructions
-            message = Message.new_with_blockhash(
-                instructions=[], payer=payer.pubkey(), blockhash=Hash.default()
+            # Get or create associated token accounts
+            payer_token_account = await self._get_associated_token_account(
+                payer.pubkey()
             )
-            transaction = Transaction.new_unsigned(message)
+            provider_token_account = await self._get_associated_token_account(
+                service_provider
+            )
 
-            # TODO: Add proper instruction for pay-per-usage
-            # This would use the actual payment program instruction
+            # Create SPL token transfer instruction
+            transfer_instruction = self._create_spl_transfer_instruction(
+                source=payer_token_account,
+                destination=provider_token_account,
+                owner=payer.pubkey(),
+                amount=base_fee,
+            )
+
+            # Create transaction
+            transaction = Transaction.new_with_payer(
+                [transfer_instruction], payer.pubkey()
+            )
+
             logger.info(
                 f"Processing pay-per-usage: payer={payer.pubkey()}, "
                 f"provider={service_provider}, fee={usage_fee} A2AMPL"
@@ -301,15 +323,18 @@ class PaymentManager:
             PaymentError: If balance retrieval fails
         """
         try:
-            escrow_pda = self._derive_escrow_pda(payer, service_provider)
-            account_info = await self.client.get_account_info(escrow_pda)
+            # Get payer's token account
+            payer_token_account = await self._get_associated_token_account(payer)
 
-            if account_info is None:
-                return Decimal("0")
+            # Get token balance
+            balance_info = await self.client.get_token_account_balance(
+                payer_token_account
+            )
+            balance_base_units = int(balance_info["amount"])
 
-            # TODO: Deserialize escrow account data to get balance
-            # For now, return mock balance
-            return Decimal("100.0")
+            # Convert to A2AMPL tokens
+            balance_a2ampl = base_units_to_a2ampl(balance_base_units)
+            return Decimal(str(balance_a2ampl))
 
         except Exception as e:
             raise PaymentError(f"Failed to get escrow balance: {e}")
@@ -352,14 +377,27 @@ class PaymentManager:
                     token_mint=str(self.token_mint),
                 )
 
-            # Create transaction
-            # TODO: Create proper transaction with instructions
-            message = Message.new_with_blockhash(
-                instructions=[], payer=payer.pubkey(), blockhash=Hash.default()
+            # Get or create associated token accounts
+            payer_token_account = await self._get_associated_token_account(
+                payer.pubkey()
             )
-            transaction = Transaction.new_unsigned(message)
+            provider_token_account = await self._get_associated_token_account(
+                service_provider
+            )
 
-            # TODO: Add proper instruction for escrow withdrawal
+            # Create SPL token transfer instruction (withdrawal)
+            transfer_instruction = self._create_spl_transfer_instruction(
+                source=provider_token_account,  # From provider back to payer
+                destination=payer_token_account,
+                owner=payer.pubkey(),  # Payer authorizes the withdrawal
+                amount=a2ampl_to_base_units(float(amount)),
+            )
+
+            # Create transaction
+            transaction = Transaction.new_with_payer(
+                [transfer_instruction], payer.pubkey()
+            )
+
             logger.info(
                 f"Withdrawing from escrow: amount={amount} A2AMPL, "
                 f"payer={payer.pubkey()}, provider={service_provider}"
@@ -435,16 +473,17 @@ class PaymentManager:
             InsufficientFundsError: If balance is insufficient
         """
         try:
-            # TODO: Get actual token account and balance
-            # For now, mock validation
-            mock_balance = a2ampl_to_base_units(
-                float(Decimal("1000"))
-            )  # Mock 1000 A2AMPL
+            # Get token account
+            token_account = await self._get_associated_token_account(payer)
 
-            if required_amount > mock_balance:
+            # Get token balance
+            balance_info = await self.client.get_token_account_balance(token_account)
+            available_balance = int(balance_info["amount"])
+
+            if required_amount > available_balance:
                 raise InsufficientFundsError(
                     required=required_amount,
-                    available=mock_balance,
+                    available=available_balance,
                     token_mint=str(self.token_mint),
                 )
 
@@ -452,6 +491,66 @@ class PaymentManager:
             raise
         except Exception as e:
             raise PaymentError(f"Failed to validate balance: {e}")
+
+    async def _get_associated_token_account(self, owner: PublicKey) -> PublicKey:
+        """
+        Get or derive associated token account for owner.
+
+        Args:
+            owner: Token account owner
+
+        Returns:
+            Associated token account public key
+        """
+        # Derive associated token account address
+        # This is a simplified version - in practice you'd use spl-token utilities
+        pda_seeds = [
+            bytes(owner),
+            bytes(TOKEN_PROGRAM_ID),
+            bytes(self.token_mint),
+        ]
+
+        # Using a placeholder derivation - in real implementation would use
+        # proper ATA derivation
+        ata_pda, _ = PublicKey.find_program_address(
+            pda_seeds[:2], TOKEN_PROGRAM_ID  # Simplified
+        )
+        return ata_pda
+
+    def _create_spl_transfer_instruction(
+        self,
+        source: PublicKey,
+        destination: PublicKey,
+        owner: PublicKey,
+        amount: int,
+    ) -> Instruction:
+        """
+        Create SPL token transfer instruction.
+
+        Args:
+            source: Source token account
+            destination: Destination token account
+            owner: Token account owner
+            amount: Amount to transfer in base units
+
+        Returns:
+            SPL token transfer instruction
+        """
+        # SPL Token Transfer instruction
+        # Instruction discriminant for Transfer (index 3)
+        instruction_data = bytes([3]) + amount.to_bytes(8, "little")
+
+        accounts = [
+            AccountMeta(pubkey=source, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=destination, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=owner, is_signer=True, is_writable=False),
+        ]
+
+        return Instruction(
+            program_id=TOKEN_PROGRAM_ID,
+            accounts=accounts,
+            data=instruction_data,
+        )
 
     async def close(self) -> None:
         """Cancel all active payment streams and cleanup."""

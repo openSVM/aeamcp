@@ -8,9 +8,7 @@ including registration, updates, retrieval, and deregistration.
 import logging
 from typing import Any, Dict, List, Optional
 
-from solders.hash import Hash
 from solders.keypair import Keypair
-from solders.message import Message
 from solders.pubkey import Pubkey as PublicKey
 from solders.transaction import Transaction
 
@@ -96,23 +94,17 @@ class AgentRegistry:
             )
 
         try:
-            # Derive PDA for agent registry entry
-            agent_pda = self.client.derive_agent_pda(agent_id, owner.pubkey())
+            # Build register agent instruction
+            instruction = self.client.build_register_agent_instruction(
+                agent_id=agent_id,
+                name=name,
+                description=description,
+                owner=owner.pubkey(),
+                metadata_uri=metadata_uri,
+            )
 
             # Create transaction
-            # TODO: Create proper transaction with instructions
-            message = Message.new_with_blockhash(
-                instructions=[], payer=owner.pubkey(), blockhash=Hash.default()
-            )
-            transaction = Transaction.new_unsigned(message)
-
-            # TODO: Add proper instruction for agent registration
-            # This would use the actual program instruction from IDL
-            # For now, we'll simulate the structure
-            logger.info(
-                f"Registering agent {agent_id} at PDA {agent_pda} "
-                f"for owner {owner.pubkey()}"
-            )
+            transaction = Transaction.new_with_payer([instruction], owner.pubkey())
 
             # Send transaction
             signature = await self.client.send_transaction(transaction, [owner])
@@ -160,21 +152,17 @@ class AgentRegistry:
             validate_url(updates["metadata_uri"], "metadata_uri")
 
         try:
-            # Derive PDA for agent registry entry
-            agent_pda = self.client.derive_agent_pda(agent_id, owner.pubkey())
+            # Build update agent instruction
+            instruction = self.client.build_update_agent_instruction(
+                agent_id=agent_id,
+                owner=owner.pubkey(),
+                name=updates.get("name"),
+                description=updates.get("description"),
+                status=updates.get("status"),
+            )
 
             # Create transaction
-            # TODO: Create proper transaction with instructions
-            message = Message.new_with_blockhash(
-                instructions=[], payer=owner.pubkey(), blockhash=Hash.default()
-            )
-            transaction = Transaction.new_unsigned(message)
-
-            # TODO: Add proper instruction for agent update
-            logger.info(
-                f"Updating agent {agent_id} at PDA {agent_pda} "
-                f"with updates: {list(updates.keys())}"
-            )
+            transaction = Transaction.new_with_payer([instruction], owner.pubkey())
 
             # Send transaction
             signature = await self.client.send_transaction(transaction, [owner])
@@ -208,19 +196,35 @@ class AgentRegistry:
             if account_data is None:
                 return None
 
-            # TODO: Deserialize account data to AgentRegistryEntry
-            # This would use the IDL to properly deserialize the account
-            # For now, return a mock entry
-            return AgentRegistryEntry(
-                agent_id=agent_id,
-                name=f"Agent {agent_id}",
-                description="Mock agent entry",
-                agent_version="1.0.0",
-                owner=str(owner),
-                status=AgentStatus.ACTIVE,
-                service_endpoints=[],
-                skills=[],
-            )
+            # Deserialize account data using the client's deserialization method
+            if "data" in account_data and isinstance(
+                account_data["data"], (list, bytes)
+            ):
+                if isinstance(account_data["data"], list):
+                    # Convert list to bytes if needed
+                    account_bytes = bytes(account_data["data"])
+                else:
+                    account_bytes = account_data["data"]
+
+                deserialized_data = await self.client.deserialize_agent_account(
+                    account_bytes
+                )
+
+                return AgentRegistryEntry(
+                    agent_id=deserialized_data["agent_id"],
+                    name=deserialized_data["name"],
+                    description=deserialized_data["description"],
+                    agent_version="1.0.0",  # Default version
+                    owner=deserialized_data["owner"],
+                    status=AgentStatus(deserialized_data["status"]),
+                    service_endpoints=[],  # Placeholder
+                    skills=[],  # Placeholder
+                    extended_metadata_uri=deserialized_data.get("metadata_uri"),
+                    created_at=deserialized_data.get("created_at", 0),
+                    updated_at=deserialized_data.get("updated_at", 0),
+                )
+            else:
+                return None
 
         except Exception as e:
             logger.error(f"Failed to retrieve agent {agent_id}: {e}")
@@ -246,18 +250,13 @@ class AgentRegistry:
             raise AgentNotFoundError(f"Agent with ID '{agent_id}' not found for owner")
 
         try:
-            # Derive PDA for agent registry entry
-            agent_pda = self.client.derive_agent_pda(agent_id, owner.pubkey())
+            # Build deregister agent instruction
+            instruction = self.client.build_deregister_agent_instruction(
+                agent_id=agent_id, owner=owner.pubkey()
+            )
 
             # Create transaction
-            # TODO: Create proper transaction with instructions
-            message = Message.new_with_blockhash(
-                instructions=[], payer=owner.pubkey(), blockhash=Hash.default()
-            )
-            transaction = Transaction.new_unsigned(message)
-
-            # TODO: Add proper instruction for agent deregistration
-            logger.info(f"Deregistering agent {agent_id} at PDA {agent_pda}")
+            transaction = Transaction.new_with_payer([instruction], owner.pubkey())
 
             # Send transaction
             signature = await self.client.send_transaction(transaction, [owner])

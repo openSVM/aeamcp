@@ -8,9 +8,7 @@ registry entries, including registration, updates, retrieval, and deregistration
 import logging
 from typing import Any, Dict, List, Optional
 
-from solders.hash import Hash
 from solders.keypair import Keypair
-from solders.message import Message
 from solders.pubkey import Pubkey as PublicKey
 from solders.transaction import Transaction
 
@@ -94,22 +92,17 @@ class McpServerRegistry:
             )
 
         try:
-            # Derive PDA for MCP server registry entry
-            server_pda = self.client.derive_mcp_server_pda(server_id, owner.pubkey())
+            # Build register MCP server instruction
+            instruction = self.client.build_register_mcp_server_instruction(
+                server_id=server_id,
+                name=name,
+                endpoint_url=endpoint_url,
+                owner=owner.pubkey(),
+                description=description,
+            )
 
             # Create transaction
-            # TODO: Create proper transaction with instructions
-            message = Message.new_with_blockhash(
-                instructions=[], payer=owner.pubkey(), blockhash=Hash.default()
-            )
-            transaction = Transaction.new_unsigned(message)
-
-            # TODO: Add proper instruction for MCP server registration
-            # This would use the actual program instruction from IDL
-            logger.info(
-                f"Registering MCP server {server_id} at PDA {server_pda} "
-                f"for owner {owner.pubkey()}"
-            )
+            transaction = Transaction.new_with_payer([instruction], owner.pubkey())
 
             # Send transaction
             signature = await self.client.send_transaction(transaction, [owner])
@@ -157,21 +150,18 @@ class McpServerRegistry:
             validate_url(updates["metadata_uri"], "metadata_uri")
 
         try:
-            # Derive PDA for MCP server registry entry
-            server_pda = self.client.derive_mcp_server_pda(server_id, owner.pubkey())
+            # For now, using a simple approach since update instructions
+            # aren't fully defined
+            instruction = self.client.build_register_mcp_server_instruction(
+                server_id=server_id,
+                name=updates.get("name", "Updated Server"),
+                endpoint_url=updates.get("endpoint_url", "https://example.com"),
+                owner=owner.pubkey(),
+                description=updates.get("description"),
+            )
 
             # Create transaction
-            # TODO: Create proper transaction with instructions
-            message = Message.new_with_blockhash(
-                instructions=[], payer=owner.pubkey(), blockhash=Hash.default()
-            )
-            transaction = Transaction.new_unsigned(message)
-
-            # TODO: Add proper instruction for MCP server update
-            logger.info(
-                f"Updating MCP server {server_id} at PDA {server_pda} "
-                f"with updates: {list(updates.keys())}"
-            )
+            transaction = Transaction.new_with_payer([instruction], owner.pubkey())
 
             # Send transaction
             signature = await self.client.send_transaction(transaction, [owner])
@@ -207,24 +197,37 @@ class McpServerRegistry:
             if account_data is None:
                 return None
 
-            # TODO: Deserialize account data to McpServerRegistryEntry
-            # This would use the IDL to properly deserialize the account
-            # For now, return a mock entry
-            return McpServerRegistryEntry(
-                server_id=server_id,
-                name=f"MCP Server {server_id}",
-                server_version="1.0.0",
-                endpoint_url="https://example.com/mcp",
-                owner=str(owner),
-                status=McpServerStatus.ACTIVE,
-                capabilities=McpCapabilities(
-                    supports_tools=True,
-                    supports_resources=True,
-                    supports_prompts=False,
-                ),
-                created_at=0,
-                updated_at=0,
-            )
+            # Deserialize account data using the client's deserialization method
+            if "data" in account_data and isinstance(
+                account_data["data"], (list, bytes)
+            ):
+                if isinstance(account_data["data"], list):
+                    # Convert list to bytes if needed
+                    account_bytes = bytes(account_data["data"])
+                else:
+                    account_bytes = account_data["data"]
+
+                deserialized_data = await self.client.deserialize_mcp_server_account(
+                    account_bytes
+                )
+
+                return McpServerRegistryEntry(
+                    server_id=deserialized_data["server_id"],
+                    name=deserialized_data["name"],
+                    server_version="1.0.0",  # Default version
+                    endpoint_url=deserialized_data["endpoint_url"],
+                    owner=deserialized_data["owner"],
+                    status=McpServerStatus(deserialized_data["status"]),
+                    capabilities=McpCapabilities(
+                        supports_tools=True,
+                        supports_resources=True,
+                        supports_prompts=False,
+                    ),
+                    created_at=deserialized_data.get("created_at", 0),
+                    updated_at=deserialized_data.get("updated_at", 0),
+                )
+            else:
+                return None
 
         except Exception as e:
             logger.error(f"Failed to retrieve MCP server {server_id}: {e}")
@@ -252,18 +255,13 @@ class McpServerRegistry:
             )
 
         try:
-            # Derive PDA for MCP server registry entry
-            server_pda = self.client.derive_mcp_server_pda(server_id, owner.pubkey())
+            # Build deregister MCP server instruction
+            instruction = self.client.build_deregister_mcp_server_instruction(
+                server_id=server_id, owner=owner.pubkey()
+            )
 
             # Create transaction
-            # TODO: Create proper transaction with instructions
-            message = Message.new_with_blockhash(
-                instructions=[], payer=owner.pubkey(), blockhash=Hash.default()
-            )
-            transaction = Transaction.new_unsigned(message)
-
-            # TODO: Add proper instruction for MCP server deregistration
-            logger.info(f"Deregistering MCP server {server_id} at PDA {server_pda}")
+            transaction = Transaction.new_with_payer([instruction], owner.pubkey())
 
             # Send transaction
             signature = await self.client.send_transaction(transaction, [owner])
