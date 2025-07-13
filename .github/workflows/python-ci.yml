@@ -117,7 +117,7 @@ jobs:
         SOLANA_RPC_URL: https://api.devnet.solana.com
     
     - name: Upload test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: integration-test-results
@@ -202,7 +202,7 @@ jobs:
         bandit -r solana_ai_registries/ -f json -o bandit-report.json || true
     
     - name: Upload security report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: security-report
