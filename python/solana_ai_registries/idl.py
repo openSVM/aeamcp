@@ -7,12 +7,12 @@ and generate Python types for Anchor programs.
 
 import json
 import logging
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 from importlib import resources
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Type, Union
 
-from .exceptions import IDLError, InvalidInputError
+from .exceptions import IDLError
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +113,13 @@ class IDLLoader:
             with resources.open_text(
                 "solana_ai_registries.idl_files", f"{program_name}.json"
             ) as f:
-                return json.load(f)
+                data = json.load(f)
+                if isinstance(data, dict):
+                    return data
+                else:
+                    raise ValueError(
+                        f"IDL file for {program_name} does not contain a JSON object"
+                    )
         except Exception as e:
             raise FileNotFoundError(f"Resource not found: {e}")
 
@@ -129,7 +135,13 @@ class IDLLoader:
         for idl_path in possible_paths:
             if idl_path.exists():
                 with open(idl_path, "r") as f:
-                    return json.load(f)
+                    data = json.load(f)
+                    if isinstance(data, dict):
+                        return data
+                    else:
+                        raise ValueError(
+                            f"IDL file {idl_path} does not contain a JSON object"
+                        )
 
         raise FileNotFoundError(f"IDL file not found for {program_name}")
 
@@ -325,14 +337,14 @@ class IDLLoader:
         elif isinstance(idl_type, dict):
             # Complex types
             if "vec" in idl_type:
-                element_type = self._map_idl_type_to_python(idl_type["vec"])
-                return List[element_type]
+                # Return the generic List type; element type will be handled at runtime
+                return List[Any]  # type: ignore[return-value]
             elif "option" in idl_type:
-                inner_type = self._map_idl_type_to_python(idl_type["option"])
-                return Optional[inner_type]
+                # Return Optional type; inner type will be handled at runtime
+                return Optional[Any]  # type: ignore[return-value]
             elif "array" in idl_type:
-                element_type = self._map_idl_type_to_python(idl_type["array"][0])
-                return List[element_type]  # Simplified as List
+                # Return the generic List type; element type will be handled at runtime
+                return List[Any]  # type: ignore[return-value]
             elif "defined" in idl_type:
                 # Reference to custom type - return as string for now
                 return str

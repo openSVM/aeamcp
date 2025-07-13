@@ -7,7 +7,7 @@ for interacting with on-chain Agent Registry and MCP Server Registry programs.
 
 import asyncio
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment
@@ -24,7 +24,6 @@ from .constants import (
 from .exceptions import (
     ConnectionError,
     InvalidPublicKeyError,
-    SolanaAIRegistriesError,
     TransactionError,
 )
 
@@ -37,7 +36,7 @@ class SolanaAIRegistriesClient:
     def __init__(
         self,
         rpc_url: str = DEFAULT_DEVNET_RPC,
-        commitment: Union[Commitment, str] = Commitment("confirmed"),
+        commitment: Optional[Commitment] = None,
     ) -> None:
         """
         Initialize client with RPC endpoint.
@@ -47,7 +46,7 @@ class SolanaAIRegistriesClient:
             commitment: Transaction commitment level
         """
         self.rpc_url = rpc_url
-        self.commitment = commitment
+        self.commitment = commitment or Commitment("confirmed")
         self._client: Optional[AsyncClient] = None
         self.agent_program_id = PublicKey.from_string(AGENT_REGISTRY_PROGRAM_ID)
         self.mcp_program_id = PublicKey.from_string(MCP_SERVER_REGISTRY_PROGRAM_ID)
@@ -65,11 +64,11 @@ class SolanaAIRegistriesClient:
             await self._client.close()
             self._client = None
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "SolanaAIRegistriesClient":
         """Async context manager entry."""
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Async context manager exit."""
         await self.close()
 
@@ -211,15 +210,17 @@ class SolanaAIRegistriesClient:
                 blockhash_resp = await self.client.get_latest_blockhash(
                     commitment=self.commitment
                 )
-                transaction.recent_blockhash = blockhash_resp.value.blockhash
+                # TODO: Update transaction with proper blockhash handling
+                # transaction.recent_blockhash = blockhash_resp.value.blockhash
+                # type: ignore[attr-defined]
 
                 # Sign transaction
-                transaction.sign(*signers)
+                transaction.sign(
+                    signers, blockhash_resp.value.blockhash
+                )  # type: ignore[arg-type]
 
                 # Send transaction
-                response = await self.client.send_transaction(
-                    transaction, *signers, opts=opts
-                )
+                response = await self.client.send_transaction(transaction, opts=opts)
 
                 signature = str(response.value)
                 logger.info(f"Transaction sent successfully: {signature}")
@@ -259,8 +260,11 @@ class SolanaAIRegistriesClient:
         try:
             # Get recent blockhash and sign transaction
             blockhash_resp = await self.client.get_latest_blockhash()
-            transaction.recent_blockhash = blockhash_resp.value.blockhash
-            transaction.sign(*signers)
+            # TODO: Update transaction with proper blockhash handling
+            # transaction.recent_blockhash = blockhash_resp.value.blockhash  # type: ignore[attr-defined]  # noqa: E501
+            transaction.sign(
+                signers, blockhash_resp.value.blockhash
+            )  # type: ignore[arg-type]
 
             # Simulate
             response = await self.client.simulate_transaction(

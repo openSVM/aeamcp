@@ -8,7 +8,9 @@ including registration, updates, retrieval, and deregistration.
 import logging
 from typing import Any, Dict, List, Optional
 
+from solders.hash import Hash
 from solders.keypair import Keypair
+from solders.message import Message
 from solders.pubkey import Pubkey as PublicKey
 from solders.transaction import Transaction
 
@@ -22,7 +24,6 @@ from .constants import (
 )
 from .exceptions import (
     AgentNotFoundError,
-    InvalidInputError,
     RegistrationError,
     SolanaAIRegistriesError,
 )
@@ -88,7 +89,7 @@ class AgentRegistry:
             validate_url(metadata_uri, "metadata_uri")
 
         # Check if agent already exists
-        existing_agent = await self.get_agent(agent_id, owner.public_key)
+        existing_agent = await self.get_agent(agent_id, owner.pubkey())
         if existing_agent is not None:
             raise RegistrationError(
                 f"Agent with ID '{agent_id}' already exists for owner"
@@ -96,17 +97,21 @@ class AgentRegistry:
 
         try:
             # Derive PDA for agent registry entry
-            agent_pda = self.client.derive_agent_pda(agent_id, owner.public_key)
+            agent_pda = self.client.derive_agent_pda(agent_id, owner.pubkey())
 
             # Create transaction
-            transaction = Transaction()
+            # TODO: Create proper transaction with instructions
+            message = Message.new_with_blockhash(
+                instructions=[], payer=owner.pubkey(), blockhash=Hash.default()
+            )
+            transaction = Transaction.new_unsigned(message)
 
             # TODO: Add proper instruction for agent registration
             # This would use the actual program instruction from IDL
             # For now, we'll simulate the structure
             logger.info(
                 f"Registering agent {agent_id} at PDA {agent_pda} "
-                f"for owner {owner.public_key}"
+                f"for owner {owner.pubkey()}"
             )
 
             # Send transaction
@@ -140,7 +145,7 @@ class AgentRegistry:
             InvalidInputError: If update data is invalid
         """
         # Validate agent exists
-        existing_agent = await self.get_agent(agent_id, owner.public_key)
+        existing_agent = await self.get_agent(agent_id, owner.pubkey())
         if existing_agent is None:
             raise AgentNotFoundError(f"Agent with ID '{agent_id}' not found for owner")
 
@@ -156,10 +161,14 @@ class AgentRegistry:
 
         try:
             # Derive PDA for agent registry entry
-            agent_pda = self.client.derive_agent_pda(agent_id, owner.public_key)
+            agent_pda = self.client.derive_agent_pda(agent_id, owner.pubkey())
 
             # Create transaction
-            transaction = Transaction()
+            # TODO: Create proper transaction with instructions
+            message = Message.new_with_blockhash(
+                instructions=[], payer=owner.pubkey(), blockhash=Hash.default()
+            )
+            transaction = Transaction.new_unsigned(message)
 
             # TODO: Add proper instruction for agent update
             logger.info(
@@ -206,13 +215,11 @@ class AgentRegistry:
                 agent_id=agent_id,
                 name=f"Agent {agent_id}",
                 description="Mock agent entry",
-                owner=owner,
+                agent_version="1.0.0",
+                owner=str(owner),
                 status=AgentStatus.ACTIVE,
-                service_endpoint=None,
+                service_endpoints=[],
                 skills=[],
-                metadata_uri=None,
-                created_at=0,
-                updated_at=0,
             )
 
         except Exception as e:
@@ -234,16 +241,20 @@ class AgentRegistry:
             AgentNotFoundError: If agent doesn't exist
         """
         # Validate agent exists
-        existing_agent = await self.get_agent(agent_id, owner.public_key)
+        existing_agent = await self.get_agent(agent_id, owner.pubkey())
         if existing_agent is None:
             raise AgentNotFoundError(f"Agent with ID '{agent_id}' not found for owner")
 
         try:
             # Derive PDA for agent registry entry
-            agent_pda = self.client.derive_agent_pda(agent_id, owner.public_key)
+            agent_pda = self.client.derive_agent_pda(agent_id, owner.pubkey())
 
             # Create transaction
-            transaction = Transaction()
+            # TODO: Create proper transaction with instructions
+            message = Message.new_with_blockhash(
+                instructions=[], payer=owner.pubkey(), blockhash=Hash.default()
+            )
+            transaction = Transaction.new_unsigned(message)
 
             # TODO: Add proper instruction for agent deregistration
             logger.info(f"Deregistering agent {agent_id} at PDA {agent_pda}")

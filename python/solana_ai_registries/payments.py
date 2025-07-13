@@ -10,23 +10,22 @@ import logging
 from decimal import Decimal
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
+from solders.hash import Hash
 from solders.keypair import Keypair
+from solders.message import Message
 from solders.pubkey import Pubkey as PublicKey
 from solders.transaction import Transaction
 
 from .client import SolanaAIRegistriesClient
 from .constants import (
-    A2AMPL_DECIMALS,
     A2AMPL_TOKEN_MINT_DEVNET,
     A2AMPL_TOKEN_MINT_MAINNET,
     a2ampl_to_base_units,
-    base_units_to_a2ampl,
 )
 from .exceptions import (
     InsufficientFundsError,
     InvalidInputError,
     PaymentError,
-    SolanaAIRegistriesError,
 )
 from .types import PaymentType
 
@@ -80,25 +79,29 @@ class PaymentManager:
             PaymentError: If escrow creation fails
         """
         if amount <= 0:
-            raise InvalidInputError("Prepay amount must be positive")
+            raise InvalidInputError("amount", amount, "Prepay amount must be positive")
 
         try:
             # Convert to base units
-            base_amount = a2ampl_to_base_units(amount)
+            base_amount = a2ampl_to_base_units(float(amount))
 
             # Check payer balance
-            await self._validate_balance(payer.public_key, base_amount)
+            await self._validate_balance(payer.pubkey(), base_amount)
 
             # Derive escrow PDA
-            escrow_pda = self._derive_escrow_pda(payer.public_key, service_provider)
+            # escrow_pda = self._derive_escrow_pda(payer.pubkey(), service_provider)
 
             # Create transaction
-            transaction = Transaction()
+            # TODO: Create proper transaction with instructions
+            message = Message.new_with_blockhash(
+                instructions=[], payer=payer.pubkey(), blockhash=Hash.default()
+            )
+            transaction = Transaction.new_unsigned(message)
 
             # TODO: Add proper instruction for escrow creation
             # This would use the actual payment program instruction
             logger.info(
-                f"Creating prepay escrow: payer={payer.public_key}, "
+                f"Creating prepay escrow: payer={payer.pubkey()}, "
                 f"provider={service_provider}, amount={amount} A2AMPL"
             )
 
@@ -139,22 +142,28 @@ class PaymentManager:
             PaymentError: If payment fails
         """
         if usage_fee <= 0:
-            raise InvalidInputError("Usage fee must be positive")
+            raise InvalidInputError(
+                "usage_fee", usage_fee, "Usage fee must be positive"
+            )
 
         try:
             # Convert to base units
-            base_fee = a2ampl_to_base_units(usage_fee)
+            base_fee = a2ampl_to_base_units(float(usage_fee))
 
             # Check payer balance
-            await self._validate_balance(payer.public_key, base_fee)
+            await self._validate_balance(payer.pubkey(), base_fee)
 
             # Create transaction
-            transaction = Transaction()
+            # TODO: Create proper transaction with instructions
+            message = Message.new_with_blockhash(
+                instructions=[], payer=payer.pubkey(), blockhash=Hash.default()
+            )
+            transaction = Transaction.new_unsigned(message)
 
             # TODO: Add proper instruction for pay-per-usage
             # This would use the actual payment program instruction
             logger.info(
-                f"Processing pay-per-usage: payer={payer.public_key}, "
+                f"Processing pay-per-usage: payer={payer.pubkey()}, "
                 f"provider={service_provider}, fee={usage_fee} A2AMPL"
             )
 
@@ -195,17 +204,24 @@ class PaymentManager:
             PaymentError: If streaming setup fails
         """
         if rate_per_second <= 0:
-            raise InvalidInputError("Rate per second must be positive")
+            raise InvalidInputError(
+                "rate_per_second", rate_per_second, "Rate per second must be positive"
+            )
         if duration_seconds <= 0:
-            raise InvalidInputError("Duration must be positive")
+            raise InvalidInputError(
+                "duration_seconds", duration_seconds, "Duration must be positive"
+            )
 
-        stream_id = f"stream_{payer.public_key}_{service_provider}_{asyncio.get_event_loop().time()}"
+        stream_id = (
+            f"stream_{payer.pubkey()}_{service_provider}_"
+            f"{asyncio.get_event_loop().time()}"
+        )
 
         try:
             # Calculate total amount and validate balance
             total_amount = rate_per_second * duration_seconds
-            base_amount = a2ampl_to_base_units(total_amount)
-            await self._validate_balance(payer.public_key, base_amount)
+            base_amount = a2ampl_to_base_units(float(total_amount))
+            await self._validate_balance(payer.pubkey(), base_amount)
 
             logger.info(
                 f"Starting payment stream {stream_id}: "
@@ -252,7 +268,8 @@ class PaymentManager:
                     )
 
                     logger.debug(
-                        f"Stream payment {stream_id}: {payment_amount} A2AMPL -> {signature}"
+                        f"Stream payment {stream_id}: {payment_amount} A2AMPL "
+                        f"-> {signature}"
                     )
                     yield signature
 
@@ -319,27 +336,33 @@ class PaymentManager:
             PaymentError: If withdrawal fails
         """
         if amount <= 0:
-            raise InvalidInputError("Withdrawal amount must be positive")
+            raise InvalidInputError(
+                "amount", amount, "Withdrawal amount must be positive"
+            )
 
         try:
             # Check escrow balance
             escrow_balance = await self.get_escrow_balance(
-                payer.public_key, service_provider
+                payer.pubkey(), service_provider
             )
             if amount > escrow_balance:
                 raise InsufficientFundsError(
-                    required=a2ampl_to_base_units(amount),
-                    available=a2ampl_to_base_units(escrow_balance),
+                    required=a2ampl_to_base_units(float(amount)),
+                    available=a2ampl_to_base_units(float(escrow_balance)),
                     token_mint=str(self.token_mint),
                 )
 
             # Create transaction
-            transaction = Transaction()
+            # TODO: Create proper transaction with instructions
+            message = Message.new_with_blockhash(
+                instructions=[], payer=payer.pubkey(), blockhash=Hash.default()
+            )
+            transaction = Transaction.new_unsigned(message)
 
             # TODO: Add proper instruction for escrow withdrawal
             logger.info(
                 f"Withdrawing from escrow: amount={amount} A2AMPL, "
-                f"payer={payer.public_key}, provider={service_provider}"
+                f"payer={payer.pubkey()}, provider={service_provider}"
             )
 
             # Send transaction
@@ -414,7 +437,9 @@ class PaymentManager:
         try:
             # TODO: Get actual token account and balance
             # For now, mock validation
-            mock_balance = a2ampl_to_base_units(Decimal("1000"))  # Mock 1000 A2AMPL
+            mock_balance = a2ampl_to_base_units(
+                float(Decimal("1000"))
+            )  # Mock 1000 A2AMPL
 
             if required_amount > mock_balance:
                 raise InsufficientFundsError(
@@ -437,10 +462,10 @@ class PaymentManager:
 
         self._active_streams.clear()
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "PaymentManager":
         """Async context manager entry."""
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Async context manager exit."""
         await self.close()

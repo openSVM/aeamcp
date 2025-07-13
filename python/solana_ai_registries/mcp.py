@@ -8,7 +8,9 @@ registry entries, including registration, updates, retrieval, and deregistration
 import logging
 from typing import Any, Dict, List, Optional
 
+from solders.hash import Hash
 from solders.keypair import Keypair
+from solders.message import Message
 from solders.pubkey import Pubkey as PublicKey
 from solders.transaction import Transaction
 
@@ -20,7 +22,6 @@ from .constants import (
     validate_url,
 )
 from .exceptions import (
-    InvalidInputError,
     McpServerNotFoundError,
     RegistrationError,
     SolanaAIRegistriesError,
@@ -86,7 +87,7 @@ class McpServerRegistry:
             validate_url(metadata_uri, "metadata_uri")
 
         # Check if server already exists
-        existing_server = await self.get_server(server_id, owner.public_key)
+        existing_server = await self.get_server(server_id, owner.pubkey())
         if existing_server is not None:
             raise RegistrationError(
                 f"MCP server with ID '{server_id}' already exists for owner"
@@ -94,16 +95,20 @@ class McpServerRegistry:
 
         try:
             # Derive PDA for MCP server registry entry
-            server_pda = self.client.derive_mcp_server_pda(server_id, owner.public_key)
+            server_pda = self.client.derive_mcp_server_pda(server_id, owner.pubkey())
 
             # Create transaction
-            transaction = Transaction()
+            # TODO: Create proper transaction with instructions
+            message = Message.new_with_blockhash(
+                instructions=[], payer=owner.pubkey(), blockhash=Hash.default()
+            )
+            transaction = Transaction.new_unsigned(message)
 
             # TODO: Add proper instruction for MCP server registration
             # This would use the actual program instruction from IDL
             logger.info(
                 f"Registering MCP server {server_id} at PDA {server_pda} "
-                f"for owner {owner.public_key}"
+                f"for owner {owner.pubkey()}"
             )
 
             # Send transaction
@@ -137,7 +142,7 @@ class McpServerRegistry:
             InvalidInputError: If update data is invalid
         """
         # Validate server exists
-        existing_server = await self.get_server(server_id, owner.public_key)
+        existing_server = await self.get_server(server_id, owner.pubkey())
         if existing_server is None:
             raise McpServerNotFoundError(
                 f"MCP server with ID '{server_id}' not found for owner"
@@ -153,10 +158,14 @@ class McpServerRegistry:
 
         try:
             # Derive PDA for MCP server registry entry
-            server_pda = self.client.derive_mcp_server_pda(server_id, owner.public_key)
+            server_pda = self.client.derive_mcp_server_pda(server_id, owner.pubkey())
 
             # Create transaction
-            transaction = Transaction()
+            # TODO: Create proper transaction with instructions
+            message = Message.new_with_blockhash(
+                instructions=[], payer=owner.pubkey(), blockhash=Hash.default()
+            )
+            transaction = Transaction.new_unsigned(message)
 
             # TODO: Add proper instruction for MCP server update
             logger.info(
@@ -204,16 +213,15 @@ class McpServerRegistry:
             return McpServerRegistryEntry(
                 server_id=server_id,
                 name=f"MCP Server {server_id}",
+                server_version="1.0.0",
                 endpoint_url="https://example.com/mcp",
-                owner=owner,
+                owner=str(owner),
                 status=McpServerStatus.ACTIVE,
                 capabilities=McpCapabilities(
                     supports_tools=True,
                     supports_resources=True,
                     supports_prompts=False,
                 ),
-                description="Mock MCP server entry",
-                metadata_uri=None,
                 created_at=0,
                 updated_at=0,
             )
@@ -237,7 +245,7 @@ class McpServerRegistry:
             McpServerNotFoundError: If server doesn't exist
         """
         # Validate server exists
-        existing_server = await self.get_server(server_id, owner.public_key)
+        existing_server = await self.get_server(server_id, owner.pubkey())
         if existing_server is None:
             raise McpServerNotFoundError(
                 f"MCP server with ID '{server_id}' not found for owner"
@@ -245,10 +253,14 @@ class McpServerRegistry:
 
         try:
             # Derive PDA for MCP server registry entry
-            server_pda = self.client.derive_mcp_server_pda(server_id, owner.public_key)
+            server_pda = self.client.derive_mcp_server_pda(server_id, owner.pubkey())
 
             # Create transaction
-            transaction = Transaction()
+            # TODO: Create proper transaction with instructions
+            message = Message.new_with_blockhash(
+                instructions=[], payer=owner.pubkey(), blockhash=Hash.default()
+            )
+            transaction = Transaction.new_unsigned(message)
 
             # TODO: Add proper instruction for MCP server deregistration
             logger.info(f"Deregistering MCP server {server_id} at PDA {server_pda}")
