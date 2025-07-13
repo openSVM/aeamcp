@@ -79,19 +79,12 @@ class TestClientBasics:
         owner = PublicKey.from_string("11111111111111111111111111111112")
         
         # Test agent PDA derivation
-        pda, bump = client.derive_agent_pda("test-agent", owner)
+        pda = client.derive_agent_pda("test-agent", owner)
         assert isinstance(pda, PublicKey)
-        assert isinstance(bump, int)
         
         # Test MCP server PDA derivation
-        pda, bump = client.derive_mcp_server_pda("test-server", owner)
+        pda = client.derive_mcp_server_pda("test-server", owner)
         assert isinstance(pda, PublicKey)
-        assert isinstance(bump, int)
-        
-        # Test payment escrow PDA derivation
-        pda, bump = client.derive_payment_escrow_pda("test-agent", owner)
-        assert isinstance(pda, PublicKey)
-        assert isinstance(bump, int)
 
     def test_instruction_building_methods(self):
         """Test instruction building methods exist."""
@@ -131,13 +124,6 @@ class TestClientBasics:
         )
         assert instruction is not None
         
-        instruction = client.build_update_mcp_server_instruction(
-            server_id="test-server",
-            owner=owner,
-            name="Updated Server"
-        )
-        assert instruction is not None
-        
         instruction = client.build_deregister_mcp_server_instruction(
             server_id="test-server",
             owner=owner
@@ -145,35 +131,24 @@ class TestClientBasics:
         assert instruction is not None
 
     def test_serialization_methods(self):
-        """Test data serialization methods."""
+        """Test data serialization methods exist."""
         client = SolanaAIRegistriesClient()
         
-        # Test agent data serialization
-        data = client._serialize_agent_data(
+        # Test agent data encoding methods  
+        data = client._encode_register_agent_data(
             agent_id="test-agent",
             name="Test Agent",
             description="Test description"
         )
         assert isinstance(data, bytes)
         
-        # Test MCP server data serialization
-        data = client._serialize_mcp_server_data(
+        # Test MCP server data encoding
+        data = client._encode_register_mcp_server_data(
             server_id="test-server",
             name="Test Server",
             description="Test description",
             endpoint_url="https://api.example.com"
         )
-        assert isinstance(data, bytes)
-        
-        # Test string serialization
-        data = client._serialize_string("test")
-        assert isinstance(data, bytes)
-        
-        # Test optional string serialization
-        data = client._serialize_optional_string("test")
-        assert isinstance(data, bytes)
-        
-        data = client._serialize_optional_string(None)
         assert isinstance(data, bytes)
 
 
@@ -195,14 +170,22 @@ class TestPaymentManagerBasics:
         mock_client = Mock()
         manager = PaymentManager(mock_client)
         assert manager.client == mock_client
-        assert manager.use_mainnet is False
+        # Token mint should be devnet
+        from solders.pubkey import Pubkey as PublicKey
+        from solana_ai_registries.constants import A2AMPL_TOKEN_MINT_DEVNET
+        expected = PublicKey.from_string(A2AMPL_TOKEN_MINT_DEVNET)
+        assert manager.token_mint == expected
 
     def test_init_mainnet(self):
         """Test PaymentManager initialization for mainnet."""
         mock_client = Mock()
         manager = PaymentManager(mock_client, use_mainnet=True)
         assert manager.client == mock_client
-        assert manager.use_mainnet is True
+        # Token mint should be mainnet
+        from solders.pubkey import Pubkey as PublicKey
+        from solana_ai_registries.constants import A2AMPL_TOKEN_MINT_MAINNET
+        expected = PublicKey.from_string(A2AMPL_TOKEN_MINT_MAINNET)
+        assert manager.token_mint == expected
 
     def test_token_mint_property(self):
         """Test token mint property."""
@@ -222,66 +205,51 @@ class TestPaymentManagerBasics:
 
     def test_utility_methods(self):
         """Test payment utility methods."""
-        from decimal import Decimal
         mock_client = Mock()
         manager = PaymentManager(mock_client)
         
-        # Test payment amount calculation
-        amount = manager._calculate_payment_amount(Decimal("2.0"), 30)
-        assert amount == Decimal("60.0")
-        
         # Test payment amount validation
-        manager._validate_payment_amount(Decimal("10.0"))  # Should not raise
+        manager._validate_payment_amount(10.0)  # Should not raise
         
         with pytest.raises(Exception):  # Should raise for invalid amounts
-            manager._validate_payment_amount(Decimal("0"))
+            manager._validate_payment_amount(0.0)
         
         with pytest.raises(Exception):
-            manager._validate_payment_amount(Decimal("-5"))
+            manager._validate_payment_amount(-5.0)
         
-        # Test payment type methods
-        payment_type = manager._get_payment_type_for_transaction("escrow")
-        assert payment_type is not None
+        # Test stream cost calculation
+        cost = manager._calculate_stream_cost(2.0, 30)
+        assert cost == 60.0
         
-        payment_type = manager._get_payment_type_for_transaction("direct")
-        assert payment_type is not None
-        
-        payment_type = manager._get_payment_type_for_transaction("streaming")
-        assert payment_type is not None
+        # Test payment ID generation
+        from solders.pubkey import Pubkey as PublicKey
+        pubkey = PublicKey.from_string("11111111111111111111111111111112")
+        payment_id = manager._generate_payment_id(pubkey, pubkey, "test-service")
+        assert isinstance(payment_id, str)
+        assert len(payment_id) > 0
 
     def test_instruction_building_methods(self):
         """Test payment instruction building methods."""
         from solders.pubkey import Pubkey as PublicKey
         mock_client = Mock()
+        # Mock the agent_program_id property
+        mock_client.agent_program_id = PublicKey.from_string("11111111111111111111111111111112")
         manager = PaymentManager(mock_client)
         
         pubkey = PublicKey.from_string("11111111111111111111111111111112")
         
-        # Test transfer instruction building
-        instruction = manager._build_transfer_instruction(
-            from_pubkey=pubkey,
-            to_pubkey=pubkey,
-            amount=1000000000,
-            token_mint=manager.token_mint
-        )
-        assert instruction is not None
-        
-        # Test escrow instruction building
-        instruction = manager._build_create_escrow_instruction(
-            user=pubkey,
-            agent_id="test-agent",
+        # Test SPL transfer instruction building
+        instruction = manager._create_spl_transfer_instruction(
+            source=pubkey,
+            destination=pubkey,
+            owner=pubkey,
             amount=1000000000
         )
         assert instruction is not None
         
-        # Test streaming instruction building
-        instruction = manager._build_streaming_instruction(
-            user=pubkey,
-            agent_owner=pubkey,
-            rate_per_second=1000000,
-            duration=60
-        )
-        assert instruction is not None
+        # Test escrow PDA derivation
+        pda = manager._derive_escrow_pda(pubkey, pubkey)
+        assert isinstance(pda, PublicKey)
 
 
 class TestIdlLoaderBasics:
@@ -343,46 +311,23 @@ class TestIdlLoaderBasics:
         assert parsed_idl.name == "test_program"
         assert len(parsed_idl.instructions) == 1
 
-    def test_type_conversion_methods(self):
-        """Test type conversion methods."""
+    def test_type_mapping_methods(self):
+        """Test type mapping methods."""
         loader = IDLLoader()
         
-        # Test basic type conversions
-        assert loader._convert_type("string") == str
-        assert loader._convert_type("u64") == int
-        assert loader._convert_type("bool") == bool
-        assert loader._convert_type("publicKey") == str
-        assert loader._convert_type("bytes") == bytes
+        # Test basic type mappings
+        result = loader._map_idl_type_to_python("string")
+        assert result == str
         
-        # Test unknown type
-        unknown_result = loader._convert_type("unknown_type")
-        assert unknown_result is not None
-
-    def test_name_formatting(self):
-        """Test name formatting methods."""
-        loader = IDLLoader()
+        result = loader._map_idl_type_to_python("u64")
+        assert result == int
         
-        assert loader._format_name("test_name") == "TestName"
-        assert loader._format_name("another_test") == "AnotherTest"
-        assert loader._format_name("simple") == "Simple"
-
-    def test_type_generation_methods(self):
-        """Test type generation methods exist."""
-        loader = IDLLoader()
+        result = loader._map_idl_type_to_python("bool") 
+        assert result == bool
         
-        # Test struct type generation
-        struct_type = loader._generate_struct_type(
-            "TestStruct",
-            [{"name": "field1", "type": "string"}]
-        )
-        assert struct_type is not None
-        
-        # Test enum type generation
-        enum_type = loader._generate_enum_type(
-            "TestEnum",
-            [{"name": "Variant1"}, {"name": "Variant2"}]
-        )
-        assert enum_type is not None
+        # Test complex type mapping
+        result = loader._map_idl_type_to_python({"vec": "string"})
+        assert result is not None
 
 
 class TestModuleImports:

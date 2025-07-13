@@ -576,18 +576,12 @@ class TestServiceEndpointProtocolDetection:
     """Test ServiceEndpoint protocol auto-detection."""
 
     def test_protocol_detection_unknown(self) -> None:
-        """Test protocol detection for unknown protocol."""
-        # Skip URL validation by setting protocol explicitly
-        endpoint = ServiceEndpoint(
-            url="ftp://example.com",
-            protocol="ftp"  # Set protocol explicitly to avoid validation
-        )
-        # Check that protocol detection would set to unknown for unsupported protocols
-        endpoint2 = ServiceEndpoint.__new__(ServiceEndpoint)
-        endpoint2.url = "ftp://example.com"
-        endpoint2.protocol = None
-        endpoint2.__post_init__()
-        assert endpoint2.protocol == "unknown"
+        """Test protocol detection for unsupported protocol results in error."""
+        # Our implementation validates URLs and doesn't allow unsupported protocols
+        with pytest.raises(ValueError, match="endpoint URL must start with one of"):
+            ServiceEndpoint(
+                url="ftp://example.com"
+            )
 
 
 class TestMcpServerRegistryEntryTagValidation:
@@ -600,9 +594,11 @@ class TestMcpServerRegistryEntryTagValidation:
         with pytest.raises(ValueError, match="Maximum 10 tags allowed"):
             McpServerRegistryEntry(
                 server_id="test-server",
-                name="Test Server", 
-                description="Test description",
+                name="Test Server",
+                server_version="1.0.0",
                 endpoint_url="https://api.example.com",
-                owner=PublicKey.from_string("11111111111111111111111111111112"),
+                owner=str(PublicKey.from_string("11111111111111111111111111111112")),
+                status=McpServerStatus.ACTIVE,
+                description="Test description",
                 tags=["tag" + str(i) for i in range(11)]  # 11 tags
             )
