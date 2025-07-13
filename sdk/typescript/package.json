@@ -1,5 +1,5 @@
 {
-  "name": "@svmai/registries",
+  "name": "aea-sdk",
   "version": "0.1.0",
   "type": "module",
   "description": "TypeScript SDK for Solana AI Registries (Agent Registry and MCP Server Registry)",

@@ -65,6 +65,7 @@ frontend/public/workbox-*.js
 
 # TypeScript
 *.tsbuildinfo
+dist/
 
 # Vercel
 .vercel
