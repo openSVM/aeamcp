@@ -113,9 +113,7 @@ class InsufficientFundsError(SolanaAIRegistriesError):
             available: Available amount in base units
             token_mint: Token mint address
         """
-        message = (
-            f"Insufficient funds: required {required}, available {available}"
-        )
+        message = f"Insufficient funds: required {required}, " f"available {available}"
         details = {
             "required": required,
             "available": available,

@@ -212,9 +212,7 @@ def pytest_configure(config: Any) -> None:
     config.addinivalue_line(
         "markers", "devnet: tests specifically for devnet environment"
     )
-    config.addinivalue_line(
-        "markers", "slow: tests that take longer than 1 second"
-    )
+    config.addinivalue_line("markers", "slow: tests that take longer than 1 second")
 
 
 @pytest.fixture(autouse=True)

@@ -79,9 +79,7 @@ class ServiceEndpoint:
         validate_string_length(self.url, 256, "endpoint URL")
         validate_url(self.url, "endpoint URL")
         if self.description:
-            validate_string_length(
-                self.description, 512, "endpoint description"
-            )
+            validate_string_length(self.description, 512, "endpoint description")
 
 
 @dataclass
@@ -148,9 +146,7 @@ class AgentRegistryEntry:
             validate_string_length(self.provider_url, 256, "provider_url")
             validate_url(self.provider_url, "provider_url")
         if self.documentation_url:
-            validate_string_length(
-                self.documentation_url, 256, "documentation_url"
-            )
+            validate_string_length(self.documentation_url, 256, "documentation_url")
             validate_url(self.documentation_url, "documentation_url")
 
         # Validate collections
@@ -184,8 +180,7 @@ class AgentRegistryEntry:
             provider_url=data.get("provider_url"),
             documentation_url=data.get("documentation_url"),
             service_endpoints=[
-                ServiceEndpoint(**ep)
-                for ep in data.get("service_endpoints", [])
+                ServiceEndpoint(**ep) for ep in data.get("service_endpoints", [])
             ],
             capabilities_flags=data.get("capabilities_flags", 0),
             supported_input_modes=data.get("supported_input_modes", []),
@@ -194,9 +189,7 @@ class AgentRegistryEntry:
             security_info_uri=data.get("security_info_uri"),
             aea_address=data.get("aea_address"),
             economic_intent_summary=data.get("economic_intent_summary"),
-            supported_aea_protocols_hash=data.get(
-                "supported_aea_protocols_hash"
-            ),
+            supported_aea_protocols_hash=data.get("supported_aea_protocols_hash"),
             extended_metadata_uri=data.get("extended_metadata_uri"),
             tags=data.get("tags", []),
             created_at=data.get("created_at", 0),
@@ -311,7 +304,9 @@ class McpServerRegistryEntry:
             )
         if self.full_capabilities_uri:
             validate_string_length(
-                self.full_capabilities_uri, 256, "full_capabilities_uri"
+                self.full_capabilities_uri,
+                256,
+                "full_capabilities_uri",
             )
             validate_url(self.full_capabilities_uri, "full_capabilities_uri")
 
@@ -321,9 +316,7 @@ class McpServerRegistryEntry:
             validate_string_length(tag, 32, "server tag")
 
     @classmethod
-    def from_account_data(
-        cls, data: Dict[str, Any]
-    ) -> "McpServerRegistryEntry":
+    def from_account_data(cls, data: Dict[str, Any]) -> "McpServerRegistryEntry":
         """Create instance from on-chain account data.
 
         Args:
@@ -343,13 +336,8 @@ class McpServerRegistryEntry:
                 resource_count=cap_data.get("resource_count", 0),
                 prompt_count=cap_data.get("prompt_count", 0),
                 tools=[McpTool(**tool) for tool in cap_data.get("tools", [])],
-                resources=[
-                    McpResource(**res) for res in cap_data.get("resources", [])
-                ],
-                prompts=[
-                    McpPrompt(**prompt)
-                    for prompt in cap_data.get("prompts", [])
-                ],
+                resources=[McpResource(**res) for res in cap_data.get("resources", [])],
+                prompts=[McpPrompt(**prompt) for prompt in cap_data.get("prompts", [])],
             )
 
         return cls(
