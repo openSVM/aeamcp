@@ -42,7 +42,7 @@ gtest_discover_tests(aireg++_tests)
 
 # Create integration test target
 add_test(NAME integration_tests
-    COMMAND aireg++_tests --gtest_filter="*Integration*"
+    COMMAND $<TARGET_FILE:aireg++_tests> --gtest_filter=*Integration*
 )
 
 set_tests_properties(integration_tests PROPERTIES

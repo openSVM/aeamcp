@@ -7,10 +7,12 @@
  * implementation, these would interface with the actual C SDK.
  */
 
+#if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
 #endif
 
 #include <sodium.h>
@@ -1438,4 +1440,6 @@ IdlDefinition Idl::load_svmai_token_idl() {
 
 } // namespace SolanaAiRegistries
 
+#if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic pop
+#endif
