@@ -1,6 +1,7 @@
 """Integration tests for devnet environment."""
 
 import asyncio
+import logging
 
 import pytest
 import pytest_asyncio
@@ -20,6 +21,8 @@ from solana_ai_registries.types import (
     ServiceEndpoint,
 )
 
+logger = logging.getLogger(__name__)
+
 
 @pytest.mark.integration
 @pytest.mark.devnet
@@ -30,6 +33,25 @@ class TestDevnetAgentOperations:
     async def client(self):
         """Create a client for devnet testing."""
         client = SolanaAIRegistriesClient(rpc_url=DEFAULT_DEVNET_RPC)
+
+        # Verify connection health before running tests
+        max_health_attempts = 3
+        for attempt in range(max_health_attempts):
+            if await client.health_check():
+                logger.info("Devnet connection verified as healthy")
+                break
+            else:
+                logger.warning(
+                    "Devnet health check failed, "
+                    f"attempt {attempt + 1}/{max_health_attempts}"
+                )
+                if attempt < max_health_attempts - 1:
+                    await asyncio.sleep(2.0)
+                else:
+                    pytest.skip(
+                        "Devnet connection is unhealthy, skipping integration tests"
+                    )
+
         yield client
         await client.close()
 

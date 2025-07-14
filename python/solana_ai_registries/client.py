@@ -8,6 +8,7 @@ for interacting with on-chain Agent Registry and MCP Server Registry programs.
 import asyncio
 import logging
 import struct
+from copy import deepcopy
 from typing import Any, Dict, List, Optional
 
 from solana.rpc.async_api import AsyncClient
@@ -66,6 +67,35 @@ class SolanaAIRegistriesClient:
         if self._client:
             await self._client.close()
             self._client = None
+
+    async def health_check(self) -> bool:
+        """
+        Check if the Solana RPC connection is healthy and can fetch blockhashes.
+
+        Returns:
+            True if connection is healthy, False otherwise
+        """
+        try:
+            # Test basic connection by getting epoch info (lightweight check)
+            epoch_info = await self.client.get_epoch_info(commitment=self.commitment)
+            if not epoch_info.value:
+                logger.warning("Failed to fetch epoch info")
+                return False
+
+            # Test blockhash fetching (most common failure point)
+            blockhash_resp = await self.client.get_latest_blockhash(
+                commitment=self.commitment
+            )
+            if not blockhash_resp.value or not blockhash_resp.value.blockhash:
+                logger.warning("Failed to fetch latest blockhash")
+                return False
+
+            logger.debug("RPC connection health check passed")
+            return True
+
+        except Exception as e:
+            logger.warning(f"RPC health check failed: {e}")
+            return False
 
     async def __aenter__(self) -> "SolanaAIRegistriesClient":
         """Async context manager entry."""
@@ -186,7 +216,7 @@ class SolanaAIRegistriesClient:
         transaction: Transaction,
         signers: List[Keypair],
         opts: Optional[TxOpts] = None,
-        max_retries: int = 3,
+        max_retries: int = 5,
     ) -> str:
         """
         Send transaction with error handling and retry logic.
@@ -209,16 +239,32 @@ class SolanaAIRegistriesClient:
         last_error = None
         for attempt in range(max_retries):
             try:
-                # Get recent blockhash
+                # Get fresh blockhash for each attempt
                 blockhash_resp = await self.client.get_latest_blockhash(
                     commitment=self.commitment
                 )
 
-                # Sign transaction with recent blockhash
-                transaction.sign(signers, blockhash_resp.value.blockhash)
+                # Wait a bit to ensure blockhash is fully propagated
+                if attempt > 0:
+                    await asyncio.sleep(0.5)
 
-                # Send transaction
-                response = await self.client.send_transaction(transaction, opts=opts)
+                # Create a new transaction instance to avoid signature conflicts
+                tx_copy = deepcopy(transaction)
+
+                # Sign transaction with fresh blockhash
+                tx_copy.sign(signers, blockhash_resp.value.blockhash)
+
+                # Send transaction with additional retry-friendly options
+                response = await self.client.send_transaction(
+                    tx_copy,
+                    opts=TxOpts(
+                        skip_confirmation=opts.skip_confirmation,
+                        # Always run preflight to catch blockhash issues early
+                        skip_preflight=False,
+                        # Let our outer retry loop handle retries
+                        max_retries=1,
+                    ),
+                )
 
                 signature = str(response.value)
                 logger.info(f"Transaction sent successfully: {signature}")
@@ -226,11 +272,22 @@ class SolanaAIRegistriesClient:
 
             except Exception as e:
                 last_error = e
-                logger.warning(
-                    f"Transaction attempt {attempt + 1}/{max_retries} failed: {e}"
-                )
-                if attempt < max_retries - 1:
-                    await asyncio.sleep(1.0 * (attempt + 1))  # Exponential backoff
+                error_msg = str(e).lower()
+
+                # Check if it's a blockhash-related error
+                if "blockhash not found" in error_msg or "blockhash" in error_msg:
+                    logger.warning(
+                        f"Blockhash error on attempt {attempt + 1}/{max_retries}: {e}"
+                    )
+                    # For blockhash errors, wait longer before retry
+                    if attempt < max_retries - 1:
+                        await asyncio.sleep(2.0 + (attempt * 1.0))
+                else:
+                    logger.warning(
+                        f"Transaction attempt {attempt + 1}/{max_retries} failed: {e}"
+                    )
+                    if attempt < max_retries - 1:
+                        await asyncio.sleep(1.0 * (attempt + 1))  # Exponential backoff
 
         # All retries failed
         raise TransactionError(
