@@ -5,7 +5,7 @@ Additional tests to improve test coverage to reach 65%+ target.
 import pytest
 from solana_ai_registries.types import ServiceEndpoint
 from solana_ai_registries.client import SolanaAIRegistriesClient
-from solana_ai_registries.idl import IDLLoader  
+from solana_ai_registries.idl import IDLLoader
 from solana_ai_registries.exceptions import IDLError
 
 
@@ -14,25 +14,19 @@ class TestServiceEndpointProtocolDetection:
 
     def test_http_protocol_detection(self):
         """Test HTTP protocol auto-detection from URL."""
-        endpoint = ServiceEndpoint(
-            url="http://example.com",
-            auth_type="none"
-        )
+        endpoint = ServiceEndpoint(url="http://example.com", auth_type="none")
         assert endpoint.protocol == "http"
 
     def test_https_protocol_detection(self):
-        """Test HTTPS protocol auto-detection from URL."""  
-        endpoint = ServiceEndpoint(
-            url="https://example.com",
-            auth_type="none"
-        )
+        """Test HTTPS protocol auto-detection from URL."""
+        endpoint = ServiceEndpoint(url="https://example.com", auth_type="none")
         assert endpoint.protocol == "https"
 
     def test_unknown_protocol_detection(self):
         """Test unknown protocol detection for non-HTTP URLs."""
         endpoint = ServiceEndpoint(
             url="https://example.com",  # Use valid URL
-            protocol="ftp"  # Explicitly set unknown protocol
+            protocol="ftp",  # Explicitly set unknown protocol
         )
         assert endpoint.protocol == "ftp"
 

@@ -3,7 +3,6 @@ Very simple tests to reach 65% coverage target.
 """
 
 import pytest
-from unittest.mock import Mock, patch
 
 
 class TestCoverageBoost:
@@ -16,7 +15,7 @@ class TestCoverageBoost:
         import solana_ai_registries.mcp
         import solana_ai_registries.payments
         import solana_ai_registries.idl
-        
+
         assert solana_ai_registries.agent is not None
         assert solana_ai_registries.client is not None
         assert solana_ai_registries.mcp is not None
@@ -30,14 +29,14 @@ class TestCoverageBoost:
         from solana_ai_registries.agent import AgentRegistry
         from solana_ai_registries.mcp import McpServerRegistry
         from solana_ai_registries.payments import PaymentManager
-        
+
         client = SolanaAIRegistriesClient()
         loader = IDLLoader()
-        
+
         registry = AgentRegistry(client)
         mcp_registry = McpServerRegistry(client)
         payment_manager = PaymentManager(client)
-        
+
         # Basic assertions
         assert client is not None
         assert loader is not None
@@ -48,12 +47,12 @@ class TestCoverageBoost:
     def test_client_init_variations(self):
         """Test client initialization variations."""
         from solana_ai_registries.client import SolanaAIRegistriesClient
-        
+
         # Different RPC URLs
         client1 = SolanaAIRegistriesClient()
         client2 = SolanaAIRegistriesClient("https://api.mainnet-beta.solana.com")
         client3 = SolanaAIRegistriesClient(commitment="confirmed")
-        
+
         assert client1 is not None
         assert client2 is not None
         assert client3 is not None
@@ -62,13 +61,13 @@ class TestCoverageBoost:
         """Test IDL loader methods."""
         from solana_ai_registries.idl import IDLLoader
         from solana_ai_registries.exceptions import IDLError
-        
+
         loader = IDLLoader()
-        
+
         # Test clear cache method
         loader.clear_cache()
         assert len(loader._cached_idls) == 0
-        
+
         # Test error loading
         with pytest.raises(IDLError):
             loader.load_idl("nonexistent")
@@ -77,13 +76,13 @@ class TestCoverageBoost:
         """Test payment manager initialization variations."""
         from solana_ai_registries.client import SolanaAIRegistriesClient
         from solana_ai_registries.payments import PaymentManager
-        
+
         client = SolanaAIRegistriesClient()
-        
+
         # Test both mainnet and devnet
         devnet_manager = PaymentManager(client, use_mainnet=False)
         mainnet_manager = PaymentManager(client, use_mainnet=True)
-        
+
         assert devnet_manager.client == client
         assert mainnet_manager.client == client
         assert devnet_manager.token_mint != mainnet_manager.token_mint
@@ -92,55 +91,53 @@ class TestCoverageBoost:
     async def test_client_close_method(self):
         """Test client close method."""
         from solana_ai_registries.client import SolanaAIRegistriesClient
-        
+
         client = SolanaAIRegistriesClient()
         await client.close()  # Should not raise
 
     def test_constants_validation(self):
         """Test constants validation functions."""
         from solana_ai_registries.constants import validate_string_length, validate_url
-        
+
         # Valid cases
         validate_string_length("test", 10, "test field")
         validate_url("https://example.com", "test url")
-        
+
         # Invalid cases should raise
         with pytest.raises(ValueError):
             validate_string_length("too long string", 5, "test field")
-        
+
         with pytest.raises(ValueError):
             validate_url("invalid://url", "test url")
 
     def test_type_creations(self):
         """Test creating type instances."""
         from solana_ai_registries.types import (
-            ServiceEndpoint, AgentSkill, McpCapabilities
+            ServiceEndpoint,
+            AgentSkill,
+            McpCapabilities,
         )
-        
+
         # ServiceEndpoint variations
         endpoint1 = ServiceEndpoint(url="https://api.example.com")
         endpoint2 = ServiceEndpoint(
-            url="http://api.example.com",
-            description="Test endpoint"
+            url="http://api.example.com", description="Test endpoint"
         )
         endpoint3 = ServiceEndpoint(
-            url="https://secure.example.com",
-            auth_type="bearer"
+            url="https://secure.example.com", auth_type="bearer"
         )
-        
+
         assert endpoint1.protocol == "https"
         assert endpoint2.protocol == "http"
         assert endpoint3.protocol == "https"
-        
+
         # AgentSkill
         skill = AgentSkill(skill_id="test_skill")
         assert skill.skill_id == "test_skill"
-        
+
         # McpCapabilities
         caps = McpCapabilities(
-            supports_tools=True,
-            supports_resources=False,
-            supports_prompts=True
+            supports_tools=True, supports_resources=False, supports_prompts=True
         )
         assert caps.supports_tools is True
         assert caps.supports_resources is False
@@ -156,9 +153,9 @@ class TestCoverageBoost:
             IDLError,
             ConnectionError,
             TransactionError,
-            ValidationError
+            ValidationError,
         )
-        
+
         base_error = SolanaAIRegistriesError("Base error")
         agent_error = AgentNotFoundError("agent_id", "owner")
         mcp_error = McpServerNotFoundError("server_id", "owner")
@@ -168,7 +165,7 @@ class TestCoverageBoost:
         conn_error = ConnectionError("Connection failed")
         tx_error = TransactionError("Transaction failed")
         val_error = ValidationError("field", "constraint", "Invalid value")
-        
+
         assert "Base error" in str(base_error)
         assert "agent_id" in str(agent_error)
         assert "server_id" in str(mcp_error)
@@ -189,9 +186,9 @@ class TestCoverageBoost:
             BRONZE_TIER_STAKE,
             SILVER_TIER_STAKE,
             GOLD_TIER_STAKE,
-            PLATINUM_TIER_STAKE
+            PLATINUM_TIER_STAKE,
         )
-        
+
         assert len(AGENT_REGISTRY_PROGRAM_ID) > 0
         assert len(MCP_SERVER_REGISTRY_PROGRAM_ID) > 0
         assert A2AMPL_DECIMALS == 9
@@ -204,17 +201,17 @@ class TestCoverageBoost:
         """Test conversion utility functions."""
         from solana_ai_registries.constants import (
             a2ampl_to_base_units,
-            base_units_to_a2ampl
+            base_units_to_a2ampl,
         )
         from decimal import Decimal
-        
+
         # Test conversions
         base_units = a2ampl_to_base_units(Decimal("1.5"))
         assert base_units == 1_500_000_000
-        
+
         a2ampl = base_units_to_a2ampl(1_500_000_000)
         assert a2ampl == Decimal("1.5")
-        
+
         # Round trip should be close
         original = Decimal("10.12345")
         converted = base_units_to_a2ampl(a2ampl_to_base_units(original))
@@ -224,9 +221,9 @@ class TestCoverageBoost:
         """Test cluster token mint constants."""
         from solana_ai_registries.constants import (
             A2AMPL_TOKEN_MINT_DEVNET,
-            A2AMPL_TOKEN_MINT_MAINNET
+            A2AMPL_TOKEN_MINT_MAINNET,
         )
-        
+
         assert A2AMPL_TOKEN_MINT_DEVNET != A2AMPL_TOKEN_MINT_MAINNET
         assert len(A2AMPL_TOKEN_MINT_DEVNET) > 0
         assert len(A2AMPL_TOKEN_MINT_MAINNET) > 0

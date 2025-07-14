@@ -19,6 +19,7 @@ class TestClientPropertiesAndMethods:
     def test_client_initialization_with_custom_client(self):
         """Test client initialization with custom client."""
         from unittest.mock import Mock
+
         mock_client = Mock()
         client = SolanaAIRegistriesClient(client=mock_client)
         assert client.client == mock_client
@@ -30,19 +31,19 @@ class TestIdlLoaderErrorPaths:
     def test_load_nonexistent_idl_specific_error(self):
         """Test loading non-existent IDL file with specific error."""
         loader = IDLLoader()
-        
+
         with pytest.raises(IDLError) as exc_info:
             loader.load_idl("completely_nonexistent_program_12345")
-        
+
         assert "IDL not found" in str(exc_info.value)
 
     def test_get_program_info_with_cache(self):
         """Test getting program info with caching."""
         loader = IDLLoader()
-        
+
         # First check cache is empty
         assert len(loader._cached_idls) == 0
-        
+
         # Try to load (will fail but exercise the path)
         try:
             loader.load_idl("test_program")
@@ -56,7 +57,7 @@ class TestModuleInitialization:
     def test_import_all_modules(self):
         """Test importing all main modules."""
         from solana_ai_registries import agent, client, mcp, payments, idl
-        
+
         assert agent is not None
         assert client is not None
         assert mcp is not None
@@ -66,7 +67,7 @@ class TestModuleInitialization:
     def test_package_imports(self):
         """Test package-level imports."""
         import solana_ai_registries
-        
+
         # Should be importable
         assert solana_ai_registries is not None
 
@@ -77,44 +78,41 @@ class TestExtraTypesValidation:
     def test_service_endpoint_with_auth_config(self):
         """Test ServiceEndpoint with auth configuration."""
         from solana_ai_registries.types import ServiceEndpoint
-        
+
         endpoint = ServiceEndpoint(
             url="https://api.example.com",
             auth_type="bearer",
-            auth_config={"token_header": "Authorization"}
+            auth_config={"token_header": "Authorization"},
         )
-        
+
         assert endpoint.auth_type == "bearer"
         assert endpoint.auth_config["token_header"] == "Authorization"
 
     def test_service_endpoint_with_description(self):
         """Test ServiceEndpoint with description."""
         from solana_ai_registries.types import ServiceEndpoint
-        
+
         endpoint = ServiceEndpoint(
-            url="https://api.example.com",
-            description="Test API endpoint"
+            url="https://api.example.com", description="Test API endpoint"
         )
-        
+
         assert endpoint.description == "Test API endpoint"
 
     def test_agent_skill_with_skill_id(self):
         """Test AgentSkill with skill_id."""
         from solana_ai_registries.types import AgentSkill
-        
+
         skill = AgentSkill(skill_id="test_skill")
         assert skill.skill_id == "test_skill"
 
     def test_mcp_capabilities_all_false(self):
         """Test McpCapabilities with all capabilities false."""
         from solana_ai_registries.types import McpCapabilities
-        
+
         caps = McpCapabilities(
-            supports_tools=False,
-            supports_resources=False, 
-            supports_prompts=False
+            supports_tools=False, supports_resources=False, supports_prompts=False
         )
-        
+
         assert caps.supports_tools is False
         assert caps.supports_resources is False
         assert caps.supports_prompts is False
@@ -127,9 +125,9 @@ class TestConstantsAndUtilities:
         """Test token mint constants."""
         from solana_ai_registries.constants import (
             A2AMPL_TOKEN_MINT_MAINNET,
-            A2AMPL_TOKEN_MINT_DEVNET
+            A2AMPL_TOKEN_MINT_DEVNET,
         )
-        
+
         assert len(A2AMPL_TOKEN_MINT_MAINNET) > 0
         assert len(A2AMPL_TOKEN_MINT_DEVNET) > 0
         assert A2AMPL_TOKEN_MINT_MAINNET != A2AMPL_TOKEN_MINT_DEVNET
@@ -138,9 +136,9 @@ class TestConstantsAndUtilities:
         """Test fee constants."""
         from solana_ai_registries.constants import (
             AGENT_REGISTRATION_FEE,
-            MCP_REGISTRATION_FEE
+            MCP_REGISTRATION_FEE,
         )
-        
+
         assert AGENT_REGISTRATION_FEE > 0
         assert MCP_REGISTRATION_FEE > 0
 
@@ -150,11 +148,11 @@ class TestConstantsAndUtilities:
             BRONZE_TIER_STAKE,
             SILVER_TIER_STAKE,
             GOLD_TIER_STAKE,
-            PLATINUM_TIER_STAKE
+            PLATINUM_TIER_STAKE,
         )
-        
+
         assert BRONZE_TIER_STAKE < SILVER_TIER_STAKE
-        assert SILVER_TIER_STAKE < GOLD_TIER_STAKE  
+        assert SILVER_TIER_STAKE < GOLD_TIER_STAKE
         assert GOLD_TIER_STAKE < PLATINUM_TIER_STAKE
 
 
@@ -164,7 +162,7 @@ class TestAdditionalExceptionCoverage:
     def test_basic_exception_creation(self):
         """Test basic exception creation."""
         from solana_ai_registries.exceptions import SolanaAIRegistriesError
-        
+
         error = SolanaAIRegistriesError("Test error")
         assert "Test error" in str(error)
 
@@ -173,15 +171,15 @@ class TestAdditionalExceptionCoverage:
         from solana_ai_registries.exceptions import (
             AgentNotFoundError,
             McpServerNotFoundError,
-            ConnectionError
+            ConnectionError,
         )
-        
+
         agent_error = AgentNotFoundError("test_agent", "test_owner")
         assert "test_agent" in str(agent_error)
-        
+
         mcp_error = McpServerNotFoundError("test_server", "test_owner")
         assert "test_server" in str(mcp_error)
-        
+
         conn_error = ConnectionError("Connection failed")
         assert "Connection failed" in str(conn_error)
 
@@ -193,35 +191,35 @@ class TestPaymentManagerExtras:
         """Test payment manager token mint access."""
         from solana_ai_registries.client import SolanaAIRegistriesClient
         from solana_ai_registries.payments import PaymentManager
-        
+
         client = SolanaAIRegistriesClient()
         manager = PaymentManager(client, use_mainnet=False)
-        
+
         # Should have a token_mint attribute
-        assert hasattr(manager, 'token_mint')
+        assert hasattr(manager, "token_mint")
         assert manager.token_mint is not None
 
     def test_payment_manager_active_streams(self):
         """Test payment manager active streams tracking."""
         from solana_ai_registries.client import SolanaAIRegistriesClient
         from solana_ai_registries.payments import PaymentManager
-        
+
         client = SolanaAIRegistriesClient()
         manager = PaymentManager(client, use_mainnet=False)
-        
+
         # Should have active streams dictionary
-        assert hasattr(manager, '_active_streams')
+        assert hasattr(manager, "_active_streams")
         assert isinstance(manager._active_streams, dict)
 
     def test_payment_manager_mainnet_vs_devnet(self):
         """Test payment manager mainnet vs devnet token mints."""
         from solana_ai_registries.client import SolanaAIRegistriesClient
         from solana_ai_registries.payments import PaymentManager
-        
+
         client = SolanaAIRegistriesClient()
         devnet_manager = PaymentManager(client, use_mainnet=False)
         mainnet_manager = PaymentManager(client, use_mainnet=True)
-        
+
         # Should have different token mints
         assert devnet_manager.token_mint != mainnet_manager.token_mint
 
@@ -233,10 +231,10 @@ class TestAgentRegistryMethods:
         """Test AgentRegistry initialization."""
         from solana_ai_registries.agent import AgentRegistry
         from solana_ai_registries.client import SolanaAIRegistriesClient
-        
+
         client = SolanaAIRegistriesClient()
         registry = AgentRegistry(client)
-        
+
         assert registry.client == client
 
 
@@ -247,10 +245,10 @@ class TestMcpRegistryMethods:
         """Test McpServerRegistry initialization."""
         from solana_ai_registries.mcp import McpServerRegistry
         from solana_ai_registries.client import SolanaAIRegistriesClient
-        
+
         client = SolanaAIRegistriesClient()
         registry = McpServerRegistry(client)
-        
+
         assert registry.client == client
 
 
@@ -260,15 +258,15 @@ class TestTypesEnumValues:
     def test_agent_status_values(self):
         """Test AgentStatus enum values."""
         from solana_ai_registries.types import AgentStatus
-        
-        assert hasattr(AgentStatus, 'ACTIVE')
-        assert hasattr(AgentStatus, 'INACTIVE')
-        assert hasattr(AgentStatus, 'SUSPENDED')
+
+        assert hasattr(AgentStatus, "ACTIVE")
+        assert hasattr(AgentStatus, "INACTIVE")
+        assert hasattr(AgentStatus, "SUSPENDED")
 
     def test_mcp_server_status_values(self):
         """Test McpServerStatus enum values."""
         from solana_ai_registries.types import McpServerStatus
-        
-        assert hasattr(McpServerStatus, 'ACTIVE')
-        assert hasattr(McpServerStatus, 'INACTIVE')
-        assert hasattr(McpServerStatus, 'SUSPENDED')
+
+        assert hasattr(McpServerStatus, "ACTIVE")
+        assert hasattr(McpServerStatus, "INACTIVE")
+        assert hasattr(McpServerStatus, "SUSPENDED")
