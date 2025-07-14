@@ -3,6 +3,7 @@
 import asyncio
 
 import pytest
+import pytest_asyncio
 from solders.keypair import Keypair
 
 from solana_ai_registries.agent import AgentRegistry
@@ -25,14 +26,14 @@ from solana_ai_registries.types import (
 class TestDevnetAgentOperations:
     """Integration tests for agent operations on devnet."""
 
-    @pytest.fixture(scope="class")
+    @pytest_asyncio.fixture(scope="class")
     async def client(self):
         """Create a client for devnet testing."""
         client = SolanaAIRegistriesClient(rpc_url=DEFAULT_DEVNET_RPC)
         yield client
         await client.close()
 
-    @pytest.fixture(scope="class")
+    
     def test_keypair(self):
         """Generate a test keypair for operations."""
         return Keypair()
@@ -52,11 +53,11 @@ class TestDevnetAgentOperations:
             name="Integration Test Agent",
             description="An agent created during integration testing",
             skills=[
-                AgentSkill(name="testing", confidence=0.95),
-                AgentSkill(name="validation", confidence=0.90),
+                AgentSkill(skill_id="testing", name="Testing Skill"),
+                AgentSkill(skill_id="validation", name="Validation Skill"),
             ],
             endpoints=[
-                ServiceEndpoint(url="https://api.test.example.com", auth_required=True)
+                ServiceEndpoint(url="https://api.test.example.com", auth_type="bearer")
             ],
             tags=["testing", "integration", "devnet"],
         )
@@ -156,14 +157,15 @@ class TestDevnetAgentOperations:
 class TestDevnetMcpOperations:
     """Integration tests for MCP server operations on devnet."""
 
-    @pytest.fixture(scope="class")
+    
+    @pytest_asyncio.fixture(scope="class")
     async def client(self):
         """Create a client for devnet testing."""
         client = SolanaAIRegistriesClient(rpc_url=DEFAULT_DEVNET_RPC)
         yield client
         await client.close()
 
-    @pytest.fixture(scope="class")
+    
     def test_keypair(self):
         """Generate a test keypair for operations."""
         return Keypair()
@@ -187,7 +189,7 @@ class TestDevnetMcpOperations:
                 McpTool(name="analyze", description="Analysis tool"),
             ],
             capabilities=McpCapabilities(
-                tools=True, resources=True, prompts=False, logging=True
+                supports_tools=True, supports_resources=True, supports_prompts=False
             ),
             tags=["testing", "integration", "mcp"],
         )
@@ -256,7 +258,7 @@ class TestDevnetMcpOperations:
                 name=f"Search MCP Server {i}",
                 endpoint_url=f"https://mcp{i}.test.example.com",
                 description=f"MCP server {i} for search testing",
-                capabilities=McpCapabilities(tools=True, resources=(i == 0)),
+                capabilities=McpCapabilities(supports_tools=True, supports_resources=(i == 0)),
                 tags=["search", "mcp", f"server{i}"],
             )
 
@@ -287,19 +289,20 @@ class TestDevnetMcpOperations:
 class TestDevnetPaymentOperations:
     """Integration tests for payment operations on devnet."""
 
-    @pytest.fixture(scope="class")
+    
+    @pytest_asyncio.fixture(scope="class")
     async def client(self):
         """Create a client for devnet testing."""
         client = SolanaAIRegistriesClient(rpc_url=DEFAULT_DEVNET_RPC)
         yield client
         await client.close()
 
-    @pytest.fixture(scope="class")
+    
     def test_payer(self):
         """Generate a test payer keypair."""
         return Keypair()
 
-    @pytest.fixture(scope="class")
+    
     def test_payee(self):
         """Generate a test payee keypair."""
         return Keypair()
@@ -367,14 +370,15 @@ class TestDevnetPaymentOperations:
 class TestDevnetClientOperations:
     """Integration tests for low-level client operations."""
 
-    @pytest.fixture(scope="class")
+    
+    @pytest_asyncio.fixture(scope="class")
     async def client(self):
         """Create a client for devnet testing."""
         client = SolanaAIRegistriesClient(rpc_url=DEFAULT_DEVNET_RPC)
         yield client
         await client.close()
 
-    @pytest.fixture(scope="class")
+    
     def test_keypair(self):
         """Generate a test keypair."""
         return Keypair()
@@ -470,7 +474,8 @@ class TestDevnetClientOperations:
 class TestDevnetEndToEndScenarios:
     """End-to-end integration test scenarios."""
 
-    @pytest.fixture(scope="class")
+    
+    @pytest_asyncio.fixture(scope="class")
     async def client(self):
         """Create a client for devnet testing."""
         client = SolanaAIRegistriesClient(rpc_url=DEFAULT_DEVNET_RPC)
@@ -496,7 +501,7 @@ class TestDevnetEndToEndScenarios:
                 agent_id=agent_id,
                 name="Ecosystem Test Agent",
                 description="Agent for end-to-end testing",
-                skills=[AgentSkill(name="integration", confidence=1.0)],
+                skills=[AgentSkill(skill_id="integration", name="Integration Testing")],
                 tags=["ecosystem", "test"],
             )
             print(f"Agent registered: {agent_sig}")
@@ -509,7 +514,7 @@ class TestDevnetEndToEndScenarios:
                 name="Ecosystem Test MCP Server",
                 endpoint_url="https://eco-mcp.test.example.com",
                 description="MCP server for ecosystem testing",
-                capabilities=McpCapabilities(tools=True, resources=True),
+                capabilities=McpCapabilities(supports_tools=True, supports_resources=True),
                 tags=["ecosystem", "test"],
             )
             print(f"MCP server registered: {mcp_sig}")
