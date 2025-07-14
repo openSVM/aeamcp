@@ -5,7 +5,6 @@ Final optimized tests with correct method signatures.
 from unittest.mock import Mock
 
 import pytest
-from solders.keypair import Keypair
 from solders.pubkey import Pubkey as PublicKey
 
 from solana_ai_registries.agent import AgentRegistry

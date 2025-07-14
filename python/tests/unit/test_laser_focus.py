@@ -2,10 +2,7 @@
 Laser-focused tests to reach 95% coverage by targeting specific missing lines.
 """
 
-from decimal import Decimal
-
 import pytest
-from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 
 
@@ -249,8 +246,6 @@ class TestDirectLineCoverage:
             AgentStatus,
             McpPrompt,
             McpResource,
-            McpServerRegistryEntry,
-            McpServerStatus,
             McpTool,
             ServiceEndpoint,
         )
@@ -394,11 +389,7 @@ class TestDirectLineCoverage:
         """Test from_account_data methods with comprehensive data."""
         from solana_ai_registries.types import (
             AgentRegistryEntry,
-            McpCapabilities,
-            McpPrompt,
-            McpResource,
             McpServerRegistryEntry,
-            McpTool,
         )
 
         # Test AgentRegistryEntry.from_account_data with complete data
@@ -467,7 +458,9 @@ class TestDirectLineCoverage:
             "owner": str(Pubkey.default()),
             "status": 1,  # ACTIVE
             "description": "A comprehensive MCP server with all features",
-            "capabilities_summary": "Full MCP capabilities with tools, resources, and prompts",
+            "capabilities_summary": (
+                "Full MCP capabilities with tools, resources, and prompts"
+            ),
             "capabilities": {
                 "supports_tools": True,
                 "supports_resources": True,

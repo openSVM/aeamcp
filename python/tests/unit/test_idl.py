@@ -1,11 +1,11 @@
-"""Simplified tests for solana_ai_registries.idl module focused on interface coverage."""
+"""
+Simplified tests for solana_ai_registries.idl module focused on interface coverage.
+"""
 
-from typing import Any, Dict, Type
 from unittest.mock import Mock, patch
 
 import pytest
 
-from solana_ai_registries.exceptions import IdlLoadError
 from solana_ai_registries.idl import IDLLoader
 
 

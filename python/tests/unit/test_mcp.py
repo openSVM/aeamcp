@@ -1,21 +1,19 @@
-"""Simplified tests for solana_ai_registries.mcp module focused on interface coverage."""
+"""
+Simplified tests for solana_ai_registries.mcp module focused on interface coverage.
+"""
 
-from typing import Any, Dict, List, Optional
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from solders.keypair import Keypair
-from solders.pubkey import Pubkey as PublicKey
 
 from solana_ai_registries.client import SolanaAIRegistriesClient
 from solana_ai_registries.exceptions import (
-    InvalidInputError,
     McpServerNotFoundError,
-    RegistrationError,
     SolanaAIRegistriesError,
 )
 from solana_ai_registries.mcp import McpServerRegistry
-from solana_ai_registries.types import McpServerRegistryEntry, McpServerStatus
+from solana_ai_registries.types import McpServerStatus
 
 
 class TestMcpServerRegistryInterface:

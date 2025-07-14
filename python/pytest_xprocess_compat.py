@@ -3,7 +3,6 @@ Compatibility shim for pytest_xprocess to fix anchorpy import issues.
 This must be imported before any anchorpy imports.
 """
 
-import os
 import sys
 import tempfile
 from types import ModuleType

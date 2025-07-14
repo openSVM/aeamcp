@@ -192,8 +192,8 @@ class TestInvalidPublicKeyError:
         """Test invalid public key error initialization."""
         error = InvalidPublicKeyError("invalid_key")
         assert (
-            str(error)
-            == "Validation failed for field 'public_key': must be a valid base58 public key"
+            str(error) == "Validation failed for field 'public_key': "
+            "must be a valid base58 public key"
         )
         assert error.field == "public_key"
         assert error.value == "invalid_key"

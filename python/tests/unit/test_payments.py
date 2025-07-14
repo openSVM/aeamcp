@@ -1,9 +1,9 @@
-"""Simplified tests for solana_ai_registries.payments module focused on interface coverage."""
+"""
+Simplified tests for solana_ai_registries.payments module focused on interface coverage.
+"""
 
-import asyncio
 from decimal import Decimal
-from typing import AsyncGenerator
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 from solders.keypair import Keypair
@@ -11,10 +11,8 @@ from solders.pubkey import Pubkey as PublicKey
 
 from solana_ai_registries.client import SolanaAIRegistriesClient
 from solana_ai_registries.exceptions import (
-    InsufficientFundsError,
     InvalidInputError,
     PaymentError,
-    SolanaAIRegistriesError,
 )
 from solana_ai_registries.payments import PaymentManager
 from solana_ai_registries.types import PaymentType
