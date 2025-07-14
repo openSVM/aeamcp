@@ -33,7 +33,6 @@ class TestDevnetAgentOperations:
         yield client
         await client.close()
 
-    
     def test_keypair(self):
         """Generate a test keypair for operations."""
         return Keypair()
@@ -157,7 +156,6 @@ class TestDevnetAgentOperations:
 class TestDevnetMcpOperations:
     """Integration tests for MCP server operations on devnet."""
 
-    
     @pytest_asyncio.fixture(scope="class")
     async def client(self):
         """Create a client for devnet testing."""
@@ -165,7 +163,6 @@ class TestDevnetMcpOperations:
         yield client
         await client.close()
 
-    
     def test_keypair(self):
         """Generate a test keypair for operations."""
         return Keypair()
@@ -258,7 +255,9 @@ class TestDevnetMcpOperations:
                 name=f"Search MCP Server {i}",
                 endpoint_url=f"https://mcp{i}.test.example.com",
                 description=f"MCP server {i} for search testing",
-                capabilities=McpCapabilities(supports_tools=True, supports_resources=(i == 0)),
+                capabilities=McpCapabilities(
+                    supports_tools=True, supports_resources=(i == 0)
+                ),
                 tags=["search", "mcp", f"server{i}"],
             )
 
@@ -289,7 +288,6 @@ class TestDevnetMcpOperations:
 class TestDevnetPaymentOperations:
     """Integration tests for payment operations on devnet."""
 
-    
     @pytest_asyncio.fixture(scope="class")
     async def client(self):
         """Create a client for devnet testing."""
@@ -297,12 +295,10 @@ class TestDevnetPaymentOperations:
         yield client
         await client.close()
 
-    
     def test_payer(self):
         """Generate a test payer keypair."""
         return Keypair()
 
-    
     def test_payee(self):
         """Generate a test payee keypair."""
         return Keypair()
@@ -370,7 +366,6 @@ class TestDevnetPaymentOperations:
 class TestDevnetClientOperations:
     """Integration tests for low-level client operations."""
 
-    
     @pytest_asyncio.fixture(scope="class")
     async def client(self):
         """Create a client for devnet testing."""
@@ -378,7 +373,6 @@ class TestDevnetClientOperations:
         yield client
         await client.close()
 
-    
     def test_keypair(self):
         """Generate a test keypair."""
         return Keypair()
@@ -474,7 +468,6 @@ class TestDevnetClientOperations:
 class TestDevnetEndToEndScenarios:
     """End-to-end integration test scenarios."""
 
-    
     @pytest_asyncio.fixture(scope="class")
     async def client(self):
         """Create a client for devnet testing."""
@@ -514,7 +507,9 @@ class TestDevnetEndToEndScenarios:
                 name="Ecosystem Test MCP Server",
                 endpoint_url="https://eco-mcp.test.example.com",
                 description="MCP server for ecosystem testing",
-                capabilities=McpCapabilities(supports_tools=True, supports_resources=True),
+                capabilities=McpCapabilities(
+                    supports_tools=True, supports_resources=True
+                ),
                 tags=["ecosystem", "test"],
             )
             print(f"MCP server registered: {mcp_sig}")
