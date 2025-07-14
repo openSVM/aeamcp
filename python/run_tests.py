@@ -10,7 +10,7 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 
 # Import compatibility shim BEFORE importing pytest
-import pytest_xprocess_compat  # noqa: F401, E402
+import pytest_xprocess_compat  # noqa: F401, E402, isort:skip
 import pytest  # noqa: E402
 
 if __name__ == "__main__":

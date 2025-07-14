@@ -2,13 +2,13 @@
 pytest configuration and fixtures.
 """
 
-# Import compatibility shim FIRST before any other imports
-import pytest_xprocess_compat  # noqa: F401
-
 import asyncio
 from typing import Generator
 
 import pytest
+
+# Import compatibility shim FIRST before any other imports
+import pytest_xprocess_compat  # noqa: F401, isort:skip
 
 # Configure pytest plugins to load our shim first
 pytest_plugins = ["pytest_plugin_compat"]
