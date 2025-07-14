@@ -101,11 +101,18 @@ class SolanaAIRegistriesClient:
                     commitment=self.commitment
                 )
 
-                if blockhash_resp.value and blockhash_resp.value.blockhash:
+                # Handle response type safely - check if response has .value attribute
+                if (
+                    hasattr(blockhash_resp, "value")
+                    and blockhash_resp.value
+                    and hasattr(blockhash_resp.value, "blockhash")
+                ):
                     logger.debug(f"Fresh blockhash obtained from {rpc_to_try}")
                     return blockhash_resp.value.blockhash  # Return Hash object directly
                 else:
-                    raise ConnectionError("Blockhash response was empty")
+                    raise ConnectionError(
+                        f"Blockhash response was invalid: {type(blockhash_resp)}"
+                    )
 
             except Exception as e:
                 logger.warning(
@@ -113,8 +120,17 @@ class SolanaAIRegistriesClient:
                     f"(attempt {attempt + 1}/{max_attempts}): {e}"
                 )
 
-                # Try next RPC endpoint
+                # Try next RPC endpoint on any error
                 self._current_rpc_index += 1
+
+                # Close current client to force reconnection with new RPC
+                if self._client:
+                    try:
+                        await self._client.close()
+                    except Exception:  # noqa: S110
+                        pass  # Ignore close errors
+                    self._client = None
+
                 if attempt < max_attempts - 1:
                     continue
 
@@ -147,7 +163,7 @@ class SolanaAIRegistriesClient:
         try:
             # Test basic connection by getting epoch info (lightweight check)
             epoch_info = await self.client.get_epoch_info(commitment=self.commitment)
-            if not epoch_info.value:
+            if not hasattr(epoch_info, "value") or not epoch_info.value:
                 logger.warning("Failed to fetch epoch info")
                 return False
 
@@ -193,7 +209,7 @@ class SolanaAIRegistriesClient:
             response = await self.client.get_account_info(
                 pubkey, encoding=encoding, commitment=self.commitment
             )
-            if response.value is None:
+            if not hasattr(response, "value") or response.value is None:
                 return None
 
             return {
@@ -333,7 +349,9 @@ class SolanaAIRegistriesClient:
                     ),
                 )
 
-                signature = str(response.value)
+                # Handle response type safely - sometimes response is int
+                # instead of object with .value attribute
+                signature = str(getattr(response, "value", response))
                 logger.info(f"Transaction sent successfully: {signature}")
                 return signature
 
@@ -403,12 +421,18 @@ class SolanaAIRegistriesClient:
                     tx_copy, commitment=self.commitment
                 )
 
-                return {
-                    "logs": response.value.logs,
-                    "err": response.value.err,
-                    "accounts": response.value.accounts,
-                    "units_consumed": response.value.units_consumed,
-                }
+                # Handle response type safely
+                if hasattr(response, "value") and response.value:
+                    return {
+                        "logs": response.value.logs,
+                        "err": response.value.err,
+                        "accounts": response.value.accounts,
+                        "units_consumed": response.value.units_consumed,
+                    }
+                else:
+                    raise TransactionError(
+                        f"Invalid simulation response: {type(response)}"
+                    )
 
             except Exception as e:
                 last_error = e
@@ -450,7 +474,8 @@ class SolanaAIRegistriesClient:
         """
         try:
             response = await self.client.get_balance(pubkey, commitment=self.commitment)
-            return int(response.value)
+            # Handle response type safely - cast response to int directly
+            return int(getattr(response, "value", 0))  # type: ignore[arg-type]
         except Exception as e:
             raise ConnectionError(f"Failed to get balance: {e}")
 
@@ -473,12 +498,17 @@ class SolanaAIRegistriesClient:
             response = await self.client.get_token_account_balance(
                 token_account, commitment=self.commitment
             )
-            return {
-                "amount": response.value.amount,
-                "decimals": response.value.decimals,
-                "ui_amount": response.value.ui_amount,
-                "ui_amount_string": response.value.ui_amount_string,
-            }
+            if hasattr(response, "value") and response.value:
+                return {
+                    "amount": response.value.amount,
+                    "decimals": response.value.decimals,
+                    "ui_amount": response.value.ui_amount,
+                    "ui_amount_string": response.value.ui_amount_string,
+                }
+            else:
+                raise ConnectionError(
+                    f"Invalid token balance response: {type(response)}"
+                )
         except Exception as e:
             raise ConnectionError(f"Failed to get token balance: {e}")
 
