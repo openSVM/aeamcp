@@ -136,10 +136,10 @@ class AgentRegistryEntry:
 
     agent_id: str
     name: str
-    description: str
-    agent_version: str
-    owner: str  # PublicKey as string
-    status: AgentStatus
+    description: str = ""
+    agent_version: str = "1.0.0"
+    owner: str = ""  # PublicKey as string
+    status: AgentStatus = AgentStatus.PENDING
     provider_name: Optional[str] = None
     provider_url: Optional[str] = None
     documentation_url: Optional[str] = None

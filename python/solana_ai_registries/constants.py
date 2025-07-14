@@ -7,7 +7,8 @@ ensuring consistency between the SDK and the deployed contracts.
 All values are sourced from: sdk/constants.md
 """
 
-from typing import Final
+from decimal import Decimal
+from typing import Final, Union
 
 # ============================================================================
 # AGENT REGISTRY CONSTANTS
@@ -192,7 +193,7 @@ MAX_RETRIES: Final[int] = 3
 # ============================================================================
 
 
-def a2ampl_to_base_units(amount: float) -> int:
+def a2ampl_to_base_units(amount: Union[float, Decimal]) -> int:
     """Convert A2AMPL decimal amount to base units.
 
     Args:
@@ -201,6 +202,8 @@ def a2ampl_to_base_units(amount: float) -> int:
     Returns:
         Amount in base units (e.g., 100500000000)
     """
+    if isinstance(amount, Decimal):
+        return int(amount * Decimal(str(A2AMPL_BASE_UNIT)))
     return int(amount * A2AMPL_BASE_UNIT)
 
 
@@ -248,7 +251,9 @@ def validate_string_length(value: str, max_length: int, field_name: str) -> None
         ValueError: If string exceeds maximum length
     """
     if len(value) > max_length:
-        raise ValueError(f"{field_name} must be at most {max_length} characters")
+        raise ValueError(
+            f"{field_name} exceeds maximum length: {len(value)} > {max_length}"
+        )
 
 
 def validate_url(url: str, field_name: str) -> None:
@@ -261,13 +266,14 @@ def validate_url(url: str, field_name: str) -> None:
     Raises:
         ValueError: If URL format is invalid
     """
-    # First check if it looks like a valid URL (contains ://)
-    if "://" not in url:
-        raise ValueError(f"{field_name} must be a valid URL")
+    # Check for None first - let it raise AttributeError as expected
+    if url is None:
+        # This will raise AttributeError when we try to call startswith on None
+        pass
 
-    # Then check allowed schemes
+    # Check allowed schemes first (this will handle most invalid cases)
     allowed_schemes = ("http://", "https://", "ipfs://", "ar://")
     if not any(url.startswith(scheme) for scheme in allowed_schemes):
         raise ValueError(
-            f"{field_name} must start with one of: " f"{', '.join(allowed_schemes)}"
+            f"{field_name} must start with one of: {', '.join(allowed_schemes)}"
         )

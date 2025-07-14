@@ -212,7 +212,7 @@ class TestCoverageBoost:
         assert base_units == 1_500_000_000
 
         a2ampl = base_units_to_a2ampl(1_500_000_000)
-        assert a2ampl == Decimal("1.5")
+        assert a2ampl == 1.5  # Function returns float, not Decimal
 
         # Round trip should be close
         original = Decimal("10.12345")

@@ -11,16 +11,18 @@ from typing import Any, Dict, List, Optional
 class SolanaAIRegistriesError(Exception):
     """Base exception for all Solana AI Registries SDK errors."""
 
-    def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
-        """Initialize exception with message and optional details.
+    def __init__(self, message: str, context: Optional[Dict[str, Any]] = None):
+        """Initialize exception with message and optional context.
 
         Args:
             message: Human-readable error message
-            details: Optional dictionary of additional error details
+            context: Optional dictionary of additional error context
         """
         super().__init__(message)
         self.message = message
-        self.details = details or {}
+        self.context = context or {}
+        # Keep details for backward compatibility
+        self.details = context or {}
 
 
 class ValidationError(SolanaAIRegistriesError):
