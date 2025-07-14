@@ -352,7 +352,7 @@ class SolanaAIRegistriesClient:
         """
         try:
             response = await self.client.get_balance(pubkey, commitment=self.commitment)
-            return response.value
+            return int(response.value)
         except Exception as e:
             raise ConnectionError(f"Failed to get balance: {e}")
 

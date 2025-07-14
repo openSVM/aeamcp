@@ -6,9 +6,10 @@ This must be imported before any anchorpy imports.
 import sys
 import tempfile
 from types import ModuleType
+from typing import Any
 
 
-def getrootdir(config=None) -> str:
+def getrootdir(config: Any = None) -> str:
     """Compatibility function for pytest_xprocess.getrootdir"""
     return tempfile.gettempdir()
 
