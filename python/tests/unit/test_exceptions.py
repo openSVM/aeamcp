@@ -177,7 +177,9 @@ class TestConnectionError:
 
     def test_init_with_endpoint(self) -> None:
         """Test connection error with endpoint."""
-        error = ConnectionError("Connection timeout", "https://api.mainnet-beta.solana.com")
+        error = ConnectionError(
+            "Connection timeout", "https://api.mainnet-beta.solana.com"
+        )
         assert str(error) == "Connection timeout"
         assert error.endpoint == "https://api.mainnet-beta.solana.com"
         assert error.details["endpoint"] == "https://api.mainnet-beta.solana.com"
@@ -189,7 +191,10 @@ class TestInvalidPublicKeyError:
     def test_init(self) -> None:
         """Test invalid public key error initialization."""
         error = InvalidPublicKeyError("invalid_key")
-        assert str(error) == "Validation failed for field 'public_key': must be a valid base58 public key"
+        assert (
+            str(error)
+            == "Validation failed for field 'public_key': must be a valid base58 public key"
+        )
         assert error.field == "public_key"
         assert error.value == "invalid_key"
         assert error.constraint == "must be a valid base58 public key"

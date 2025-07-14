@@ -1,12 +1,14 @@
 """
 pytest configuration and fixtures.
 """
-# Import compatibility shim before any other imports
-import pytest_xprocess_compat  # noqa: F401
 
-import pytest
 import asyncio
 from typing import Generator
+
+import pytest
+
+# Import compatibility shim before any other imports
+import pytest_xprocess_compat  # noqa: F401
 
 
 @pytest.fixture(scope="session")
@@ -21,5 +23,6 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
 def mock_environment():
     """Set up mock environment variables for testing."""
     import os
+
     os.environ.setdefault("SOLANA_RPC_URL", "https://api.devnet.solana.com")
     os.environ.setdefault("ANCHOR_WALLET", "/tmp/test-keypair.json")

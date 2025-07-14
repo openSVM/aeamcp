@@ -95,7 +95,7 @@ class ServiceEndpoint:
                 self.protocol = "http"
             else:
                 self.protocol = "unknown"
-                
+
         validate_string_length(self.protocol, 64, "protocol")
         validate_string_length(self.url, 256, "endpoint URL")
         validate_url(self.url, "endpoint URL")
@@ -215,7 +215,8 @@ class AgentRegistryEntry:
                     description=ep.get("description"),
                     auth_type=ep.get("auth_type"),
                     auth_config=ep.get("auth_config"),
-                ) for ep in data.get("service_endpoints", [])
+                )
+                for ep in data.get("service_endpoints", [])
             ],
             capabilities_flags=data.get("capabilities_flags", 0),
             supported_input_modes=data.get("supported_input_modes", []),
@@ -228,7 +229,8 @@ class AgentRegistryEntry:
                     category=skill.get("category"),
                     tags=skill.get("tags", []),
                     metadata=skill.get("metadata"),
-                ) for skill in data.get("skills", [])
+                )
+                for skill in data.get("skills", [])
             ],
             security_info_uri=data.get("security_info_uri"),
             aea_address=data.get("aea_address"),

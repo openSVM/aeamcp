@@ -579,9 +579,7 @@ class TestServiceEndpointProtocolDetection:
         """Test protocol detection for unsupported protocol results in error."""
         # Our implementation validates URLs and doesn't allow unsupported protocols
         with pytest.raises(ValueError, match="endpoint URL must start with one of"):
-            ServiceEndpoint(
-                url="ftp://example.com"
-            )
+            ServiceEndpoint(url="ftp://example.com")
 
 
 class TestMcpServerRegistryEntryTagValidation:
@@ -590,7 +588,7 @@ class TestMcpServerRegistryEntryTagValidation:
     def test_too_many_tags(self) -> None:
         """Test validation with too many tags."""
         from solders.pubkey import Pubkey as PublicKey
-        
+
         with pytest.raises(ValueError, match="Maximum 10 tags allowed"):
             McpServerRegistryEntry(
                 server_id="test-server",
@@ -600,5 +598,5 @@ class TestMcpServerRegistryEntryTagValidation:
                 owner=str(PublicKey.from_string("11111111111111111111111111111112")),
                 status=McpServerStatus.ACTIVE,
                 description="Test description",
-                tags=["tag" + str(i) for i in range(11)]  # 11 tags
+                tags=["tag" + str(i) for i in range(11)],  # 11 tags
             )

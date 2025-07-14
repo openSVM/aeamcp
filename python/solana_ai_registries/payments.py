@@ -564,7 +564,7 @@ class PaymentManager:
             service_id: Service identifier
         """
         stream_id = f"{payer}:{recipient}:{service_id}"
-        
+
         if stream_id in self._active_streams:
             task = self._active_streams[stream_id]
             if not task.done():
@@ -572,7 +572,9 @@ class PaymentManager:
                 logger.info(f"Stopped payment stream: {stream_id}")
             del self._active_streams[stream_id]
 
-    def _calculate_stream_cost(self, rate_per_second: float, duration_seconds: int) -> float:
+    def _calculate_stream_cost(
+        self, rate_per_second: float, duration_seconds: int
+    ) -> float:
         """
         Calculate total cost for a payment stream.
 
@@ -614,7 +616,7 @@ class PaymentManager:
         """
         import hashlib
         import time
-        
+
         data = f"{payer}:{recipient}:{service_id}:{time.time()}"
         return hashlib.sha256(data.encode()).hexdigest()[:16]
 
