@@ -1,7 +1,6 @@
 """Additional test coverage to reach 65% threshold."""
 
-from decimal import Decimal
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -9,9 +8,7 @@ from solana_ai_registries.agent import AgentRegistry
 from solana_ai_registries.client import SolanaAIRegistriesClient
 from solana_ai_registries.constants import (  # Constants
     A2AMPL_BASE_UNIT,
-    AGENT_REGISTRY_PROGRAM_ID,
     DEFAULT_DEVNET_RPC,
-    DEFAULT_MAINNET_RPC,
     MAX_AGENT_ID_LEN,
     a2ampl_to_base_units,
     base_units_to_a2ampl,
@@ -38,8 +35,6 @@ from solana_ai_registries.types import (
     AgentStatus,
     McpCapabilities,
     McpPrompt,
-    McpResource,
-    McpServerRegistryEntry,
     McpServerStatus,
     McpTool,
     ServiceEndpoint,
