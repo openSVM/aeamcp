@@ -264,7 +264,7 @@ def validate_url(url: str, field_name: str) -> None:
     # First check if it looks like a valid URL (contains ://)
     if "://" not in url:
         raise ValueError(f"{field_name} must be a valid URL")
-    
+
     # Then check allowed schemes
     allowed_schemes = ("http://", "https://", "ipfs://", "ar://")
     if not any(url.startswith(scheme) for scheme in allowed_schemes):
