@@ -31,7 +31,6 @@ class TestFinalOptimized:
         assert isinstance(data, bytes)
         
         data = client._encode_update_agent_data(
-            agent_id="test-agent",
             name="Updated Agent"
         )
         assert isinstance(data, bytes)
