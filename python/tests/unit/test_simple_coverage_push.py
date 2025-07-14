@@ -132,8 +132,9 @@ class TestCoverageBoost:
         assert endpoint3.protocol == "https"
 
         # AgentSkill
-        skill = AgentSkill(skill_id="test_skill")
+        skill = AgentSkill(skill_id="test_skill", name="Test Skill")
         assert skill.skill_id == "test_skill"
+        assert skill.name == "Test Skill"
 
         # McpCapabilities
         caps = McpCapabilities(
@@ -215,7 +216,7 @@ class TestCoverageBoost:
 
         # Round trip should be close
         original = Decimal("10.12345")
-        converted = base_units_to_a2ampl(a2ampl_to_base_units(original))
+        converted = Decimal(str(base_units_to_a2ampl(a2ampl_to_base_units(original))))
         assert abs(converted - original) < Decimal("0.000000001")
 
     def test_cluster_token_mint(self):

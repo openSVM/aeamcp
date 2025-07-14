@@ -17,13 +17,11 @@ class TestClientPropertiesAndMethods:
         client = SolanaAIRegistriesClient(commitment="confirmed")
         assert client is not None
 
-    def test_client_initialization_with_custom_client(self):
-        """Test client initialization with custom client."""
-        from unittest.mock import Mock
-
-        mock_client = Mock()
-        client = SolanaAIRegistriesClient(client=mock_client)
-        assert client.client == mock_client
+    def test_client_initialization_with_custom_endpoint(self):
+        """Test client initialization with custom endpoint."""
+        custom_endpoint = "https://custom.solana.rpc"
+        client = SolanaAIRegistriesClient(rpc_url=custom_endpoint)
+        assert client.rpc_url == custom_endpoint
 
 
 class TestIdlLoaderErrorPaths:
@@ -103,8 +101,9 @@ class TestExtraTypesValidation:
         """Test AgentSkill with skill_id."""
         from solana_ai_registries.types import AgentSkill
 
-        skill = AgentSkill(skill_id="test_skill")
+        skill = AgentSkill(skill_id="test_skill", name="Test Skill")
         assert skill.skill_id == "test_skill"
+        assert skill.name == "Test Skill"
 
     def test_mcp_capabilities_all_false(self):
         """Test McpCapabilities with all capabilities false."""
@@ -262,7 +261,7 @@ class TestTypesEnumValues:
 
         assert hasattr(AgentStatus, "ACTIVE")
         assert hasattr(AgentStatus, "INACTIVE")
-        assert hasattr(AgentStatus, "SUSPENDED")
+        assert hasattr(AgentStatus, "DEREGISTERED")
 
     def test_mcp_server_status_values(self):
         """Test McpServerStatus enum values."""
@@ -270,4 +269,4 @@ class TestTypesEnumValues:
 
         assert hasattr(McpServerStatus, "ACTIVE")
         assert hasattr(McpServerStatus, "INACTIVE")
-        assert hasattr(McpServerStatus, "SUSPENDED")
+        assert hasattr(McpServerStatus, "DEREGISTERED")
