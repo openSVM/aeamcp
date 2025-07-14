@@ -3,9 +3,10 @@ Final targeted tests to push coverage over 65%.
 """
 
 import pytest
+
 from solana_ai_registries.client import SolanaAIRegistriesClient
-from solana_ai_registries.idl import IDLLoader
 from solana_ai_registries.exceptions import IDLError
+from solana_ai_registries.idl import IDLLoader
 
 
 class TestClientPropertiesAndMethods:
@@ -56,7 +57,7 @@ class TestModuleInitialization:
 
     def test_import_all_modules(self):
         """Test importing all main modules."""
-        from solana_ai_registries import agent, client, mcp, payments, idl
+        from solana_ai_registries import agent, client, idl, mcp, payments
 
         assert agent is not None
         assert client is not None
@@ -124,8 +125,8 @@ class TestConstantsAndUtilities:
     def test_token_mint_constants(self):
         """Test token mint constants."""
         from solana_ai_registries.constants import (
-            A2AMPL_TOKEN_MINT_MAINNET,
             A2AMPL_TOKEN_MINT_DEVNET,
+            A2AMPL_TOKEN_MINT_MAINNET,
         )
 
         assert len(A2AMPL_TOKEN_MINT_MAINNET) > 0
@@ -146,9 +147,9 @@ class TestConstantsAndUtilities:
         """Test tier stake constants."""
         from solana_ai_registries.constants import (
             BRONZE_TIER_STAKE,
-            SILVER_TIER_STAKE,
             GOLD_TIER_STAKE,
             PLATINUM_TIER_STAKE,
+            SILVER_TIER_STAKE,
         )
 
         assert BRONZE_TIER_STAKE < SILVER_TIER_STAKE
@@ -170,8 +171,8 @@ class TestAdditionalExceptionCoverage:
         """Test specific exception types."""
         from solana_ai_registries.exceptions import (
             AgentNotFoundError,
-            McpServerNotFoundError,
             ConnectionError,
+            McpServerNotFoundError,
         )
 
         agent_error = AgentNotFoundError("test_agent", "test_owner")
@@ -243,8 +244,8 @@ class TestMcpRegistryMethods:
 
     def test_mcp_registry_initialization(self):
         """Test McpServerRegistry initialization."""
-        from solana_ai_registries.mcp import McpServerRegistry
         from solana_ai_registries.client import SolanaAIRegistriesClient
+        from solana_ai_registries.mcp import McpServerRegistry
 
         client = SolanaAIRegistriesClient()
         registry = McpServerRegistry(client)

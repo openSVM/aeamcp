@@ -3,10 +3,11 @@ Additional tests to improve test coverage to reach 65%+ target.
 """
 
 import pytest
-from solana_ai_registries.types import ServiceEndpoint
+
 from solana_ai_registries.client import SolanaAIRegistriesClient
-from solana_ai_registries.idl import IDLLoader
 from solana_ai_registries.exceptions import IDLError
+from solana_ai_registries.idl import IDLLoader
+from solana_ai_registries.types import ServiceEndpoint
 
 
 class TestServiceEndpointProtocolDetection:

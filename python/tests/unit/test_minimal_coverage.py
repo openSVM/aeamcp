@@ -10,7 +10,7 @@ class TestSimpleCoverage:
 
     def test_import_and_use_types(self):
         """Test importing and using types."""
-        from solana_ai_registries.types import ServiceEndpoint, McpCapabilities
+        from solana_ai_registries.types import McpCapabilities, ServiceEndpoint
 
         # Simple ServiceEndpoint creation
         endpoint = ServiceEndpoint(url="https://example.com")
@@ -56,8 +56,8 @@ class TestSimpleCoverage:
 
     def test_registries_creation(self):
         """Test registry creation."""
-        from solana_ai_registries.client import SolanaAIRegistriesClient
         from solana_ai_registries.agent import AgentRegistry
+        from solana_ai_registries.client import SolanaAIRegistriesClient
         from solana_ai_registries.mcp import McpServerRegistry
 
         client = SolanaAIRegistriesClient()
@@ -70,15 +70,16 @@ class TestSimpleCoverage:
 
     def test_constants_access(self):
         """Test constants access."""
+        from decimal import Decimal
+
         from solana_ai_registries.constants import (
             A2AMPL_BASE_UNIT,
             AGENT_REGISTRATION_FEE,
-            MCP_REGISTRATION_FEE,
             BRONZE_TIER_STAKE,
+            MCP_REGISTRATION_FEE,
             a2ampl_to_base_units,
             base_units_to_a2ampl,
         )
-        from decimal import Decimal
 
         assert A2AMPL_BASE_UNIT == 1_000_000_000
         assert AGENT_REGISTRATION_FEE > 0
@@ -96,14 +97,14 @@ class TestSimpleCoverage:
     def test_exception_creation(self):
         """Test exception creation."""
         from solana_ai_registries.exceptions import (
-            SolanaAIRegistriesError,
             AgentNotFoundError,
-            McpServerNotFoundError,
-            IDLError,
             ConnectionError,
-            TransactionError,
+            IDLError,
+            McpServerNotFoundError,
             PaymentError,
             RegistrationError,
+            SolanaAIRegistriesError,
+            TransactionError,
         )
 
         base_err = SolanaAIRegistriesError("base")

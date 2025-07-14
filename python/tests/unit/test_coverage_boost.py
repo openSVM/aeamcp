@@ -2,9 +2,9 @@
 Additional coverage tests for payments and MCP modules.
 """
 
-from solana_ai_registries.payments import PaymentManager
-from solana_ai_registries.mcp import McpServerRegistry
 from solana_ai_registries.agent import AgentRegistry
+from solana_ai_registries.mcp import McpServerRegistry
+from solana_ai_registries.payments import PaymentManager
 
 
 class TestPaymentManagerBasics:
@@ -79,9 +79,9 @@ class TestConstantsCoverage:
     def test_import_constants(self):
         """Test importing constants."""
         from solana_ai_registries.constants import (
+            A2AMPL_BASE_UNIT,
             MAX_AGENT_ID_LEN,
             MAX_AGENT_NAME_LEN,
-            A2AMPL_BASE_UNIT,
         )
 
         assert MAX_AGENT_ID_LEN > 0
@@ -103,9 +103,9 @@ class TestExceptionsCoverage:
     def test_exception_creation(self):
         """Test creating exceptions."""
         from solana_ai_registries.exceptions import (
-            SolanaAIRegistriesError,
             AgentNotFoundError,
             McpServerNotFoundError,
+            SolanaAIRegistriesError,
         )
 
         base_error = SolanaAIRegistriesError("Base error")

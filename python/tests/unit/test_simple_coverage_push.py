@@ -12,9 +12,9 @@ class TestCoverageBoost:
         """Test importing main modules."""
         import solana_ai_registries.agent
         import solana_ai_registries.client
+        import solana_ai_registries.idl
         import solana_ai_registries.mcp
         import solana_ai_registries.payments
-        import solana_ai_registries.idl
 
         assert solana_ai_registries.agent is not None
         assert solana_ai_registries.client is not None
@@ -24,9 +24,9 @@ class TestCoverageBoost:
 
     def test_basic_class_instantiation(self):
         """Test basic class instantiation."""
+        from solana_ai_registries.agent import AgentRegistry
         from solana_ai_registries.client import SolanaAIRegistriesClient
         from solana_ai_registries.idl import IDLLoader
-        from solana_ai_registries.agent import AgentRegistry
         from solana_ai_registries.mcp import McpServerRegistry
         from solana_ai_registries.payments import PaymentManager
 
@@ -59,8 +59,8 @@ class TestCoverageBoost:
 
     def test_idl_loader_methods(self):
         """Test IDL loader methods."""
-        from solana_ai_registries.idl import IDLLoader
         from solana_ai_registries.exceptions import IDLError
+        from solana_ai_registries.idl import IDLLoader
 
         loader = IDLLoader()
 
@@ -113,9 +113,9 @@ class TestCoverageBoost:
     def test_type_creations(self):
         """Test creating type instances."""
         from solana_ai_registries.types import (
-            ServiceEndpoint,
             AgentSkill,
             McpCapabilities,
+            ServiceEndpoint,
         )
 
         # ServiceEndpoint variations
@@ -145,13 +145,13 @@ class TestCoverageBoost:
     def test_exception_instantiation(self):
         """Test exception instantiation."""
         from solana_ai_registries.exceptions import (
-            SolanaAIRegistriesError,
             AgentNotFoundError,
-            McpServerNotFoundError,
-            RegistrationError,
-            PaymentError,
-            IDLError,
             ConnectionError,
+            IDLError,
+            McpServerNotFoundError,
+            PaymentError,
+            RegistrationError,
+            SolanaAIRegistriesError,
             TransactionError,
             ValidationError,
         )
@@ -179,14 +179,14 @@ class TestCoverageBoost:
     def test_more_constants(self):
         """Test more constants."""
         from solana_ai_registries.constants import (
-            AGENT_REGISTRY_PROGRAM_ID,
-            MCP_SERVER_REGISTRY_PROGRAM_ID,
-            A2AMPL_DECIMALS,
             A2AMPL_BASE_UNIT,
+            A2AMPL_DECIMALS,
+            AGENT_REGISTRY_PROGRAM_ID,
             BRONZE_TIER_STAKE,
-            SILVER_TIER_STAKE,
             GOLD_TIER_STAKE,
+            MCP_SERVER_REGISTRY_PROGRAM_ID,
             PLATINUM_TIER_STAKE,
+            SILVER_TIER_STAKE,
         )
 
         assert len(AGENT_REGISTRY_PROGRAM_ID) > 0
@@ -199,11 +199,12 @@ class TestCoverageBoost:
 
     def test_conversion_functions(self):
         """Test conversion utility functions."""
+        from decimal import Decimal
+
         from solana_ai_registries.constants import (
             a2ampl_to_base_units,
             base_units_to_a2ampl,
         )
-        from decimal import Decimal
 
         # Test conversions
         base_units = a2ampl_to_base_units(Decimal("1.5"))

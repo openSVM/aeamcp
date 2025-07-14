@@ -19,8 +19,8 @@ class TestFinalCoveragePush:
 
     def test_idl_loader_one_more_path(self):
         """Test one more IDL loader path."""
-        from solana_ai_registries.idl import IDLLoader
         from solana_ai_registries.exceptions import IDLError
+        from solana_ai_registries.idl import IDLLoader
 
         loader = IDLLoader()
 
@@ -50,7 +50,7 @@ class TestFinalCoveragePush:
 
     def test_exception_str_methods(self):
         """Test exception __str__ methods."""
-        from solana_ai_registries.exceptions import ValidationError, AgentExistsError
+        from solana_ai_registries.exceptions import AgentExistsError, ValidationError
 
         # Test ValidationError string representation
         val_error = ValidationError("test_field", "test_constraint", "Test message")
@@ -66,12 +66,12 @@ class TestFinalCoveragePush:
     def test_more_constants_usage(self):
         """Test more constants usage."""
         from solana_ai_registries.constants import (
+            GOLD_TIER_STAKE,
+            MAX_AGENT_DESCRIPTION_LEN,
             MAX_AGENT_ID_LEN,
             MAX_AGENT_NAME_LEN,
-            MAX_AGENT_DESCRIPTION_LEN,
-            SILVER_TIER_STAKE,
-            GOLD_TIER_STAKE,
             PLATINUM_TIER_STAKE,
+            SILVER_TIER_STAKE,
         )
 
         # Just test they exist and are reasonable values
