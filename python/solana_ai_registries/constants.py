@@ -248,9 +248,7 @@ def validate_string_length(value: str, max_length: int, field_name: str) -> None
         ValueError: If string exceeds maximum length
     """
     if len(value) > max_length:
-        raise ValueError(
-            f"{field_name} exceeds maximum length: {len(value)} > {max_length}"
-        )
+        raise ValueError(f"{field_name} must be at most {max_length} characters")
 
 
 def validate_url(url: str, field_name: str) -> None:
@@ -263,6 +261,11 @@ def validate_url(url: str, field_name: str) -> None:
     Raises:
         ValueError: If URL format is invalid
     """
+    # First check if it looks like a valid URL (contains ://)
+    if "://" not in url:
+        raise ValueError(f"{field_name} must be a valid URL")
+    
+    # Then check allowed schemes
     allowed_schemes = ("http://", "https://", "ipfs://", "ar://")
     if not any(url.startswith(scheme) for scheme in allowed_schemes):
         raise ValueError(
