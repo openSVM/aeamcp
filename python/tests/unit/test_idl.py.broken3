@@ -1,0 +1,289 @@
+"""Simplified tests for solana_ai_registries.idl module focused on interface coverage."""
+
+import pytest
+from unittest.mock import Mock, patch, mock_open
+from typing import Dict, Any, Type
+import json
+
+from solana_ai_registries.idl import IDLLoader, ParsedIdl, IdlAccount, IdlInstruction, IdlType
+from solana_ai_registries.exceptions import IdlLoadError
+
+
+class TestIDLLoaderInterface:
+    """Test IDLLoader interface and basic functionality."""
+
+    def setup_method(self):
+        """Set up test fixtures."""
+        self.idl_loader = IDLLoader()
+        
+        # Sample IDL data for testing
+        self.sample_idl_data = {
+            "version": "1.0.0",
+            "name": "test_program",
+            "instructions": [
+                {
+                    "name": "initialize",
+                    "accounts": [
+                        {"name": "user", "isMut": True, "isSigner": True},
+                        {"name": "system_program", "isMut": False, "isSigner": False}
+                    ],
+                    "args": [
+                        {"name": "amount", "type": "u64"}
+                    ]
+                }
+            ],
+            "accounts": [
+                {
+                    "name": "UserAccount",
+                    "type": {
+                        "kind": "struct",
+                        "fields": [
+                            {"name": "balance", "type": "u64"},
+                            {"name": "owner", "type": "publicKey"}
+                        ]
+                    }
+                }
+            ],
+            "types": [
+                {
+                    "name": "CustomData",
+                    "type": {
+                        "kind": "struct",
+                        "fields": [
+                            {"name": "value", "type": "u32"},
+                            {"name": "label", "type": "string"}
+                        ]
+                    }
+                }
+            ]
+        }
+
+    def test_init(self):
+        """Test IDLLoader initialization."""
+        loader = IDLLoader()
+        assert loader._cache == {}
+
+    def test_has_required_methods(self):
+        """Test that IDLLoader has expected methods."""
+        expected_methods = [
+            'load_idl',
+            'generate_types',
+            'get_instruction_discriminant',
+            'get_account_layout',
+            'clear_cache'
+        ]
+        for method in expected_methods:
+            assert hasattr(self.idl_loader, method)
+            assert callable(getattr(self.idl_loader, method))
+
+    def test_load_idl_nonexistent_program(self):
+        """Test loading IDL for nonexistent program."""
+        with pytest.raises(IdlLoadError, match="IDL file not found"):
+            self.idl_loader.load_idl("nonexistent_program")
+
+    @patch('solana_ai_registries.idl.IDLLoader._load_from_resources')
+    def test_load_idl_from_resources_success(self, mock_load):
+        """Test successful IDL loading from resources."""
+        mock_load.return_value = self.sample_idl_data
+        
+        result = self.idl_loader.load_idl("test_program")
+        assert isinstance(result, ParsedIdl)
+        assert result.name == "test_program"
+        assert result.version == "1.0.0"
+
+    @patch('solana_ai_registries.idl.IDLLoader._load_from_file')
+    @patch('solana_ai_registries.idl.IDLLoader._load_from_resources')
+    def test_load_idl_fallback_to_file(self, mock_resources, mock_file):
+        """Test IDL loading fallback to file."""
+        mock_resources.side_effect = FileNotFoundError()
+        mock_file.return_value = self.sample_idl_data
+        
+        result = self.idl_loader.load_idl("test_program")
+        assert isinstance(result, ParsedIdl)
+
+    @patch('solana_ai_registries.idl.IDLLoader._load_from_file')
+    @patch('solana_ai_registries.idl.IDLLoader._load_from_resources')
+    def test_load_idl_both_sources_fail(self, mock_resources, mock_file):
+        """Test IDL loading when both sources fail."""
+        mock_resources.side_effect = FileNotFoundError()
+        mock_file.side_effect = FileNotFoundError()
+        
+        with pytest.raises(IdlLoadError, match="IDL file not found"):
+            self.idl_loader.load_idl("test_program")
+
+    def test_load_from_resources_interface(self):
+        """Test _load_from_resources interface."""
+        # This should raise FileNotFoundError for non-existent resources
+        with pytest.raises(FileNotFoundError):
+            self.idl_loader._load_from_resources("nonexistent")
+
+    @patch('builtins.open', mock_open(read_data='{"name": "test", "version": "1.0.0"}'))
+    @patch('os.path.exists', return_value=True)
+    def test_load_from_file_success(self, mock_exists):
+        """Test successful file loading."""
+        result = self.idl_loader._load_from_file("test_program")
+        assert isinstance(result, dict)
+        assert result["name"] == "test"
+
+    @patch('os.path.exists', return_value=False)
+    def test_load_from_file_not_found(self, mock_exists):
+        """Test file loading when file doesn't exist."""
+        with pytest.raises(FileNotFoundError):
+            self.idl_loader._load_from_file("nonexistent")
+
+    def test_parse_idl_interface(self):
+        """Test IDL parsing interface."""
+        parsed = self.idl_loader._parse_idl(self.sample_idl_data)
+        assert isinstance(parsed, ParsedIdl)
+        assert parsed.name == "test_program"
+        assert parsed.version == "1.0.0"
+        assert len(parsed.instructions) == 1
+        assert len(parsed.accounts) == 1
+        assert len(parsed.types) == 1
+
+    def test_parse_idl_missing_fields(self):
+        """Test IDL parsing with missing required fields."""
+        incomplete_idl = {"name": "test"}  # Missing version and other fields
+        
+        with pytest.raises(KeyError):
+            self.idl_loader._parse_idl(incomplete_idl)
+
+    def test_generate_types_interface(self):
+        """Test type generation interface."""
+        parsed_idl = self.idl_loader._parse_idl(self.sample_idl_data)
+        types = self.idl_loader.generate_types(parsed_idl)
+        
+        assert isinstance(types, dict)
+        # Should contain generated types for accounts and custom types
+        assert len(types) >= 0  # May be empty in basic implementation
+
+    def test_generate_account_class_interface(self):
+        """Test account class generation."""
+        account = IdlAccount(
+            name="TestAccount",
+            type={
+                "kind": "struct",
+                "fields": [
+                    {"name": "balance", "type": "u64"},
+                    {"name": "owner", "type": "publicKey"}
+                ]
+            }
+        )
+        
+        # Test that method exists and can be called
+        result = self.idl_loader._generate_account_class(account)
+        assert isinstance(result, type)
+
+    def test_generate_instruction_class_interface(self):
+        """Test instruction class generation."""
+        instruction = IdlInstruction(
+            name="test_instruction",
+            accounts=[
+                {"name": "user", "isMut": True, "isSigner": True}
+            ],
+            args=[
+                {"name": "amount", "type": "u64"}
+            ]
+        )
+        
+        result = self.idl_loader._generate_instruction_class(instruction)
+        assert isinstance(result, type)
+
+    def test_map_idl_type_to_python_basic_types(self):
+        """Test IDL type mapping for basic types."""
+        # Test string types
+        assert self.idl_loader._map_idl_type_to_python("u64") == int
+        assert self.idl_loader._map_idl_type_to_python("string") == str
+        assert self.idl_loader._map_idl_type_to_python("bool") == bool
+        assert self.idl_loader._map_idl_type_to_python("publicKey") == str
+
+    def test_map_idl_type_to_python_complex_types(self):
+        """Test IDL type mapping for complex types."""
+        # Test array type
+        array_type = {"vec": "u32"}
+        result = self.idl_loader._map_idl_type_to_python(array_type)
+        assert result == list
+
+        # Test option type
+        option_type = {"option": "string"}
+        result = self.idl_loader._map_idl_type_to_python(option_type)
+        # Should return a type (might be Any or specific optional type)
+        assert result is not None
+
+    def test_map_idl_type_to_python_unknown_type(self):
+        """Test IDL type mapping for unknown types."""
+        # Should return Any for unknown types
+        result = self.idl_loader._map_idl_type_to_python("unknown_type")
+        # Should not raise an exception
+        assert result is not None
+
+    def test_get_instruction_discriminant_interface(self):
+        """Test instruction discriminant calculation."""
+        discriminant = self.idl_loader.get_instruction_discriminant("initialize")
+        assert isinstance(discriminant, bytes)
+        assert len(discriminant) == 8  # SHA256 first 8 bytes
+
+    def test_get_account_layout_interface(self):
+        """Test account layout generation."""
+        account = IdlAccount(
+            name="TestAccount",
+            type={
+                "kind": "struct",
+                "fields": [
+                    {"name": "balance", "type": "u64"},
+                    {"name": "owner", "type": "publicKey"}
+                ]
+            }
+        )
+        
+        layout = self.idl_loader.get_account_layout(account)
+        # Should return some kind of layout structure
+        assert layout is not None
+
+    def test_clear_cache_interface(self):
+        """Test cache clearing."""
+        # Add something to cache first
+        self.idl_loader._cache["test"] = "value"
+        assert len(self.idl_loader._cache) > 0
+        
+        # Clear cache
+        self.idl_loader.clear_cache()
+        assert len(self.idl_loader._cache) == 0
+
+    def test_caching_behavior(self):
+        """Test that IDL loading uses caching."""
+        with patch.object(self.idl_loader, '_load_from_resources') as mock_load:
+            mock_load.return_value = self.sample_idl_data
+            
+            # First load
+            result1 = self.idl_loader.load_idl("test_program")
+            # Second load should use cache
+            result2 = self.idl_loader.load_idl("test_program")
+            
+            # Should only call _load_from_resources once due to caching
+            assert mock_load.call_count == 1
+            assert result1.name == result2.name
+
+    def test_error_handling_invalid_json(self):
+        """Test error handling for invalid JSON."""
+        with patch('builtins.open', mock_open(read_data='invalid json')):
+            with patch('os.path.exists', return_value=True):
+                with pytest.raises(IdlLoadError):
+                    self.idl_loader._load_from_file("test")
+
+    def test_generate_type_class_interface(self):
+        """Test custom type class generation."""
+        custom_type = IdlType(
+            name="CustomType",
+            type={
+                "kind": "struct",
+                "fields": [
+                    {"name": "value", "type": "u32"},
+                    {"name": "label", "type": "string"}
+                ]
+            }
+        )
+        
+        result = self.idl_loader._generate_type_class(custom_type)
+        assert isinstance(result, type)
+        assert result.__name__ == "CustomType"

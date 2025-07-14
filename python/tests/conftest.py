@@ -5,6 +5,22 @@ This module provides common test fixtures and configuration used across
 unit and integration tests.
 """
 
+# Fix pytest_xprocess compatibility issue with anchorpy
+import sys
+from types import ModuleType
+
+# Create proper pytest_xprocess module forwarding to the actual location
+try:
+    from xprocess.pytest_xprocess import getrootdir
+    mock_xprocess = ModuleType('pytest_xprocess')
+    mock_xprocess.getrootdir = getrootdir
+    sys.modules['pytest_xprocess'] = mock_xprocess
+except ImportError:
+    import tempfile
+    mock_xprocess = ModuleType('pytest_xprocess')
+    mock_xprocess.getrootdir = lambda: tempfile.gettempdir()
+    sys.modules['pytest_xprocess'] = mock_xprocess
+
 import asyncio
 from typing import Any, AsyncGenerator, Dict
 from unittest.mock import AsyncMock, Mock
