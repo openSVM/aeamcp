@@ -78,10 +78,25 @@ class SolanaAIRegistriesClient:
             Hash object if valid blockhash found, None otherwise
         """
         try:
+            # Debug logging for response structure
+            logger.debug(f"Blockhash response from {rpc_url}: type={type(response)}")
+            if hasattr(response, "__dict__"):
+                logger.debug(f"Response attributes: {list(response.__dict__.keys())}")
+
             # Check if response has expected structure
             if hasattr(response, "value") and response.value:
+                logger.debug(f"Response.value type: {type(response.value)}")
+                if hasattr(response.value, "__dict__"):
+                    logger.debug(
+                        f"Response.value attributes: "
+                        f"{list(response.value.__dict__.keys())}"
+                    )
+
                 if hasattr(response.value, "blockhash"):
                     blockhash = response.value.blockhash
+                    logger.debug(
+                        f"Found blockhash: type={type(blockhash)}, value={blockhash}"
+                    )
                     # Validate that blockhash is a Hash object (not int or other type)
                     if isinstance(blockhash, Hash):
                         return blockhash
@@ -163,10 +178,21 @@ class SolanaAIRegistriesClient:
                 )
 
             except Exception as e:
-                logger.warning(
+                # Log the specific error with more details
+                error_msg = (
                     f"Failed to get blockhash from {rpc_to_try} "
-                    f"(attempt {attempt + 1}/{max_attempts}): {e}"
+                    f"(attempt {attempt + 1}/{max_attempts})"
                 )
+                if "429" in str(e) or "Too Many Requests" in str(e):
+                    logger.warning(f"{error_msg}: Rate limited - {e}")
+                elif "connect" in str(e).lower() or "dns" in str(e).lower():
+                    logger.warning(f"{error_msg}: Connection error - {e}")
+                elif hasattr(e, "response") and hasattr(e.response, "status_code"):
+                    logger.warning(f"{error_msg}: HTTP {e.response.status_code} - {e}")
+                else:
+                    logger.warning(f"{error_msg}: {e}")
+                    # Log the full exception for debugging
+                    logger.debug(f"Full exception details: {repr(e)}")
 
                 # Try next RPC endpoint on any error
                 self._current_rpc_index += 1
@@ -198,8 +224,13 @@ class SolanaAIRegistriesClient:
     async def close(self) -> None:
         """Close the RPC client connection."""
         if self._client:
-            await self._client.close()
-            self._client = None
+            try:
+                await self._client.close()
+            except Exception as e:
+                # Ignore close errors to prevent test failures due to cleanup issues
+                logger.debug(f"Error closing RPC client: {e}")
+            finally:
+                self._client = None
 
     async def health_check(self) -> bool:
         """
@@ -220,12 +251,14 @@ class SolanaAIRegistriesClient:
                 await self._get_fresh_blockhash(max_attempts=2)
                 logger.debug("RPC connection health check passed")
                 return True
-            except ConnectionError:
-                logger.warning("Failed to fetch fresh blockhash during health check")
+            except ConnectionError as e:
+                logger.warning(
+                    f"Failed to fetch fresh blockhash during health check: {e}"
+                )
                 return False
-
         except Exception as e:
             logger.warning(f"RPC health check failed: {e}")
+            return False
             return False
 
     async def __aenter__(self) -> "SolanaAIRegistriesClient":

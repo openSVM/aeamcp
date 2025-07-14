@@ -186,9 +186,9 @@ DEFAULT_TESTNET_RPC: Final[str] = "https://api.testnet.solana.com"
 # Alternative RPC endpoints for failover (using most reliable endpoints)
 FALLBACK_DEVNET_RPCS: Final[List[str]] = [
     "https://api.devnet.solana.com",  # Official Solana Labs endpoint
+    "https://rpc.ankr.com/solana_devnet",  # Ankr (more reliable than Alchemy)
     "https://devnet.helius-rpc.com",  # Helius (reliable)
-    "https://solana-devnet.g.alchemy.com/v2/demo",  # Alchemy demo
-    "https://devnet.sonic.game",  # Sonic (alternative)
+    "https://api.testnet.solana.com",  # Alternative testnet endpoint
 ]
 
 # Transaction Configuration

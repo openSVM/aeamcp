@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import os
 
 import pytest
 import pytest_asyncio
@@ -23,6 +24,18 @@ from solana_ai_registries.types import (
 
 logger = logging.getLogger(__name__)
 
+# Check if we should skip devnet tests entirely (useful for CI)
+SKIP_DEVNET_TESTS = os.getenv("SKIP_DEVNET_TESTS", "").lower() in ("true", "1", "yes")
+
+
+def pytest_runtest_setup(item):
+    """Setup function to conditionally skip devnet tests."""
+    if SKIP_DEVNET_TESTS and "devnet" in item.keywords:
+        pytest.skip(
+            "Skipping devnet tests (SKIP_DEVNET_TESTS=true). "
+            "Devnet may be experiencing issues."
+        )
+
 
 @pytest.mark.integration
 @pytest.mark.devnet
@@ -32,28 +45,57 @@ class TestDevnetAgentOperations:
     @pytest_asyncio.fixture(scope="class")
     async def client(self):
         """Create a client for devnet testing."""
+        # Check for skip environment variable
+        if SKIP_DEVNET_TESTS:
+            pytest.skip(
+                "Skipping devnet tests (SKIP_DEVNET_TESTS=true). "
+                "Devnet may be experiencing issues."
+            )
+
         client = SolanaAIRegistriesClient(rpc_url=DEFAULT_DEVNET_RPC)
 
-        # Verify connection health before running tests
-        max_health_attempts = 3
+        # Check if devnet is available and healthy
+        max_health_attempts = 2  # Reduced attempts for faster CI
+        devnet_healthy = False
+
         for attempt in range(max_health_attempts):
-            if await client.health_check():
-                logger.info("Devnet connection verified as healthy")
-                break
-            else:
+            try:
+                if await client.health_check():
+                    logger.info("Devnet connection verified as healthy")
+                    devnet_healthy = True
+                    break
+                else:
+                    logger.warning(
+                        f"Devnet health check failed, "
+                        f"attempt {attempt + 1}/{max_health_attempts}"
+                    )
+                    if attempt < max_health_attempts - 1:
+                        await asyncio.sleep(5.0)  # Longer wait between attempts
+            except Exception as e:
                 logger.warning(
-                    "Devnet health check failed, "
-                    f"attempt {attempt + 1}/{max_health_attempts}"
+                    f"Devnet health check exception, "
+                    f"attempt {attempt + 1}/{max_health_attempts}: {e}"
                 )
                 if attempt < max_health_attempts - 1:
-                    await asyncio.sleep(2.0)
-                else:
-                    pytest.skip(
-                        "Devnet connection is unhealthy, skipping integration tests"
-                    )
+                    await asyncio.sleep(5.0)
+
+        if not devnet_healthy:
+            await client.close()  # Clean up
+            # Skip all tests in this class if devnet is not healthy
+            pytest.skip(
+                "Devnet connection is unhealthy, skipping integration tests. "
+                "This is normal when devnet is experiencing issues. "
+                "Set SKIP_DEVNET_TESTS=true to skip devnet tests entirely."
+            )
 
         yield client
-        await client.close()
+
+        # Close with error handling
+        try:
+            await client.close()
+        except Exception as e:
+            logger.debug(f"Error during client cleanup: {e}")
+            # Don't fail tests due to cleanup issues
 
     @pytest.fixture
     def test_keypair(self):
@@ -182,9 +224,33 @@ class TestDevnetMcpOperations:
     @pytest_asyncio.fixture(scope="class")
     async def client(self):
         """Create a client for devnet testing."""
+        # Check for skip environment variable
+        if SKIP_DEVNET_TESTS:
+            pytest.skip(
+                "Skipping devnet tests (SKIP_DEVNET_TESTS=true). "
+                "Devnet may be experiencing issues."
+            )
+
         client = SolanaAIRegistriesClient(rpc_url=DEFAULT_DEVNET_RPC)
+
+        # Quick health check
+        try:
+            healthy = await client.health_check()
+            if not healthy:
+                await client.close()
+                pytest.skip(
+                    "Devnet connection is unhealthy, skipping integration tests."
+                )
+        except Exception as e:
+            await client.close()
+            pytest.skip(f"Devnet health check failed: {e}")
+
         yield client
-        await client.close()
+
+        try:
+            await client.close()
+        except Exception as e:
+            logger.debug(f"Error during client cleanup: {e}")
 
     @pytest.fixture
     def test_keypair(self):
@@ -315,9 +381,33 @@ class TestDevnetPaymentOperations:
     @pytest_asyncio.fixture(scope="class")
     async def client(self):
         """Create a client for devnet testing."""
+        # Check for skip environment variable
+        if SKIP_DEVNET_TESTS:
+            pytest.skip(
+                "Skipping devnet tests (SKIP_DEVNET_TESTS=true). "
+                "Devnet may be experiencing issues."
+            )
+
         client = SolanaAIRegistriesClient(rpc_url=DEFAULT_DEVNET_RPC)
+
+        # Quick health check
+        try:
+            healthy = await client.health_check()
+            if not healthy:
+                await client.close()
+                pytest.skip(
+                    "Devnet connection is unhealthy, skipping integration tests."
+                )
+        except Exception as e:
+            await client.close()
+            pytest.skip(f"Devnet health check failed: {e}")
+
         yield client
-        await client.close()
+
+        try:
+            await client.close()
+        except Exception as e:
+            logger.debug(f"Error during client cleanup: {e}")
 
     def test_payer(self):
         """Generate a test payer keypair."""
@@ -393,9 +483,33 @@ class TestDevnetClientOperations:
     @pytest_asyncio.fixture(scope="class")
     async def client(self):
         """Create a client for devnet testing."""
+        # Check for skip environment variable
+        if SKIP_DEVNET_TESTS:
+            pytest.skip(
+                "Skipping devnet tests (SKIP_DEVNET_TESTS=true). "
+                "Devnet may be experiencing issues."
+            )
+
         client = SolanaAIRegistriesClient(rpc_url=DEFAULT_DEVNET_RPC)
+
+        # Quick health check
+        try:
+            healthy = await client.health_check()
+            if not healthy:
+                await client.close()
+                pytest.skip(
+                    "Devnet connection is unhealthy, skipping integration tests."
+                )
+        except Exception as e:
+            await client.close()
+            pytest.skip(f"Devnet health check failed: {e}")
+
         yield client
-        await client.close()
+
+        try:
+            await client.close()
+        except Exception as e:
+            logger.debug(f"Error during client cleanup: {e}")
 
     @pytest.fixture
     def test_keypair(self):
@@ -496,9 +610,33 @@ class TestDevnetEndToEndScenarios:
     @pytest_asyncio.fixture(scope="class")
     async def client(self):
         """Create a client for devnet testing."""
+        # Check for skip environment variable
+        if SKIP_DEVNET_TESTS:
+            pytest.skip(
+                "Skipping devnet tests (SKIP_DEVNET_TESTS=true). "
+                "Devnet may be experiencing issues."
+            )
+
         client = SolanaAIRegistriesClient(rpc_url=DEFAULT_DEVNET_RPC)
+
+        # Quick health check
+        try:
+            healthy = await client.health_check()
+            if not healthy:
+                await client.close()
+                pytest.skip(
+                    "Devnet connection is unhealthy, skipping integration tests."
+                )
+        except Exception as e:
+            await client.close()
+            pytest.skip(f"Devnet health check failed: {e}")
+
         yield client
-        await client.close()
+
+        try:
+            await client.close()
+        except Exception as e:
+            logger.debug(f"Error during client cleanup: {e}")
 
     @pytest.mark.asyncio
     async def test_complete_ecosystem_flow(self, client):

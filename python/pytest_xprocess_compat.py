@@ -14,17 +14,31 @@ def getrootdir(config: Any = None) -> str:
     return tempfile.gettempdir()
 
 
-# Try to import the real module from xprocess package structure
+# Try to import from the new xprocess structure
 try:
-    from xprocess.pytest_xprocess import getrootdir as real_getrootdir  # noqa: F401
+    import xprocess
 
-    # Create module alias for pytest_xprocess at top level
+    # Create a mock pytest_xprocess module that maps to xprocess functionality
     if "pytest_xprocess" not in sys.modules:
-        import xprocess.pytest_xprocess as pytest_xprocess_module
+        mock_module = ModuleType("pytest_xprocess")
 
-        sys.modules["pytest_xprocess"] = pytest_xprocess_module
+        # Map the getrootdir function
+        if hasattr(xprocess, "getrootdir"):
+            mock_module.getrootdir = xprocess.getrootdir  # type: ignore
+        else:
+            mock_module.getrootdir = getrootdir  # type: ignore
+
+        # Try to find other attributes that might be needed
+        if hasattr(xprocess, "__version__"):
+            mock_module.__version__ = xprocess.__version__  # type: ignore
+        else:
+            mock_module.__version__ = "1.0.0"  # type: ignore
+
+        mock_module.__file__ = __file__
+        sys.modules["pytest_xprocess"] = mock_module
+
 except ImportError:
-    # If that fails, create a mock module
+    # If xprocess isn't available, create a full mock module
     if "pytest_xprocess" not in sys.modules:
         mock_module = ModuleType("pytest_xprocess")
         mock_module.getrootdir = getrootdir  # type: ignore

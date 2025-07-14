@@ -2,18 +2,29 @@
 pytest configuration and fixtures.
 """
 
+# Import compatibility shim FIRST before any other imports
+import pytest_xprocess_compat  # noqa: F401
+
 import asyncio
 from typing import Generator
 
 import pytest
 
-# Import compatibility shim before any other imports
-import pytest_xprocess_compat  # noqa: F401
+# Configure pytest plugins to load our shim first
+pytest_plugins = ["pytest_plugin_compat"]
 
 
 @pytest.fixture(scope="session")  # type: ignore[misc]
 def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
     """Create an instance of the default event loop for the test session."""
+    # Use the current policy's default loop if one exists
+    try:
+        loop = asyncio.get_running_loop()
+        yield loop
+        return
+    except RuntimeError:
+        pass
+
     # Create a new event loop policy to avoid conflicts
     policy = asyncio.get_event_loop_policy()
     loop = policy.new_event_loop()
