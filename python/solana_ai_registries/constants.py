@@ -8,7 +8,7 @@ All values are sourced from: sdk/constants.md
 """
 
 from decimal import Decimal
-from typing import Final, Union
+from typing import Final, List, Union
 
 # ============================================================================
 # AGENT REGISTRY CONSTANTS
@@ -182,6 +182,14 @@ AUTHORIZED_DDR_PROGRAM_ID: Final[str] = (
 DEFAULT_MAINNET_RPC: Final[str] = "https://api.mainnet-beta.solana.com"
 DEFAULT_DEVNET_RPC: Final[str] = "https://api.devnet.solana.com"
 DEFAULT_TESTNET_RPC: Final[str] = "https://api.testnet.solana.com"
+
+# Alternative RPC endpoints for failover
+FALLBACK_DEVNET_RPCS: Final[List[str]] = [
+    "https://api.devnet.solana.com",
+    "https://devnet.helius-rpc.com",
+    "https://solana-devnet.g.alchemy.com/v2/demo",
+    "https://rpc.ankr.com/solana_devnet",
+]
 
 # Transaction Configuration
 DEFAULT_COMMITMENT: Final[str] = "confirmed"

@@ -13,6 +13,7 @@ from typing import Any, Dict, List, Optional
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment
 from solana.rpc.types import TxOpts
+from solders.hash import Hash
 from solders.instruction import AccountMeta, Instruction
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey as PublicKey
@@ -22,6 +23,7 @@ from solders.transaction import Transaction
 from .constants import (
     AGENT_REGISTRY_PROGRAM_ID,
     DEFAULT_DEVNET_RPC,
+    FALLBACK_DEVNET_RPCS,
     MCP_SERVER_REGISTRY_PROGRAM_ID,
 )
 from .exceptions import (
@@ -40,6 +42,7 @@ class SolanaAIRegistriesClient:
         self,
         rpc_url: str = DEFAULT_DEVNET_RPC,
         commitment: Optional[Commitment] = None,
+        enable_rpc_failover: bool = True,
     ) -> None:
         """
         Initialize client with RPC endpoint.
@@ -47,12 +50,79 @@ class SolanaAIRegistriesClient:
         Args:
             rpc_url: Solana RPC endpoint URL
             commitment: Transaction commitment level
+            enable_rpc_failover: Whether to use failover RPC endpoints
         """
         self.rpc_url = rpc_url
+        self.enable_rpc_failover = enable_rpc_failover
         self.commitment = commitment or Commitment("confirmed")
         self._client: Optional[AsyncClient] = None
+        self._current_rpc_index = 0
         self.agent_program_id = PublicKey.from_string(AGENT_REGISTRY_PROGRAM_ID)
         self.mcp_program_id = PublicKey.from_string(MCP_SERVER_REGISTRY_PROGRAM_ID)
+
+    def _get_available_rpcs(self) -> List[str]:
+        """Get list of available RPC endpoints for failover."""
+        if not self.enable_rpc_failover or self.rpc_url not in FALLBACK_DEVNET_RPCS:
+            return [self.rpc_url]
+        return FALLBACK_DEVNET_RPCS
+
+    async def _get_fresh_blockhash(self, max_attempts: int = 3) -> Hash:
+        """
+        Get a fresh blockhash with retry logic.
+
+        Args:
+            max_attempts: Maximum number of attempts to fetch blockhash
+
+        Returns:
+            Fresh blockhash Hash object
+
+        Raises:
+            ConnectionError: If unable to fetch blockhash after all attempts
+        """
+        available_rpcs = self._get_available_rpcs()
+
+        for attempt in range(max_attempts):
+            # Try current RPC first, then failover to others
+            rpc_to_try = available_rpcs[self._current_rpc_index % len(available_rpcs)]
+
+            try:
+                if self._client is None or self.rpc_url != rpc_to_try:
+                    # Switch to different RPC if needed
+                    if self._client:
+                        await self._client.close()
+                    self.rpc_url = rpc_to_try
+                    self._client = AsyncClient(self.rpc_url, commitment=self.commitment)
+
+                # Wait a moment for RPC to be ready
+                if attempt > 0:
+                    await asyncio.sleep(0.5 + (attempt * 0.5))
+
+                blockhash_resp = await self._client.get_latest_blockhash(
+                    commitment=self.commitment
+                )
+
+                if blockhash_resp.value and blockhash_resp.value.blockhash:
+                    logger.debug(f"Fresh blockhash obtained from {rpc_to_try}")
+                    return blockhash_resp.value.blockhash  # Return Hash object directly
+                else:
+                    raise ConnectionError("Blockhash response was empty")
+
+            except Exception as e:
+                logger.warning(
+                    f"Failed to get blockhash from {rpc_to_try} "
+                    f"(attempt {attempt + 1}/{max_attempts}): {e}"
+                )
+
+                # Try next RPC endpoint
+                self._current_rpc_index += 1
+                if attempt < max_attempts - 1:
+                    continue
+
+        # All attempts failed
+        raise ConnectionError(
+            f"Failed to get fresh blockhash after {max_attempts} attempts "
+            f"across {len(available_rpcs)} RPC endpoints"
+        )
 
     @property
     def client(self) -> AsyncClient:
@@ -82,15 +152,13 @@ class SolanaAIRegistriesClient:
                 return False
 
             # Test blockhash fetching (most common failure point)
-            blockhash_resp = await self.client.get_latest_blockhash(
-                commitment=self.commitment
-            )
-            if not blockhash_resp.value or not blockhash_resp.value.blockhash:
-                logger.warning("Failed to fetch latest blockhash")
+            try:
+                await self._get_fresh_blockhash(max_attempts=2)
+                logger.debug("RPC connection health check passed")
+                return True
+            except ConnectionError:
+                logger.warning("Failed to fetch fresh blockhash during health check")
                 return False
-
-            logger.debug("RPC connection health check passed")
-            return True
 
         except Exception as e:
             logger.warning(f"RPC health check failed: {e}")
@@ -238,14 +306,12 @@ class SolanaAIRegistriesClient:
         last_error = None
         for attempt in range(max_retries):
             try:
-                # Get fresh blockhash for each attempt
-                blockhash_resp = await self.client.get_latest_blockhash(
-                    commitment=self.commitment
-                )
+                # Get fresh blockhash for each attempt using robust method
+                fresh_blockhash = await self._get_fresh_blockhash(max_attempts=3)
 
                 # Wait a bit to ensure blockhash is fully propagated
                 if attempt > 0:
-                    await asyncio.sleep(0.5)
+                    await asyncio.sleep(1.0 + (attempt * 0.5))
 
                 # Create a new transaction instance to avoid signature conflicts
                 # Note: Cannot use deepcopy on Transaction objects as they
@@ -253,7 +319,7 @@ class SolanaAIRegistriesClient:
                 tx_copy = Transaction.from_bytes(bytes(transaction))
 
                 # Sign transaction with fresh blockhash
-                tx_copy.sign(signers, blockhash_resp.value.blockhash)
+                tx_copy.sign(signers, fresh_blockhash)
 
                 # Send transaction with additional retry-friendly options
                 response = await self.client.send_transaction(
@@ -280,9 +346,10 @@ class SolanaAIRegistriesClient:
                     logger.warning(
                         f"Blockhash error on attempt {attempt + 1}/{max_retries}: {e}"
                     )
-                    # For blockhash errors, wait longer before retry
+                    # For blockhash errors, wait longer and force RPC switch
                     if attempt < max_retries - 1:
-                        await asyncio.sleep(2.0 + (attempt * 1.0))
+                        self._current_rpc_index += 1  # Force RPC failover
+                        await asyncio.sleep(2.5 + (attempt * 1.0))
                 else:
                     logger.warning(
                         f"Transaction attempt {attempt + 1}/{max_retries} failed: {e}"
@@ -298,44 +365,75 @@ class SolanaAIRegistriesClient:
         )
 
     async def simulate_transaction(
-        self, transaction: Transaction, signers: List[Keypair]
+        self, transaction: Transaction, signers: List[Keypair], max_retries: int = 3
     ) -> Dict[str, Any]:
         """
-        Simulate transaction execution.
+        Simulate transaction execution with retry logic for blockhash issues.
 
         Args:
             transaction: Transaction to simulate
             signers: List of keypairs to sign the transaction
+            max_retries: Maximum number of retry attempts
 
         Returns:
             Simulation result
 
         Raises:
-            TransactionError: If simulation fails
+            TransactionError: If simulation fails after retries
         """
-        try:
-            # Get recent blockhash and sign transaction
-            blockhash_resp = await self.client.get_latest_blockhash()
-            # TODO: Update transaction with proper blockhash handling
-            # transaction.recent_blockhash = blockhash_resp.value.blockhash  # type: ignore[attr-defined]  # noqa: E501
-            transaction.sign(
-                signers, blockhash_resp.value.blockhash
-            )  # type: ignore[arg-type]
+        last_error = None
 
-            # Simulate
-            response = await self.client.simulate_transaction(
-                transaction, commitment=self.commitment
-            )
+        for attempt in range(max_retries):
+            try:
+                # Get fresh blockhash for each attempt using robust method
+                fresh_blockhash = await self._get_fresh_blockhash(max_attempts=2)
 
-            return {
-                "logs": response.value.logs,
-                "err": response.value.err,
-                "accounts": response.value.accounts,
-                "units_consumed": response.value.units_consumed,
-            }
+                # Wait a moment for blockhash propagation on retries
+                if attempt > 0:
+                    await asyncio.sleep(0.5 + (attempt * 0.3))
 
-        except Exception as e:
-            raise TransactionError(f"Transaction simulation failed: {e}")
+                # Create a copy of the transaction to avoid conflicts
+                tx_copy = Transaction.from_bytes(bytes(transaction))
+
+                # Sign transaction with fresh blockhash
+                tx_copy.sign(signers, fresh_blockhash)
+
+                # Simulate
+                response = await self.client.simulate_transaction(
+                    tx_copy, commitment=self.commitment
+                )
+
+                return {
+                    "logs": response.value.logs,
+                    "err": response.value.err,
+                    "accounts": response.value.accounts,
+                    "units_consumed": response.value.units_consumed,
+                }
+
+            except Exception as e:
+                last_error = e
+                error_msg = str(e).lower()
+
+                if "blockhash" in error_msg:
+                    logger.warning(
+                        f"Blockhash error in simulation attempt "
+                        f"{attempt + 1}/{max_retries}: {e}"
+                    )
+                    # Force RPC failover on blockhash errors
+                    if attempt < max_retries - 1:
+                        self._current_rpc_index += 1
+                        await asyncio.sleep(1.0 + (attempt * 0.5))
+                else:
+                    logger.warning(
+                        f"Simulation attempt {attempt + 1}/{max_retries} failed: {e}"
+                    )
+                    if attempt < max_retries - 1:
+                        await asyncio.sleep(0.5 * (attempt + 1))
+
+        # All attempts failed
+        raise TransactionError(
+            f"Transaction simulation failed after {max_retries} attempts: {last_error}"
+        )
 
     async def get_balance(self, pubkey: PublicKey) -> int:
         """
