@@ -8,7 +8,6 @@ for interacting with on-chain Agent Registry and MCP Server Registry programs.
 import asyncio
 import logging
 import struct
-from copy import deepcopy
 from typing import Any, Dict, List, Optional
 
 from solana.rpc.async_api import AsyncClient
@@ -249,7 +248,9 @@ class SolanaAIRegistriesClient:
                     await asyncio.sleep(0.5)
 
                 # Create a new transaction instance to avoid signature conflicts
-                tx_copy = deepcopy(transaction)
+                # Note: Cannot use deepcopy on Transaction objects as they
+                # cannot be pickled. Use serialization instead.
+                tx_copy = Transaction.from_bytes(bytes(transaction))
 
                 # Sign transaction with fresh blockhash
                 tx_copy.sign(signers, blockhash_resp.value.blockhash)
