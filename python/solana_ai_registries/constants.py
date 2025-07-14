@@ -183,12 +183,12 @@ DEFAULT_MAINNET_RPC: Final[str] = "https://api.mainnet-beta.solana.com"
 DEFAULT_DEVNET_RPC: Final[str] = "https://api.devnet.solana.com"
 DEFAULT_TESTNET_RPC: Final[str] = "https://api.testnet.solana.com"
 
-# Alternative RPC endpoints for failover
+# Alternative RPC endpoints for failover (using most reliable endpoints)
 FALLBACK_DEVNET_RPCS: Final[List[str]] = [
-    "https://api.devnet.solana.com",
-    "https://devnet.helius-rpc.com",
-    "https://solana-devnet.g.alchemy.com/v2/demo",
-    "https://rpc.ankr.com/solana_devnet",
+    "https://api.devnet.solana.com",  # Official Solana Labs endpoint
+    "https://devnet.helius-rpc.com",  # Helius (reliable)
+    "https://solana-devnet.g.alchemy.com/v2/demo",  # Alchemy demo
+    "https://devnet.sonic.game",  # Sonic (alternative)
 ]
 
 # Transaction Configuration

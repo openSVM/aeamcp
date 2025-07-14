@@ -66,9 +66,46 @@ class SolanaAIRegistriesClient:
             return [self.rpc_url]
         return FALLBACK_DEVNET_RPCS
 
+    def _parse_blockhash_response(self, response: Any, rpc_url: str) -> Optional[Hash]:
+        """
+        Parse blockhash response safely, handling various response types.
+
+        Args:
+            response: RPC response object
+            rpc_url: RPC endpoint URL for logging
+
+        Returns:
+            Hash object if valid blockhash found, None otherwise
+        """
+        try:
+            # Check if response has expected structure
+            if hasattr(response, "value") and response.value:
+                if hasattr(response.value, "blockhash"):
+                    blockhash = response.value.blockhash
+                    # Validate that blockhash is a Hash object (not int or other type)
+                    if isinstance(blockhash, Hash):
+                        return blockhash
+                    else:
+                        logger.warning(
+                            f"Invalid blockhash type from {rpc_url}: "
+                            f"{type(blockhash)} - expected Hash object"
+                        )
+                        return None
+                else:
+                    logger.warning(f"Response from {rpc_url} missing blockhash field")
+                    return None
+            else:
+                logger.warning(
+                    f"Invalid response structure from {rpc_url}: {type(response)}"
+                )
+                return None
+        except Exception as e:
+            logger.warning(f"Error parsing blockhash response from {rpc_url}: {e}")
+            return None
+
     async def _get_fresh_blockhash(self, max_attempts: int = 3) -> Hash:
         """
-        Get a fresh blockhash with retry logic.
+        Get a fresh blockhash with robust retry logic and RPC failover.
 
         Args:
             max_attempts: Maximum number of attempts to fetch blockhash
@@ -93,26 +130,37 @@ class SolanaAIRegistriesClient:
                     self.rpc_url = rpc_to_try
                     self._client = AsyncClient(self.rpc_url, commitment=self.commitment)
 
-                # Wait a moment for RPC to be ready
+                # Increased wait time for RPC to be ready and reduce rate limiting
                 if attempt > 0:
-                    await asyncio.sleep(0.5 + (attempt * 0.5))
+                    wait_time = 2.5 + (
+                        attempt * 2.0
+                    )  # Start at 2.5s, increase by 2s each attempt
+                    logger.debug(f"Waiting {wait_time}s before retry {attempt + 1}")
+                    await asyncio.sleep(wait_time)
 
+                logger.debug(
+                    f"Fetching blockhash from {rpc_to_try} (attempt {attempt + 1})"
+                )
                 blockhash_resp = await self._client.get_latest_blockhash(
                     commitment=self.commitment
                 )
 
-                # Handle response type safely - check if response has .value attribute
-                if (
-                    hasattr(blockhash_resp, "value")
-                    and blockhash_resp.value
-                    and hasattr(blockhash_resp.value, "blockhash")
-                ):
+                # Use robust parser to handle response
+                parsed_blockhash = self._parse_blockhash_response(
+                    blockhash_resp, rpc_to_try
+                )
+                if parsed_blockhash:
                     logger.debug(f"Fresh blockhash obtained from {rpc_to_try}")
-                    return blockhash_resp.value.blockhash  # Return Hash object directly
-                else:
-                    raise ConnectionError(
-                        f"Blockhash response was invalid: {type(blockhash_resp)}"
-                    )
+                    return parsed_blockhash
+
+                # If parsing failed, try next RPC
+                logger.warning(
+                    f"Failed to parse blockhash response from {rpc_to_try}, "
+                    "trying next endpoint"
+                )
+                raise ConnectionError(
+                    f"Blockhash response was invalid from {rpc_to_try}"
+                )
 
             except Exception as e:
                 logger.warning(
@@ -323,11 +371,15 @@ class SolanaAIRegistriesClient:
         for attempt in range(max_retries):
             try:
                 # Get fresh blockhash for each attempt using robust method
-                fresh_blockhash = await self._get_fresh_blockhash(max_attempts=3)
+                fresh_blockhash = await self._get_fresh_blockhash(
+                    max_attempts=3
+                )
 
-                # Wait a bit to ensure blockhash is fully propagated
+                # Wait longer to ensure blockhash propagated across network
                 if attempt > 0:
-                    await asyncio.sleep(1.0 + (attempt * 0.5))
+                    await asyncio.sleep(
+                        2.0 + (attempt * 1.5)
+                    )  # Start at 2s, increase by 1.5s
 
                 # Create a new transaction instance to avoid signature conflicts
                 # Note: Cannot use deepcopy on Transaction objects as they
@@ -367,7 +419,9 @@ class SolanaAIRegistriesClient:
                     # For blockhash errors, wait longer and force RPC switch
                     if attempt < max_retries - 1:
                         self._current_rpc_index += 1  # Force RPC failover
-                        await asyncio.sleep(2.5 + (attempt * 1.0))
+                        await asyncio.sleep(
+                            3.0 + (attempt * 2.0)
+                        )  # Longer waits for blockhash issues
                 else:
                     logger.warning(
                         f"Transaction attempt {attempt + 1}/{max_retries} failed: {e}"
@@ -406,9 +460,11 @@ class SolanaAIRegistriesClient:
                 # Get fresh blockhash for each attempt using robust method
                 fresh_blockhash = await self._get_fresh_blockhash(max_attempts=2)
 
-                # Wait a moment for blockhash propagation on retries
+                # Wait longer for blockhash propagation on retries
                 if attempt > 0:
-                    await asyncio.sleep(0.5 + (attempt * 0.3))
+                    await asyncio.sleep(
+                        1.5 + (attempt * 1.0)
+                    )  # Start at 1.5s, increase by 1s
 
                 # Create a copy of the transaction to avoid conflicts
                 tx_copy = Transaction.from_bytes(bytes(transaction))
