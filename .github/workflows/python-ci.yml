@@ -62,7 +62,7 @@ jobs:
     
     - name: Run unit tests
       run: |
-        pytest tests/unit -v --cov=solana_ai_registries --cov-report=xml --cov-report=html
+        pytest tests/unit -v --cov=solana_ai_registries --cov-report=xml --cov-report=html --cov-fail-under=50
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
