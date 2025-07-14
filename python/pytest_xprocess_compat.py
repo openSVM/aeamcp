@@ -9,17 +9,17 @@ import tempfile
 from types import ModuleType
 
 
-def getrootdir():
+def getrootdir() -> str:
     """Compatibility function for pytest_xprocess.getrootdir"""
     return tempfile.gettempdir()
 
 
 # Create a comprehensive mock pytest_xprocess module
 mock_module = ModuleType("pytest_xprocess")
-mock_module.getrootdir = getrootdir
+mock_module.getrootdir = getrootdir  # type: ignore
 
 # Add other commonly expected attributes to avoid import errors
-mock_module.__version__ = "1.0.0"
+mock_module.__version__ = "1.0.0"  # type: ignore
 mock_module.__file__ = __file__
 
 # Patch sys.modules early to prevent import errors
