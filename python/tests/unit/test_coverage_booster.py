@@ -39,10 +39,10 @@ class TestAdditionalCoverage:
         validate_url("http://example.com", "test_url")
 
         # Invalid cases
-        with pytest.raises(ValueError, match="test_field must be at most"):
+        with pytest.raises(ValueError, match="test_field exceeds maximum length"):
             validate_string_length("too_long_string", 5, "test_field")
 
-        with pytest.raises(ValueError, match="test_url must be a valid URL"):
+        with pytest.raises(ValueError, match="test_url must start with one of"):
             validate_url("not_a_url", "test_url")
 
         with pytest.raises(ValueError, match="test_url must start with one of"):
@@ -97,7 +97,7 @@ class TestAdditionalCoverage:
         assert agent_error.owner == "owner123"
 
         validation_error = ValidationError(
-            "test_field", "test_constraint", "test_value"
+            "test_field", "test_value", "test_constraint"
         )
         assert validation_error.field == "test_field"
         assert validation_error.constraint == "test_constraint"

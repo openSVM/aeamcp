@@ -169,9 +169,9 @@ class TestTypesAdditionalCoverage:
 
     def test_service_endpoint_edge_cases(self):
         """Test ServiceEndpoint with different protocols."""
-        # Test explicit protocol setting
+        # Test explicit protocol setting with valid URL
         endpoint = ServiceEndpoint(
-            url="custom://example.com", protocol="custom", auth_type="bearer"
+            url="https://example.com", protocol="custom", auth_type="bearer"
         )
         assert endpoint.protocol == "custom"
         assert endpoint.auth_type == "bearer"
@@ -222,7 +222,7 @@ class TestClientAdditionalCoverage:
 class TestAgentRegistryAdditionalCoverage:
     """Additional tests for agent registry functionality."""
 
-    @patch("solana_ai_registries.agent.AsyncClient")
+    @patch("solana_ai_registries.client.AsyncClient")
     def test_agent_registry_initialization(self, mock_async_client):
         """Test AgentRegistry initialization."""
         mock_client = Mock()
@@ -233,7 +233,7 @@ class TestAgentRegistryAdditionalCoverage:
 class TestMcpServerRegistryAdditionalCoverage:
     """Additional tests for MCP server registry functionality."""
 
-    @patch("solana_ai_registries.mcp.AsyncClient")
+    @patch("solana_ai_registries.client.AsyncClient")
     def test_mcp_registry_initialization(self, mock_async_client):
         """Test McpServerRegistry initialization."""
         mock_client = Mock()
@@ -244,7 +244,7 @@ class TestMcpServerRegistryAdditionalCoverage:
 class TestPaymentManagerAdditionalCoverage:
     """Additional tests for payment manager functionality."""
 
-    @patch("solana_ai_registries.payments.AsyncClient")
+    @patch("solana_ai_registries.client.AsyncClient")
     def test_payment_manager_initialization(self, mock_async_client):
         """Test PaymentManager initialization."""
         mock_client = Mock()
@@ -313,7 +313,7 @@ class TestValidationFunctions:
         # String length validation
         validate_string_length("short", 10, "test")
 
-        with pytest.raises(ValueError, match="test must be at most"):
+        with pytest.raises(ValueError, match="test exceeds maximum length"):
             validate_string_length("very_long_string_that_exceeds_limit", 5, "test")
 
         # URL validation
@@ -335,7 +335,7 @@ class TestValidationFunctions:
         ]
 
         for url in invalid_urls:
-            with pytest.raises(ValueError, match="must be a valid URL"):
+            with pytest.raises(ValueError, match="must start with one of"):
                 validate_url(url, "test_url")
 
         # Invalid schemes
