@@ -55,6 +55,7 @@ class TestDevnetAgentOperations:
         yield client
         await client.close()
 
+    @pytest.fixture
     def test_keypair(self):
         """Generate a test keypair for operations."""
         return Keypair()
@@ -185,6 +186,7 @@ class TestDevnetMcpOperations:
         yield client
         await client.close()
 
+    @pytest.fixture
     def test_keypair(self):
         """Generate a test keypair for operations."""
         return Keypair()
@@ -395,6 +397,7 @@ class TestDevnetClientOperations:
         yield client
         await client.close()
 
+    @pytest.fixture
     def test_keypair(self):
         """Generate a test keypair."""
         return Keypair()

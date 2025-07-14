@@ -371,9 +371,7 @@ class SolanaAIRegistriesClient:
         for attempt in range(max_retries):
             try:
                 # Get fresh blockhash for each attempt using robust method
-                fresh_blockhash = await self._get_fresh_blockhash(
-                    max_attempts=3
-                )
+                fresh_blockhash = await self._get_fresh_blockhash(max_attempts=3)
 
                 # Wait longer to ensure blockhash propagated across network
                 if attempt > 0:
