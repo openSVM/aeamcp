@@ -409,10 +409,12 @@ class TestDevnetPaymentOperations:
         except Exception as e:
             logger.debug(f"Error during client cleanup: {e}")
 
+    @pytest.fixture
     def test_payer(self):
         """Generate a test payer keypair."""
         return Keypair()
 
+    @pytest.fixture
     def test_payee(self):
         """Generate a test payee keypair."""
         return Keypair()
