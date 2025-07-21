@@ -1,0 +1,185 @@
+{
+  "version": "0.1.0",
+  "name": "mcp_server_registry",
+  "instructions": [
+    {
+      "name": "registerServer",
+      "accounts": [
+        {
+          "name": "mcpServerRegistry",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "serverId",
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "endpointUrl",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": {
+            "option": "string"
+          }
+        }
+      ]
+    },
+    {
+      "name": "updateServer",
+      "accounts": [
+        {
+          "name": "mcpServerRegistry",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "endpointUrl",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "status",
+          "type": {
+            "option": "u8"
+          }
+        }
+      ]
+    },
+    {
+      "name": "deregisterServer",
+      "accounts": [
+        {
+          "name": "mcpServerRegistry",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "McpServerRegistry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "serverId",
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "endpointUrl",
+            "type": "string"
+          },
+          {
+            "name": "owner",
+            "type": "publicKey"
+          },
+          {
+            "name": "status",
+            "type": "u8"
+          },
+          {
+            "name": "description",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "createdAt",
+            "type": "i64"
+          },
+          {
+            "name": "updatedAt",
+            "type": "i64"
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "McpServerStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Pending"
+          },
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Inactive"
+          },
+          {
+            "name": "Deregistered"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidServerId",
+      "msg": "Invalid server ID"
+    },
+    {
+      "code": 6001,
+      "name": "ServerAlreadyExists",
+      "msg": "Server already exists"
+    },
+    {
+      "code": 6002,
+      "name": "ServerNotFound",
+      "msg": "Server not found"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidEndpointUrl",
+      "msg": "Invalid endpoint URL"
+    }
+  ]
+}
