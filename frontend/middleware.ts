@@ -14,7 +14,7 @@ export function middleware(request: NextRequest) {
       if (isPowershell) {
         // Windows PowerShell command
         return new Response(
-          `powershell -Command "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/openSVM/aea/main/install.ps1' -OutFile 'install.ps1'; .\\install.ps1"`,
+          `powershell -Command "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/openSVM/aea/main/install.ps1' -OutFile 'install.ps1'; ./install.ps1"`,
           {
             status: 200,
             headers: { 'Content-Type': 'text/plain; charset=utf-8' },
