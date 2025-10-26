@@ -2,17 +2,43 @@
 
 ## Repository Overview
 
-This is the **Solana AI Registries** project - a comprehensive on-chain registry system for autonomous AI agents and Model Context Protocol (MCP) servers on the Solana blockchain. The repository is ~4.3GB with 21,933 files, including a large set of npm dependencies.
+This is the **AEA Network (Autonomous Economic Agent Network)** - a foundational infrastructure project for the emerging autonomous agent economy. The repository implements a comprehensive on-chain registry system for autonomous AI agents and Model Context Protocol (MCP) servers on the Solana blockchain. Repository size: ~4.3GB with 21,933 files, including a large set of npm dependencies.
 
-**Core Purpose**: Provides two interconnected on-chain registries:
-1. **Agent Registry** (`solana-a2a`) - Decentralized directory for autonomous agents following AEA and A2A paradigms
-2. **MCP Server Registry** (`solana-mcp`) - Directory for Model Context Protocol compliant servers
+### Project Vision and Purpose
 
-**Key Technologies**:
+The AEA Network addresses the critical need for **decentralized discovery and verification infrastructure** for autonomous economic agents and LLM applications that can operate at scale while maintaining security and economic sustainability. This is not just a registry - it's foundational infrastructure enabling:
+
+- **Agent Discovery**: Open, permissionless discovery of AI agents and their capabilities
+- **Economic Coordination**: Autonomous agents conducting high-frequency micro-transactions
+- **Trust and Reputation**: Decentralized reputation tracking and verification
+- **Protocol Compliance**: Industry-standard compatibility with A2A, AEA, and MCP specifications
+
+### Core Components
+
+**Two Interconnected On-Chain Registries**:
+1. **Agent Registry** (`solana-a2a`) - Decentralized directory for autonomous agents following AEA (Autonomous Economic Agent) and A2A (Agent-to-Agent) paradigms with skills, capabilities, endpoints, and reputation tracking
+2. **MCP Server Registry** (`solana-mcp`) - Directory for Model Context Protocol compliant servers with tools, resources, and prompts discovery
+
+**Dual-Token Economics** (AEA/SVMAI):
+- **SVMAI**: DAO governance token with revenue sharing and value accrual (similar to MKR in MakerDAO)
+- **AEA**: Pure utility token for AI agent service payments (consumable, not investment)
+- Designed to avoid the "single token dilemma" and conflicting optimization problems
+
+### Key Architectural Innovations
+
+1. **Hybrid Data Storage**: Core verifiable data on-chain, rich metadata off-chain (IPFS/Arweave) with cryptographic hashes for integrity
+2. **Event-Driven Architecture**: Comprehensive event emission for off-chain indexing and real-time updates
+3. **Program Derived Addresses (PDAs)**: Deterministic account management enabling predictable agent coordination
+4. **Native Solana Optimization**: Leverages Solana's 400ms block times, parallel processing, and low transaction costs (<$0.001)
+5. **Protocol Compliance**: 100% compatible with Google's A2A protocol, Fetch.ai's AEA framework, and Anthropic's MCP specification
+
+### Technical Stack
+
 - **Solana Programs**: Rust with Solana SDK v1.18 and Anchor Framework v0.29.0
 - **SDKs**: Python 3.12+, TypeScript/Node 20+, Rust (client library)
-- **Frontend**: Next.js 15 with React 19
-- **Backend**: Node.js/TypeScript with Express
+- **Frontend**: Next.js 15 with React 19 (retro DOS/ASCII aesthetic)
+- **Backend**: Node.js/TypeScript with Express for Git-based registration
+- **Security**: Multiple audit cycles completed (see `docs/audits/` and `AUDIT_SUMMARY.md`)
 
 ## Project Structure
 
@@ -239,6 +265,51 @@ The repository has comprehensive CI workflows that you should understand:
 - `publish-typescript-sdk.yml` - Publishes TS SDK to npm
 - `python-publish.yml` - Publishes Python SDK to PyPI
 
+## Understanding the Protocol and Architecture
+
+### Essential Documentation
+
+Before making significant changes, familiarize yourself with these key documents:
+
+**Core Specifications**:
+- `docs/whitepaper/aeamcp-comprehensive-whitepaper.pdf` - Complete technical whitepaper covering architecture, tokenomics, security, and vision
+- `docs/solana-ai-registries-implementation-plan.md` - Detailed implementation plan for native Solana programs
+- `docs/DUAL_TOKENOMICS.md` - Comprehensive analysis of the AEA/SVMAI dual-token model
+- `AUDIT_SUMMARY.md` - Security audit summary with critical findings and recommendations
+
+**Protocol Compliance**:
+- **A2A (Agent-to-Agent)**: Google's protocol for agent communication and discovery
+- **AEA (Autonomous Economic Agent)**: Fetch.ai's framework for economic agent coordination
+- **MCP (Model Context Protocol)**: Anthropic's protocol for LLM tool/resource discovery
+
+**Architecture Documentation**:
+- `docs/CROSS_CHAIN_BRIDGE_ARCHITECTURE.md` - Cross-chain expansion strategy
+- `docs/GIT_REGISTRATION_ARCHITECTURE.md` - Git-based registration system for MCP servers
+- `docs/TOKEN_INTEGRATION_ARCHITECTURE.md` - Token integration and economic flows
+
+### Key Concepts to Understand
+
+**Hybrid Data Model**: 
+- On-chain: Agent IDs, ownership, endpoints, capability flags, cryptographic hashes
+- Off-chain: Detailed metadata, full schemas, extended documentation (IPFS/Arweave)
+- Integrity: Verified through on-chain hashes and event emission
+
+**Program Derived Addresses (PDAs)**:
+- Deterministic account generation using seeds (e.g., `[AGENT_REGISTRY_PDA_SEED, agent_id]`)
+- Enables predictable agent coordination without centralized coordination
+- Critical for security - only program can sign for PDA accounts
+
+**Event-Driven Design**:
+- All state changes emit structured program logs (JSON format)
+- Enables off-chain indexing for scalable querying
+- Events: AgentRegistered, AgentUpdated, AgentStatusChanged, AgentDeregistered (similar for MCP)
+
+**Solana-Specific Optimizations**:
+- Rent-exemption for permanent account storage
+- Parallel transaction processing for multiple agents
+- Low transaction costs (<$0.001) enable micro-economic interactions
+- 400ms block times for near-real-time coordination
+
 ## Common Issues and Workarounds
 
 ### 1. Rust Build Failures
@@ -272,6 +343,59 @@ cargo build --package solana-a2a --package solana-mcp
 - **TypeScript SDK**: `sdk/typescript/package.json`, `sdk/typescript/tsconfig.json`
 - **Frontend**: `frontend/package.json`, `frontend/next.config.js` (likely)
 - **Backend**: `backend/package.json`, `backend/tsconfig.json`
+
+## State Structure and Data Models
+
+### Agent Registry Entry (AgentRegistryEntryV1)
+
+Core fields stored on-chain:
+- `owner_authority`: Pubkey controlling the agent entry
+- `agent_id`: Unique identifier (string, max 64 chars)
+- `name`: Display name (max 128 chars)
+- `description`: Brief description (max 512 chars)
+- `agent_version`: Version string (semver recommended)
+- `service_endpoints`: Array of protocol/URL pairs for agent communication
+- `skills`: Array of agent skills with IDs, names, description hashes, and tags
+- `status`: Active, Inactive, Deprecated (u8 enum)
+- `capabilities_flags`: Bitflags for streaming, async, etc.
+- `extended_metadata_uri`: URI to off-chain detailed metadata (IPFS/Arweave)
+- `registration_timestamp`: Unix timestamp
+- `last_update_timestamp`: Unix timestamp
+
+Account size: ~2.5KB optimized for rent-exemption (~0.02 SOL)
+
+### MCP Server Registry Entry (McpServerRegistryEntryV1)
+
+Core fields stored on-chain:
+- `owner_authority`: Pubkey controlling the server entry
+- `server_id`: Unique identifier (max 64 chars)
+- `name`: Display name (max 128 chars)
+- `server_version`: Version string
+- `service_endpoint`: Primary endpoint URL
+- `capabilities`: Boolean flags for resources, tools, prompts support
+- `onchain_tool_definitions`: Array of tool names with hashes and tags
+- `onchain_resource_definitions`: Array of URI patterns with hashes
+- `onchain_prompt_definitions`: Array of prompt templates
+- `full_capabilities_uri`: URI to complete off-chain capabilities
+- `status`: Active, Inactive, Maintenance, Deprecated (u8 enum)
+
+Account size: ~2.2KB optimized for rent-exemption
+
+### Important Validation Rules
+
+**Agent Registry**:
+- Agent ID: Alphanumeric + hyphens/underscores only
+- Max 10 service endpoints per agent
+- Max 20 skills per agent
+- Max 20 tags total across all skills
+- All URLs must be valid HTTPS (or valid protocol for endpoints)
+
+**MCP Server Registry**:
+- Server ID: Alphanumeric + hyphens/underscores only
+- Max 50 tool definitions on-chain
+- Max 50 resource definitions on-chain
+- Max 20 prompt definitions on-chain
+- Service endpoint must be valid HTTPS URL
 
 ## Development Workflow Best Practices
 
