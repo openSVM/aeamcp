@@ -337,9 +337,9 @@ cargo build --package solana-a2a --package solana-mcp
 - The Rust SDK and svmai-token program have known issues - avoid them unless fixing them is your task
 
 **Performance Notes**:
-- Rust core program tests: ~10 seconds
+- Rust core program tests: <1 second (incremental), ~10 seconds (clean)
 - Python unit tests: ~5 seconds
-- TypeScript build: ~5 seconds
+- TypeScript build: ~3-5 seconds
 - Rust clean build: ~2-3 minutes
 - Python dependency install: ~30 seconds
 - TypeScript dependency install: ~10 seconds
