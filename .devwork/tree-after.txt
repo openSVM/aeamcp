@@ -1,0 +1,611 @@
+# Directory snapshot after SpecKit execution
+
+/tmp/claudev-pr-71078
+├── Anchor.toml
+├── app
+│   ├── agents
+│   │   └── page.tsx
+│   ├── layout.tsx
+│   ├── page.tsx
+│   └── servers
+│       └── page.tsx
+├── AUDIT_SUMMARY.md
+├── backend
+│   ├── docker-compose.yml
+│   ├── Dockerfile
+│   ├── migrations
+│   │   ├── 001_create_github_installations.sql
+│   │   └── 002_create_repository_analyses.sql
+│   ├── package.json
+│   ├── quick-start.sh
+│   ├── README.md
+│   ├── scripts
+│   │   ├── setup.sh
+│   │   └── test-api.sh
+│   ├── src
+│   │   ├── app.ts
+│   │   ├── controllers
+│   │   │   └── analysis.controller.ts
+│   │   ├── index.ts
+│   │   ├── parsers
+│   │   │   └── typescript-parser.ts
+│   │   ├── routes
+│   │   │   └── analysis.routes.ts
+│   │   ├── services
+│   │   │   ├── cache.service.ts
+│   │   │   ├── database.service.ts
+│   │   │   ├── git-clone.service.ts
+│   │   │   ├── github-auth.service.ts
+│   │   │   └── readiness-scorer.service.ts
+│   │   ├── types
+│   │   │   ├── analysis.types.ts
+│   │   │   └── github.types.ts
+│   │   └── utils
+│   │       └── logger.ts
+│   └── tsconfig.json
+├── Cargo.lock
+├── Cargo.toml
+├── components
+│   └── common
+│       ├── GhostInTheBrowser.tsx
+│       ├── Navigation.tsx
+│       ├── WalletButton.tsx
+│       └── WalletProvider.tsx
+├── cpp_sdk
+│   ├── cmake
+│   │   └── aireg++Config.cmake.in
+│   ├── CMakeLists.txt
+│   ├── docs
+│   │   ├── C_SDK_INTEGRATION.md
+│   │   ├── Doxyfile
+│   │   ├── TROUBLESHOOTING.md
+│   │   └── USAGE_GUIDE.md
+│   ├── examples
+│   │   ├── agent_operations.cpp
+│   │   ├── basic_usage.cpp
+│   │   ├── CMakeLists.txt
+│   │   ├── idl_generation.cpp
+│   │   ├── mcp_operations.cpp
+│   │   └── payment_flows.cpp
+│   ├── include
+│   │   └── aireg++
+│   │       ├── agent.hpp
+│   │       ├── aireg++.hpp
+│   │       ├── client.hpp
+│   │       ├── common.hpp
+│   │       ├── c_sdk_bridge.hpp
+│   │       ├── idl.hpp
+│   │       ├── mcp.hpp
+│   │       └── payments.hpp
+│   ├── README.md
+│   ├── src
+│   │   ├── aireg++.cpp
+│   │   ├── c_sdk_impl.cpp
+│   │   └── stubs.cpp
+│   └── tests
+│       ├── CMakeLists.txt
+│       ├── test_agent.cpp
+│       ├── test_base58.cpp
+│       ├── test_client.cpp
+│       ├── test_common.cpp
+│       ├── test_c_sdk_bridge.cpp
+│       ├── test_idl.cpp
+│       ├── test_integration.cpp
+│       ├── test_main.cpp
+│       ├── test_mcp.cpp
+│       ├── test_payments.cpp
+│       └── test_url_validation.cpp
+├── deployment-info-devnet-final.json
+├── deployment-info-devnet.json
+├── deployment-simulation.json
+├── Dockerfile
+├── docs
+│   ├── aeamcp.pdf
+│   ├── Agentic Economy, Memecoin Capital Markets_.md
+│   ├── Agentic Economy, Memecoin Capital Markets_.pdf
+│   ├── ASCII_TRANSFORMATION_COMPLETE.md
+│   ├── ASCII_TRANSFORMATION_PROGRESS.md
+│   ├── audits
+│   │   ├── report2.md
+│   │   └── SECURITY_REMEDIATION_ACTION_PLAN.md
+│   ├── book
+│   │   ├── 01_registry_entry_accounts_.md
+│   │   ├── 02_agent_registry_program_.md
+│   │   ├── 03_mcp_server_registry_program_.md
+│   │   ├── 04_program_derived_addresses__pdas__.md
+│   │   ├── 05_registry_rpc_service__frontend__.md
+│   │   ├── 06_solana_wallet_integration_.md
+│   │   ├── 07_a2ampl__svmai__token_.md
+│   │   ├── 08_program_events_.md
+│   │   └── intro.md
+│   ├── COMPACT_CARDS_AND_DETAILED_PAGES_COMPLETE.md
+│   ├── COMPREHENSIVE_DASHBOARD_ARCHITECTURE_PLAN.md
+│   ├── COMPREHENSIVE_SOLANA_RUST_SECURITY_AUDIT_2025.md
+│   ├── COMPREHENSIVE_SOLANA_SECURITY_AUDIT_2025_UPDATED.md
+│   ├── cpp_sdk_implementation_guidelines.md
+│   ├── CROSS_CHAIN_BRIDGE_ARCHITECTURE.md
+│   ├── DASHBOARD_IMPLEMENTATION_ROADMAP.md
+│   ├── DEPLOYMENT_AND_TESTING_GUIDE.md
+│   ├── DEPLOYMENT_CHECKLIST.md
+│   ├── DEPLOYMENT_GUIDE.md
+│   ├── DEPLOYMENT_SUCCESS.md
+│   ├── DOS_STATUS_BAR_DEMO.html
+│   ├── DOS_STATUS_BAR_IMPLEMENTATION.md
+│   ├── DUAL_TOKENOMICS.md
+│   ├── DYNAMIC_ONBOARDING_IMPLEMENTATION_COMPLETE.md
+│   ├── DYNAMIC_ONBOARDING_IMPLEMENTATION_PLAN.md
+│   ├── GITHUB_ISSUES_BREAKDOWN.md
+│   ├── GIT_REGISTRATION_ARCHITECTURE.md
+│   ├── GIT_REGISTRATION_GITHUB_ISSUES.md
+│   ├── GRAYSCALE_ASCII_TRANSFORMATION_PREVIEW.md
+│   ├── IMPLEMENTATION_STATUS.md
+│   ├── IMPLEMENTATION_SUMMARY.md
+│   ├── ONBOARDING_CONTENT_SPECIFICATIONS.md
+│   ├── ONBOARDING_I18N_SPECIFICATIONS.md
+│   ├── ONCHAIN_DATA_INTEGRATION_COMPLETE.md
+│   ├── ONCHAIN_DATA_INTEGRATION_IMPLEMENTATION_PLAN.md
+│   ├── ONCHAIN_DATA_INTEGRATION_PLAN.md
+│   ├── PHASE1_DEPLOYMENT_STATUS.md
+│   ├── PHASE1_EXECUTION_PLAN.md
+│   ├── PHASE1_IMPLEMENTATION_COMPLETE.md
+│   ├── PHASE1_IMPLEMENTATION_SUMMARY.md
+│   ├── PHASE2_A2AMPL_DEPLOYMENT_PLAN.md
+│   ├── PHASE2_DEPLOYMENT_PLAN.md
+│   ├── PHASE2_DEPLOYMENT_STATUS_EXISTING_TOKEN.md
+│   ├── PRODUCTION_DEPLOYMENT_GUIDE.md
+│   ├── PWA_IMPLEMENTATION_COMPLETE.md
+│   ├── PYTHON_SDK_IMPLEMENTATION_GUIDELINES.md
+│   ├── PYTHON_SDK_QUICK_START.md
+│   ├── REGISTRY_MODIFICATION_REQUIREMENTS.md
+│   ├── RETRO_STATUS_BAR_DEMO.html
+│   ├── RETRO_STATUS_BAR_IMPLEMENTATION.md
+│   ├── RISK_ASSESSMENT_MATRIX.md
+│   ├── rust_sdk_comprehensive_review.pdf
+│   ├── rust_sdk_comprehensive_review_simplified.typ
+│   ├── SDK_BURNDOWN_TRACKER.md
+│   ├── SDK_EXECUTION_PLAN_DETAILED_EXPLAINED.md
+│   ├── SDK_EXECUTION_PLAN_DETAILED.md
+│   ├── SDK_EXECUTION_PLAN_DETAILED_REFERENCED.md
+│   ├── SDK_EXECUTION_PLAN_FULL.md
+│   ├── SDK_EXECUTION_PLAN.md
+│   ├── SDK_EXECUTION_SUMMARY.md
+│   ├── sdk_refs
+│   │   ├── cicd_references.md
+│   │   ├── common_artifacts_references.md
+│   │   ├── cpp_sdk_references.md
+│   │   ├── c_sdk_references.md
+│   │   ├── examples_references.md
+│   │   ├── go_sdk_references.md
+│   │   ├── python_sdk_references.md
+│   │   ├── README.md
+│   │   ├── rust_sdk_references.md
+│   │   └── typescript_sdk_references.md
+│   ├── SDK_RESOURCE_PLANNING.md
+│   ├── SDK_ROADMAP_DETAILED.md
+│   ├── SDK_TASK_TRACKER.md
+│   ├── SECURITY_AUDIT_RESPONSE_REPORT.md
+│   ├── SECURITY_FIX_CHANGELOG.md
+│   ├── SECURITY_FIXES_IMPLEMENTATION_REPORT.md
+│   ├── solana-ai-registries-implementation-plan.md
+│   ├── SOLANA_PROGRAMS_SECURITY_AUDIT.md
+│   ├── STATUS_BAR_REAL_DATA_FIX_COMPLETE.md
+│   ├── STATUS_BAR_REAL_DATA_FIX.md
+│   ├── SVMAI_TOKEN_TECHNICAL_SPEC.md
+│   ├── TEST_PLAN.md
+│   ├── TOKEN_INTEGRATION_ARCHITECTURE.md
+│   ├── TYPESCRIPT_SDK_API_REFERENCE.md
+│   ├── TYPESCRIPT_SDK_IMPLEMENTATION_GUIDELINES.md
+│   ├── ULTRA_COMPACT_CARD_SYSTEM.md
+│   ├── ULTRA_COMPACT_DEMO.html
+│   ├── ULTRA_COMPACT_IMPLEMENTATION_GUIDE.md
+│   └── whitepaper
+│       ├── aeamcp-comprehensive-whitepaper-de.pdf
+│       ├── aeamcp-comprehensive-whitepaper-de.tex
+│       ├── aeamcp-comprehensive-whitepaper-es.pdf
+│       ├── aeamcp-comprehensive-whitepaper-es.tex
+│       ├── aeamcp-comprehensive-whitepaper-hi.pdf
+│       ├── aeamcp-comprehensive-whitepaper-hi.tex
+│       ├── aeamcp-comprehensive-whitepaper-ja.pdf
+│       ├── aeamcp-comprehensive-whitepaper-ja.tex
+│       ├── aeamcp-comprehensive-whitepaper-ko.pdf
+│       ├── aeamcp-comprehensive-whitepaper-ko.tex
+│       ├── aeamcp-comprehensive-whitepaper.pdf
+│       ├── aeamcp-comprehensive-whitepaper-ru.tex
+│       ├── aeamcp-comprehensive-whitepaper.tex
+│       ├── aeamcp-comprehensive-whitepaper-th.pdf
+│       ├── aeamcp-comprehensive-whitepaper-th.tex
+│       ├── aeamcp-comprehensive-whitepaper-uk.pdf
+│       ├── aeamcp-comprehensive-whitepaper-uk.tex
+│       ├── aeamcp-comprehensive-whitepaper-zh.pdf
+│       ├── aeamcp-comprehensive-whitepaper-zh.tex
+│       ├── original_full.tex
+│       └── references.bib
+├── draft.rs
+├── frontend
+│   ├── app
+│   │   ├── agents
+│   │   │   ├── [id]
+│   │   │   │   └── page.tsx
+│   │   │   ├── page.tsx
+│   │   │   └── register
+│   │   │       └── page.tsx
+│   │   ├── favicon.ico
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   ├── onboarding.css
+│   │   ├── page.tsx
+│   │   ├── servers
+│   │   │   ├── [id]
+│   │   │   │   └── page.tsx
+│   │   │   ├── page.tsx
+│   │   │   └── register
+│   │   │       └── page.tsx
+│   │   └── tokenomics
+│   │       └── page.tsx
+│   ├── components
+│   │   ├── common
+│   │   │   ├── DOSStatusBar.tsx
+│   │   │   ├── GhostInTheBrowser.tsx
+│   │   │   ├── I18nProvider.tsx
+│   │   │   ├── Navigation.tsx
+│   │   │   ├── PWAInstaller.tsx
+│   │   │   ├── QueryProvider.tsx
+│   │   │   ├── RetroStatusBar.tsx
+│   │   │   ├── UltraCompactCard.tsx
+│   │   │   ├── UltraCompactGrid.tsx
+│   │   │   └── WalletProvider.tsx
+│   │   └── onboarding
+│   │       ├── Hotspot.tsx
+│   │       ├── index.ts
+│   │       ├── OnboardingContext.tsx
+│   │       ├── OnboardingManager.tsx
+│   │       ├── ProgressTracker.tsx
+│   │       ├── README.md
+│   │       ├── Tooltip.tsx
+│   │       ├── tourConfigs.ts
+│   │       ├── TourEngine.tsx
+│   │       ├── types.ts
+│   │       └── UserTypeSelector.tsx
+│   ├── FRONTEND_PLAN.md
+│   ├── hooks
+│   │   ├── useRealStatusData.ts
+│   │   ├── useRetroStatusData.ts
+│   │   └── use-theme.ts
+│   ├── IDL_ERROR_FIX_COMPLETE.md
+│   ├── IDL_SERIALIZATION_FIX_SUMMARY.md
+│   ├── lib
+│   │   ├── constants.ts
+│   │   ├── hooks
+│   │   │   └── useRegistry.ts
+│   │   ├── i18n.ts
+│   │   ├── idl
+│   │   │   ├── agent_registry.json
+│   │   │   └── mcp_server_registry.json
+│   │   ├── monitoring
+│   │   │   └── performance-monitor.ts
+│   │   ├── performance
+│   │   │   └── virtual-scroller.tsx
+│   │   ├── realtime
+│   │   │   └── websocket-manager.ts
+│   │   ├── rpc
+│   │   │   ├── configuration-manager.ts
+│   │   │   ├── connection-manager.ts
+│   │   │   ├── rate-limiter.ts
+│   │   │   ├── registry-service.ts
+│   │   │   └── request-deduplicator.ts
+│   │   ├── search
+│   │   │   └── advanced-search.ts
+│   │   ├── security
+│   │   │   ├── content-security.ts
+│   │   │   ├── cryptographic-validator.ts
+│   │   │   └── schema-validator.ts
+│   │   ├── solana
+│   │   │   ├── connection.ts
+│   │   │   ├── registry.ts
+│   │   │   ├── serialization.ts
+│   │   │   ├── token-registry.ts
+│   │   │   └── utils.ts
+│   │   ├── testing
+│   │   │   └── test-utils.ts
+│   │   ├── token.ts
+│   │   ├── transactions
+│   │   │   ├── transaction-hooks.ts
+│   │   │   └── transaction-manager.ts
+│   │   ├── transformers
+│   │   │   └── index.ts
+│   │   └── types
+│   │       ├── onchain-types.ts
+│   │       ├── ui-types.ts
+│   │       └── validation-types.ts
+│   ├── middleware.ts
+│   ├── next.config.mjs
+│   ├── next.config.ts
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── postcss.config.mjs
+│   ├── production.config.ts
+│   ├── public
+│   │   ├── aeamcp.html
+│   │   ├── audit.html
+│   │   ├── docs
+│   │   │   ├── book
+│   │   │   │   ├── 01_registry_entry_accounts_.md
+│   │   │   │   ├── 02_agent_registry_program_.md
+│   │   │   │   ├── 03_mcp_server_registry_program_.md
+│   │   │   │   ├── 04_program_derived_addresses__pdas__.md
+│   │   │   │   ├── 05_registry_rpc_service__frontend__.md
+│   │   │   │   ├── 06_solana_wallet_integration_.md
+│   │   │   │   ├── 07_a2ampl__svmai__token_.md
+│   │   │   │   ├── 08_program_events_.md
+│   │   │   │   ├── diagrams
+│   │   │   │   │   ├── ch1-register-sequence.mmd
+│   │   │   │   │   ├── ch2-agent-register-sequence.mmd
+│   │   │   │   │   ├── ch3-mcp-register-sequence.mmd
+│   │   │   │   │   ├── ch5-rpc-fetch-sequence.mmd
+│   │   │   │   │   ├── ch6-wallet-sequence.mmd
+│   │   │   │   │   ├── ch7-token-register-sequence.mmd
+│   │   │   │   │   ├── ch8-events-sequence.mmd
+│   │   │   │   │   ├── intro-overview.mmd
+│   │   │   │   │   └── README.md
+│   │   │   │   └── intro.md
+│   │   │   ├── developer-guide.md
+│   │   │   ├── protocol-specification.md
+│   │   │   ├── README.md
+│   │   │   ├── SDK_ROADMAP_DETAILED.md
+│   │   │   ├── svmai-token.md
+│   │   │   ├── svmai-tokenomics.md
+│   │   │   ├── TYPESCRIPT_SDK_IMPLEMENTATION_GUIDELINES.md
+│   │   │   ├── typescript-sdk.md
+│   │   │   └── use-cases.md
+│   │   ├── docs.css
+│   │   ├── docs.html
+│   │   ├── favicon.svg
+│   │   ├── file.svg
+│   │   ├── globe.svg
+│   │   ├── icons
+│   │   │   ├── icon-128x128.svg
+│   │   │   ├── icon-144x144.svg
+│   │   │   ├── icon-152x152.svg
+│   │   │   ├── icon-192x192.svg
+│   │   │   ├── icon-384x384.svg
+│   │   │   ├── icon-512x512.svg
+│   │   │   ├── icon-72x72.svg
+│   │   │   ├── icon-96x96.svg
+│   │   │   └── icon.svg
+│   │   ├── manifest.json
+│   │   ├── mermaid-test.html
+│   │   ├── next.svg
+│   │   ├── preview.png
+│   │   ├── simulation.html
+│   │   ├── sw.js
+│   │   ├── vercel.svg
+│   │   ├── whitepapers
+│   │   │   ├── aeamcp-comprehensive-whitepaper-de.pdf
+│   │   │   ├── aeamcp-comprehensive-whitepaper-es.pdf
+│   │   │   ├── aeamcp-comprehensive-whitepaper-hi.pdf
+│   │   │   ├── aeamcp-comprehensive-whitepaper-ja.pdf
+│   │   │   ├── aeamcp-comprehensive-whitepaper-ko.pdf
+│   │   │   ├── aeamcp-comprehensive-whitepaper.pdf
+│   │   │   ├── aeamcp-comprehensive-whitepaper-th.pdf
+│   │   │   ├── aeamcp-comprehensive-whitepaper-uk.pdf
+│   │   │   └── aeamcp-comprehensive-whitepaper-zh.pdf
+│   │   ├── window.svg
+│   │   └── workbox-cb477421.js
+│   ├── README.md
+│   ├── RPC_CONFIGURATION_AUDIT.md
+│   ├── RPC_CONFIGURATION_CONSOLIDATION_ISSUES.md
+│   ├── RPC_OPTIMIZATION_COMPLETE.md
+│   ├── RUNTIME_ERROR_FIXES_COMPLETE.md
+│   ├── scripts
+│   │   └── generate-icons.js
+│   ├── styles
+│   │   ├── dos-status-bar.css
+│   │   ├── retro-status-bar.css
+│   │   └── ultra-compact-cards.css
+│   ├── tsconfig.json
+│   └── types
+│       └── index.ts
+├── frontend-dependencies.txt
+├── idl
+│   ├── agent_registry.json
+│   ├── mcp_server_registry.json
+│   └── README.md
+├── osvm-audit
+│   ├── osvm_audit_report_20250802_004856.html
+│   ├── osvm_audit_report_20250802_004856.pdf
+│   └── osvm_audit_report_20250802_004856.typ
+├── package.json
+├── package-lock.json
+├── preview.png
+├── programs
+│   ├── agent-registry
+│   │   ├── Cargo.toml
+│   │   └── src
+│   │       ├── events.rs
+│   │       ├── instruction.rs
+│   │       ├── lib.rs
+│   │       ├── processor.rs
+│   │       ├── state.rs
+│   │       ├── _tests_disabled
+│   │       │   ├── authority_verification_test.rs
+│   │       │   ├── mod.rs
+│   │       │   ├── security_integration_test.rs
+│   │       │   └── token_integration_test.rs
+│   │       └── validation.rs
+│   ├── common
+│   │   ├── Cargo.toml
+│   │   └── src
+│   │       ├── authority.rs
+│   │       ├── constants.rs
+│   │       ├── error.rs
+│   │       ├── lib.rs
+│   │       ├── serialization.rs
+│   │       ├── token_utils.rs
+│   │       └── utils.rs
+│   ├── mcp-server-registry
+│   │   ├── Cargo.toml
+│   │   └── src
+│   │       ├── events.rs
+│   │       ├── instruction.rs
+│   │       ├── lib.rs
+│   │       ├── processor.rs
+│   │       ├── state.rs
+│   │       ├── _tests_disabled
+│   │       │   ├── authority_verification_test.rs
+│   │       │   ├── mod.rs
+│   │       │   ├── security_integration_test.rs
+│   │       │   └── token_integration_test.rs
+│   │       └── validation.rs
+│   └── svmai-token
+│       ├── Cargo.toml
+│       └── src
+│           ├── lib.rs
+│           └── tests.rs
+├── python
+│   ├── conftest.py
+│   ├── IMPLEMENTATION_SUMMARY.md
+│   ├── integration-report.xml
+│   ├── mypy.ini
+│   ├── pyproject.toml
+│   ├── pytest.ini
+│   ├── pytest_plugin_compat.py
+│   ├── pytest_xprocess_compat.py
+│   ├── README.md
+│   ├── run_tests.py
+│   ├── solana_ai_registries
+│   │   ├── agent.py
+│   │   ├── client.py
+│   │   ├── constants.py
+│   │   ├── exceptions.py
+│   │   ├── idl_files
+│   │   │   ├── agent_registry.json
+│   │   │   ├── __init__.py
+│   │   │   └── mcp_server_registry.json
+│   │   ├── idl.py
+│   │   ├── __init__.py
+│   │   ├── mcp.py
+│   │   ├── payments.py
+│   │   └── types.py
+│   └── tests
+│       ├── conftest.py
+│       ├── integration
+│       │   ├── __init__.py
+│       │   └── test_devnet.py
+│       └── unit
+│           ├── __init__.py
+│           ├── test_additional_coverage_boost.py
+│           ├── test_additional_coverage.py
+│           ├── test_constants.py
+│           ├── test_core_coverage.py
+│           ├── test_coverage_booster.py
+│           ├── test_coverage_boost.py
+│           ├── test_exceptions.py
+│           ├── test_final_coverage_push.py
+│           ├── test_final_optimized.py
+│           ├── test_final_push.py
+│           ├── test_idl.py
+│           ├── test_imports.py
+│           ├── test_laser_focus.py
+│           ├── test_mcp.py
+│           ├── test_minimal_coverage.py
+│           ├── test_payments.py
+│           ├── test_simple_coverage_push.py
+│           └── test_types.py
+├── README.md
+├── refs.bib
+├── rust
+│   ├── Cargo.toml
+│   ├── idl
+│   │   ├── agent_registry.json
+│   │   └── mcp_server_registry.json
+│   ├── README.md
+│   ├── src
+│   │   ├── agent
+│   │   │   └── mod.rs
+│   │   ├── client.rs
+│   │   ├── errors.rs
+│   │   ├── idl.rs
+│   │   ├── lib.rs
+│   │   ├── mcp
+│   │   │   └── mod.rs
+│   │   └── payments
+│   │       ├── common.rs
+│   │       ├── mod.rs
+│   │       ├── prepay.rs
+│   │       ├── pyg.rs
+│   │       └── stream.rs
+│   └── tests
+│       ├── agent_flow.rs
+│       ├── integration.rs
+│       └── payment_pyg.rs
+├── rust_security_audit_2025.pdf
+├── rust_security_audit_2025.typ
+├── scripts
+│   ├── build.sh
+│   ├── deploy-devnet.sh
+│   ├── deploy-devnet-simple.sh
+│   ├── deploy-devnet-vanity-token.sh
+│   ├── deploy-devnet-with-existing-token.sh
+│   ├── deploy-devnet-with-token.sh
+│   ├── deploy-mainnet.sh
+│   ├── deploy-testnet.sh
+│   ├── e2e-devnet-test-final.sh
+│   ├── e2e-devnet-test-fixed.sh
+│   ├── e2e-devnet-test.sh
+│   ├── e2e-devnet-test-simple.sh
+│   ├── simulate-deployment.js
+│   ├── simulate-deployment.sh
+│   ├── test-idl-usage.js
+│   ├── verify-idl-improved.js
+│   ├── verify-idl.js
+│   └── verify.sh
+├── sdk
+│   ├── constants.md
+│   └── typescript
+│       ├── examples
+│       │   ├── mcp-server-management.ts
+│       │   └── register-agent.ts
+│       ├── jest.config.js
+│       ├── package.json
+│       ├── package-lock.json
+│       ├── README.md
+│       ├── rollup.config.js
+│       ├── src
+│       │   ├── agent.ts
+│       │   ├── builders.ts
+│       │   ├── client.ts
+│       │   ├── errors.ts
+│       │   ├── idl
+│       │   │   ├── index.ts
+│       │   │   ├── loader.ts
+│       │   │   └── types.ts
+│       │   ├── index.ts
+│       │   ├── mcp.ts
+│       │   ├── payments
+│       │   │   ├── index.ts
+│       │   │   ├── pay-as-you-go-flow.ts
+│       │   │   ├── prepayment-flow.ts
+│       │   │   └── stream-payment-flow.ts
+│       │   ├── types.ts
+│       │   └── utils
+│       │       └── validation.ts
+│       ├── tests
+│       │   ├── integration
+│       │   │   └── sdk-integration.test.ts
+│       │   ├── setup.ts
+│       │   └── unit
+│       │       ├── errors.test.ts
+│       │       ├── payment-flows.test.ts
+│       │       └── validation.test.ts
+│       └── tsconfig.json
+├── tests
+│   ├── agent_registry_tests.rs
+│   └── mcp_server_registry_tests.rs
+├── typst.tar.xz
+└── typst-x86_64-unknown-linux-musl
+    ├── LICENSE
+    ├── NOTICE
+    ├── README.md
+    └── typst
+
+104 directories, 503 files

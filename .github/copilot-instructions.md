@@ -196,25 +196,29 @@ npm install
 **Development**:
 ```bash
 cd frontend
-npm run dev  # Starts dev server with Turbopack
+npm run dev  # Starts dev server on http://localhost:3000
 ```
 
-**Building**:
+**Building** (takes ~30 seconds):
 ```bash
 cd frontend
-npm run build  # Production build
-npm start      # Run production server
+npm run build
 ```
 
 **Linting**:
 ```bash
 cd frontend
-npm run lint  # Next.js ESLint
+npm run lint              # ESLint with Next.js config
+npx tsc --noEmit          # TypeScript type checking
 ```
+
+**Known Issues**:
+- The frontend has a `GhostInTheBrowser` component that triggers a React useEffect warning - this is a cosmetic issue and does not affect functionality
+- The retro DOS/ASCII aesthetic intentionally uses monospace fonts and terminal-style UI
 
 ### Backend (Node.js/Express)
 
-**Prerequisites**: Node.js 18+
+**Prerequisites**: Node.js 20+, npm 10+
 
 **Setup**:
 ```bash
@@ -222,12 +226,16 @@ cd backend
 npm install
 ```
 
-**Development**:
+**Running**:
 ```bash
 cd backend
-npm run dev    # Nodemon with ts-node
-npm run build  # TypeScript compilation
-npm start      # Run compiled JS
+npm run dev  # Starts server on http://localhost:4000
+```
+
+**Building/Compiling**:
+```bash
+cd backend
+npm run build  # Compiles TypeScript to JavaScript
 ```
 
 **Testing**:
@@ -236,234 +244,64 @@ cd backend
 npm test
 ```
 
-## GitHub Actions CI/CD
+### C++ SDK (Optional)
 
-The repository has comprehensive CI workflows that you should understand:
+**Prerequisites**: CMake 3.21+, C++20 compiler with SIMD support
 
-### Rust CI (`.github/workflows/rust-ci.yml`)
-- Triggers on: Changes to `rust/**`
-- Runs on: Ubuntu latest with Rust stable and beta
-- Steps: Format check, build (no-features and all-features), test, package check
-- **Important**: Tests individual Rust SDK features (pyg, prepay, stream)
-
-### Python CI (`.github/workflows/python-ci.yml`)
-- Triggers on: Changes to `python/**`
-- Runs on: Ubuntu latest with Python 3.12
-- Jobs: test (format, type check, lint, unit tests), integration-tests (devnet), docs, security
-- **Important**: Integration tests have retry logic for devnet instability
-- Uses compatibility shim for pytest-xprocess in all jobs
-
-### TypeScript CI (`.github/workflows/typescript-ci.yml`)
-- Triggers on: Changes to `sdk/typescript/**`
-- Runs on: Ubuntu latest with Node 18, 20, 22
-- Steps: Format check, lint, type check, build, test (disabled), package check
-- **Important**: Uses `npm ci --legacy-peer-deps` for installation
-
-### Other Workflows
-- `cpp_sdk.yml` - C++ SDK (separate component)
-- `publish-rust-sdk.yml` - Publishes Rust SDK to crates.io
-- `publish-typescript-sdk.yml` - Publishes TS SDK to npm
-- `python-publish.yml` - Publishes Python SDK to PyPI
-
-## Understanding the Protocol and Architecture
-
-### Essential Documentation
-
-Before making significant changes, familiarize yourself with these key documents:
-
-**Core Specifications**:
-- `docs/whitepaper/aeamcp-comprehensive-whitepaper.pdf` - Complete technical whitepaper covering architecture, tokenomics, security, and vision
-- `docs/solana-ai-registries-implementation-plan.md` - Detailed implementation plan for native Solana programs
-- `docs/DUAL_TOKENOMICS.md` - Comprehensive analysis of the AEA/SVMAI dual-token model
-- `AUDIT_SUMMARY.md` - Security audit summary with critical findings and recommendations
-
-**Protocol Compliance**:
-- **A2A (Agent-to-Agent)**: Google's protocol for agent communication and discovery
-- **AEA (Autonomous Economic Agent)**: Fetch.ai's framework for economic agent coordination
-- **MCP (Model Context Protocol)**: Anthropic's protocol for LLM tool/resource discovery
-
-**Architecture Documentation**:
-- `docs/CROSS_CHAIN_BRIDGE_ARCHITECTURE.md` - Cross-chain expansion strategy
-- `docs/GIT_REGISTRATION_ARCHITECTURE.md` - Git-based registration system for MCP servers
-- `docs/TOKEN_INTEGRATION_ARCHITECTURE.md` - Token integration and economic flows
-
-### Key Concepts to Understand
-
-**Hybrid Data Model**: 
-- On-chain: Agent IDs, ownership, endpoints, capability flags, cryptographic hashes
-- Off-chain: Detailed metadata, full schemas, extended documentation (IPFS/Arweave)
-- Integrity: Verified through on-chain hashes and event emission
-
-**Program Derived Addresses (PDAs)**:
-- Deterministic account generation using seeds (e.g., `[AGENT_REGISTRY_PDA_SEED, agent_id]`)
-- Enables predictable agent coordination without centralized coordination
-- Critical for security - only program can sign for PDA accounts
-
-**Event-Driven Design**:
-- All state changes emit structured program logs (JSON format)
-- Enables off-chain indexing for scalable querying
-- Events: AgentRegistered, AgentUpdated, AgentStatusChanged, AgentDeregistered (similar for MCP)
-
-**Solana-Specific Optimizations**:
-- Rent-exemption for permanent account storage
-- Parallel transaction processing for multiple agents
-- Low transaction costs (<$0.001) enable micro-economic interactions
-- 400ms block times for near-real-time coordination
-
-## Common Issues and Workarounds
-
-### 1. Rust Build Failures
-**Problem**: `cargo test --all` or `cargo build --all` fails
-**Solution**: Always use `cargo test --package solana-a2a --package solana-mcp` to test only working programs
-
-### 2. Python pytest-xprocess Error
-**Problem**: `ModuleNotFoundError: No module named 'pytest_xprocess'`
-**Solution**: Create the compatibility shim as shown in Python CI workflow
-
-### 3. Solana CLI Not Found
-**Problem**: `solana: command not found` when running build.sh
-**Solution**: Install Solana CLI or only build/test core programs which don't require it:
+**Building**:
 ```bash
-cargo build --package solana-a2a --package solana-mcp
+cd cpp_sdk
+mkdir -p build && cd build
+cmake ..
+make
 ```
 
-### 4. TypeScript Peer Dependency Conflicts
-**Problem**: npm install fails with peer dependency errors
-**Solution**: Always use `npm ci --legacy-peer-deps` or `npm install --legacy-peer-deps`
+**Testing**:
+```bash
+cd cpp_sdk/build
+ctest --output-on-failure
+```
 
-### 5. Unused Variable Warnings in Rust
-**Problem**: Warnings about `clock_info`, `owner_token_account`, unused imports
-**Solution**: These are known and acceptable warnings in development. They don't prevent successful builds.
+**Note**: The C++ SDK is for advanced use cases and is not required for core development.
 
-## Key Configuration Files
+## Important Notes
 
-- **Rust**: `Cargo.toml` (workspace), `programs/*/Cargo.toml` (individual programs)
-- **Anchor**: `Anchor.toml` (Solana program configuration, program IDs for devnet)
-- **Python**: `python/pyproject.toml` (all Python config including black, isort, mypy, pytest)
-- **TypeScript SDK**: `sdk/typescript/package.json`, `sdk/typescript/tsconfig.json`
-- **Frontend**: `frontend/package.json`, `frontend/next.config.js` (likely)
-- **Backend**: `backend/package.json`, `backend/tsconfig.json`
+### Trust These Instructions
+The information in this file has been validated through extensive testing. **Do not re-explore** the repository to verify build commands unless you find evidence that the information here is incorrect. The build instructions here represent tested, working commands.
 
-## State Structure and Data Models
+### Avoid Common Pitfalls
+1. **Never run `cargo test --all`** - This will fail due to known issues in `rust/` SDK
+2. **Always use `--legacy-peer-deps`** with npm commands in TypeScript SDK
+3. **Python tests require Python 3.12+** - Earlier versions will fail
+4. **Solana CLI is optional** - Core programs build and test without it
 
-### Agent Registry Entry (AgentRegistryEntryV1)
+### Repository Size and Performance
+- Full repository: ~4.3GB, 21,933 files
+- Core Rust programs: Build ~10s, test ~10s (incremental ~1s)
+- TypeScript SDK: Build ~5s
+- Frontend: Build ~30s, dev server ~5s
+- Backend: Build ~10s
 
-Core fields stored on-chain:
-- `owner_authority`: Pubkey controlling the agent entry
-- `agent_id`: Unique identifier (string, max 64 chars)
-- `name`: Display name (max 128 chars)
-- `description`: Brief description (max 512 chars)
-- `agent_version`: Version string (semver recommended)
-- `service_endpoints`: Array of protocol/URL pairs for agent communication
-- `skills`: Array of agent skills with IDs, names, description hashes, and tags
-- `status`: Active, Inactive, Deprecated (u8 enum)
-- `capabilities_flags`: Bitflags for streaming, async, etc.
-- `extended_metadata_uri`: URI to off-chain detailed metadata (IPFS/Arweave)
-- `registration_timestamp`: Unix timestamp
-- `last_update_timestamp`: Unix timestamp
+### When in Doubt
+If a build fails, check if you're using the correct working directory and whether you've followed the instructions exactly. Common issues include:
+- Using `cargo test --all` instead of specific packages
+- Forgetting `--legacy-peer-deps` with npm
+- Not having Python 3.12+ for Python SDK
 
-Account size: ~2.5KB optimized for rent-exemption (~0.02 SOL)
+## Additional Resources
 
-### MCP Server Registry Entry (McpServerRegistryEntryV1)
+### Documentation
+- Full Technical Whitepaper: `docs/whitepaper/aeamcp-comprehensive-whitepaper.pdf`
+- Dual-Token Economics: `docs/DUAL_TOKENOMICS.md`
+- Security Audits: `docs/audits/` and `AUDIT_SUMMARY.md`
+- Implementation Plan: `docs/solana-ai-registries-implementation-plan.md`
 
-Core fields stored on-chain:
-- `owner_authority`: Pubkey controlling the server entry
-- `server_id`: Unique identifier (max 64 chars)
-- `name`: Display name (max 128 chars)
-- `server_version`: Version string
-- `service_endpoint`: Primary endpoint URL
-- `capabilities`: Boolean flags for resources, tools, prompts support
-- `onchain_tool_definitions`: Array of tool names with hashes and tags
-- `onchain_resource_definitions`: Array of URI patterns with hashes
-- `onchain_prompt_definitions`: Array of prompt templates
-- `full_capabilities_uri`: URI to complete off-chain capabilities
-- `status`: Active, Inactive, Maintenance, Deprecated (u8 enum)
+### Protocol Specifications
+- AEA (Autonomous Economic Agent): Fetch.ai framework
+- A2A (Agent-to-Agent): Google protocol
+- MCP (Model Context Protocol): Anthropic specification
 
-Account size: ~2.2KB optimized for rent-exemption
-
-### Important Validation Rules
-
-**Agent Registry**:
-- Agent ID: Alphanumeric + hyphens/underscores only
-- Max 10 service endpoints per agent
-- Max 20 skills per agent
-- Max 20 tags total across all skills
-- All URLs must be valid HTTPS (or valid protocol for endpoints)
-
-**MCP Server Registry**:
-- Server ID: Alphanumeric + hyphens/underscores only
-- Max 50 tool definitions on-chain
-- Max 50 resource definitions on-chain
-- Max 20 prompt definitions on-chain
-- Service endpoint must be valid HTTPS URL
-
-## Development Workflow Best Practices
-
-### Making Changes to Rust Programs
-
-1. **Always** edit only `programs/agent-registry/` or `programs/mcp-server-registry/`
-2. **Never** break the core programs - they are production-ready and tested
-3. Run tests frequently: `cargo test --package solana-a2a --package solana-mcp`
-4. Format before committing: `cargo fmt --all`
-5. Check for clippy warnings: `cargo clippy --package solana-a2a --package solana-mcp`
-6. Build times: ~10 seconds for incremental, ~2-3 minutes for clean build
-
-### Making Changes to Python SDK
-
-1. Always work in `python/` directory
-2. Install dev dependencies: `pip3 install -e .[dev]`
-3. Run unit tests: `pytest tests/unit -v` (takes ~5 seconds)
-4. Format: `black .` and `isort .`
-5. Type check: `mypy .`
-6. Lint: `flake8 .`
-7. Integration tests require devnet and may be flaky
-
-### Making Changes to TypeScript SDK
-
-1. Always work in `sdk/typescript/` directory
-2. Install: `npm ci --legacy-peer-deps`
-3. Build: `npm run build` (takes ~5 seconds)
-4. Format: `npm run format`
-5. Lint: `npm run lint`
-6. Type check: `npx tsc --noEmit`
-
-### Making Changes to Frontend/Backend
-
-1. Install dependencies: `npm install`
-2. Run in dev mode to test: `npm run dev`
-3. Build for production: `npm run build`
-4. Lint: `npm run lint`
-
-## Deployment Information
-
-**Live Devnet Addresses**:
-- Agent Registry: `BruRLHGfNaf6C5HKUqFu6md5ePJNELafm1vZdhctPkpr`
-- MCP Server Registry: `BCBVehUHR3yhbDbvhV3QHS3s27k3LTbpX5CrXQ2sR2SR`
-
-**Deployment Scripts**:
-- `./scripts/deploy-devnet.sh` - Deploy to devnet (requires Solana CLI and funded wallet)
-- `./scripts/build.sh` - Build all programs with BPF target
-- `./scripts/verify.sh` - Verification script
-
-## Critical Instructions
-
-**TRUST THESE INSTRUCTIONS**: The information above has been validated by running builds and tests. Do not waste time re-exploring unless you find an error in these instructions.
-
-**When in doubt**:
-1. For Rust: Use `cargo test --package solana-a2a --package solana-mcp` (never `--all`)
-2. For Python: Create pytest-xprocess shim if tests fail
-3. For TypeScript: Use `--legacy-peer-deps` with npm
-4. Check GitHub Actions workflows for the exact commands used in CI
-
-**Focus Areas**:
-- The core Solana programs (`programs/agent-registry/`, `programs/mcp-server-registry/`) are production-ready with 100% test coverage
-- The Python and TypeScript SDKs are actively developed
-- The Rust SDK and svmai-token program have known issues - avoid them unless fixing them is your task
-
-**Performance Notes**:
-- Rust core program tests: <1 second (incremental), ~10 seconds (clean)
-- Python unit tests: ~5 seconds
-- TypeScript build: ~3-5 seconds
-- Rust clean build: ~2-3 minutes
-- Python dependency install: ~30 seconds
-- TypeScript dependency install: ~10 seconds
+### Getting Help
+- Check GitHub Issues for known bugs
+- Review CI/CD workflows in `.github/workflows/`
+- Examine test files in `tests/` for usage examples
