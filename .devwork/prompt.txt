@@ -1,0 +1,73 @@
+# PR #58: [WIP] Integrate MCP registry server into our system
+
+## Description
+Thanks for assigning this issue to me. I'm starting to work on it and will keep this PR's description up to date as I form a plan and make progress.
+
+<!-- START COPILOT CODING AGENT SUFFIX -->
+
+
+
+<details>
+
+<summary>Original prompt</summary>
+
+> 
+> ----
+> 
+> *This section details on the original issue you should resolve*
+> 
+> <issue_title>integrate mcp registry server</issue_title>
+> <issue_description>here is registry example, study it and integrate in our server
+> https://github.com/modelcontextprotocol/registry</issue_description>
+> 
+> ## Comments on the Issue (you are @copilot in this section)
+> 
+> <comments>
+> </comments>
+> 
+
+
+</details>
+
+- Fixes openSVM/aeamcp#57
+
+<!-- START COPILOT CODING AGENT TIPS -->
+---
+
+💡 You can make Copilot smarter by setting up custom instructions, customizing its development environment and configuring Model Context Protocol (MCP) servers. Learn more [Copilot coding agent tips](https://gh.io/copilot-coding-agent-tips) in the docs.
+
+## Task
+Thanks for assigning this issue to me. I'm starting to work on it and will keep this PR's description up to date as I form a plan and make progress.
+
+<!-- START COPILOT CODING AGENT SUFFIX -->
+
+
+
+<details>
+
+<summary>Original prompt</summary>
+
+> 
+> ----
+> 
+> *This section details on the original issue you should resolve*
+> 
+> <issue_title>integrate mcp registry server</issue_title>
+> <issue_description>here is registry example, study it and integrate in our server
+> https://github.com/modelcontextprotocol/registry</issue_description>
+> 
+> ## Comments on the Issue (you are @copilot in this section)
+> 
+> <comments>
+> </comments>
+> 
+
+
+</details>
+
+- Fixes openSVM/aeamcp#57
+
+<!-- START COPILOT CODING AGENT TIPS -->
+---
+
+💡 You can make Copilot smarter by setting up custom instructions, customizing its development environment and configuring Model Context Protocol (MCP) servers. Learn more [Copilot coding agent tips](https://gh.io/copilot-coding-agent-tips) in the docs.
